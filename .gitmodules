@@ -1,0 +1,6 @@
+[submodule ".\\ComputerGraphicsProject2023\\vendor\\glm"]
+	path = .\\ComputerGraphicsProject2023\\vendor\\glm
+	url = https://github.com/g-truc/glm
+[submodule ".\\ComputerGraphicsProject2023\\vendor\\stb"]
+	path = .\\ComputerGraphicsProject2023\\vendor\\stb
+	url = https://github.com/nothings/stb
