@@ -34,6 +34,7 @@ private:
 	Instance m_Instance;
 	DebugUtilMessanger m_DebugMessager;
 	Surface m_Surface;
+	PhysicalDevice m_PhysicalDevice;
 
 	void initWindow();
 	void initVulkan();

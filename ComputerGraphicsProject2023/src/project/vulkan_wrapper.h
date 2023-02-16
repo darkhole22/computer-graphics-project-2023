@@ -63,5 +63,27 @@ private:
 	const Instance* m_Instance;
 };
 
+class PhysicalDevice
+{
+public:
+	inline PhysicalDevice() : m_Handle(VK_NULL_HANDLE) {}
+	inline PhysicalDevice(const PhysicalDevice& other) : m_Handle(other.m_Handle) {}
+
+	static const PhysicalDevice& pickDevice(const Instance& instance, const Surface& surface);
+
+	inline const VkPhysicalDevice& getHandle() const { return m_Handle; }
+
+	inline const PhysicalDevice& operator=(const PhysicalDevice& other) noexcept
+	{
+		m_Handle = other.m_Handle;
+		return *this;
+	}
+
+	inline ~PhysicalDevice() {};
+private:
+	VkPhysicalDevice m_Handle;
+};
+
+
 
 }
