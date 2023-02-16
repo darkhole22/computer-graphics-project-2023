@@ -30,7 +30,10 @@ private:
 	const std::string c_name;
 	GLFWwindow* m_Window;
 	bool m_FramebufferResized = false;
+
 	Instance m_Instance;
+	DebugUtilMessanger m_DebugMessager;
+	Surface m_Surface;
 
 	void initWindow();
 	void initVulkan();

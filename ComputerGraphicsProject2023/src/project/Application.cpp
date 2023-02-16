@@ -51,7 +51,10 @@ void Application::initWindow()
 
 void Application::initVulkan()
 {
-	m_Instance = Instance(c_name);
+	m_Instance = std::move(Instance(c_name));
+	m_DebugMessager = std::move(DebugUtilMessanger(m_Instance));
+	m_Surface = std::move(Surface(m_Instance, m_Window));
+
 }
 
 void Application::run()

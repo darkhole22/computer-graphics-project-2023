@@ -24,9 +24,9 @@ static const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
-Instance::Instance()
+Instance::Instance() :
+    m_Handle(VK_NULL_HANDLE)
 {
-    m_Handle = VK_NULL_HANDLE;
 }
 
 bool checkValidationLayerSupport()
@@ -163,6 +163,25 @@ Instance::Instance(const std::string& applicationName)
     }
 }
 
+Instance::Instance(Instance&& other) noexcept
+{
+    m_Handle = other.m_Handle;
+    other.m_Handle = VK_NULL_HANDLE;
+}
+
+const Instance& Instance::operator=(Instance&& other) noexcept
+{
+    if (other.m_Handle != m_Handle)
+    {
+        if (m_Handle != VK_NULL_HANDLE)
+            vkDestroyInstance(m_Handle, nullptr);
+        m_Handle = other.m_Handle;
+        other.m_Handle = VK_NULL_HANDLE;
+    }
+
+    return *this;
+}
+
 Instance::~Instance()
 {
     if (m_Handle != VK_NULL_HANDLE)
@@ -179,9 +198,15 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMes
     }
 }
 
-DebugUtilMessanger::DebugUtilMessanger(const Instance& instance)
-    : m_Instance(instance)
+DebugUtilMessanger::DebugUtilMessanger() :
+    m_Handle(VK_NULL_HANDLE), m_Instance(nullptr)
 {
+}
+
+DebugUtilMessanger::DebugUtilMessanger(const Instance& instance)
+    : m_Instance(&instance)
+{
+    m_Handle = VK_NULL_HANDLE;
     VALIDATION_LAYER_IF(
         VkDebugUtilsMessengerCreateInfoEXT createInfo{};
         populateDebugMessengerCreateInfo(createInfo);
@@ -192,6 +217,15 @@ DebugUtilMessanger::DebugUtilMessanger(const Instance& instance)
     )
 }
 
+DebugUtilMessanger::DebugUtilMessanger(DebugUtilMessanger&& other) noexcept
+{
+    m_Instance = other.m_Instance;
+    m_Handle = other.m_Handle;
+
+    other.m_Instance = nullptr;
+    other.m_Handle = VK_NULL_HANDLE;
+}
+
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
@@ -199,9 +233,80 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
     }
 }
 
+const DebugUtilMessanger& DebugUtilMessanger::operator=(DebugUtilMessanger&& other) noexcept
+{
+    if (m_Handle != other.m_Handle)
+    {
+        VALIDATION_LAYER_IF(
+            if (m_Instance && m_Handle != VK_NULL_HANDLE)
+            {
+                DestroyDebugUtilsMessengerEXT(m_Instance->getHandle(), m_Handle, nullptr);
+            }
+        )
+
+        m_Instance = other.m_Instance;
+        m_Handle = other.m_Handle;
+
+        other.m_Instance = nullptr;
+        other.m_Handle = VK_NULL_HANDLE;
+    }
+
+    return *this;
+}
+
 DebugUtilMessanger::~DebugUtilMessanger()
 {
-    VALIDATION_LAYER_IF(DestroyDebugUtilsMessengerEXT(m_Instance.getHandle(), m_Handle, nullptr));
+    VALIDATION_LAYER_IF(
+        if (m_Instance && m_Handle != VK_NULL_HANDLE)
+        {
+            DestroyDebugUtilsMessengerEXT(m_Instance->getHandle(), m_Handle, nullptr);
+        }
+    )
+}
+
+Surface::Surface() :
+    m_Handle(VK_NULL_HANDLE), m_Instance(nullptr)
+{
+}
+
+Surface::Surface(Surface&& other) noexcept
+{
+    m_Instance = other.m_Instance;
+    m_Handle = other.m_Handle;
+
+    other.m_Instance = nullptr;
+    other.m_Handle = VK_NULL_HANDLE;
+}
+
+Surface::Surface(const Instance& instance, GLFWwindow* window) :
+    m_Handle(VK_NULL_HANDLE), m_Instance(&instance)
+{
+    if (glfwCreateWindowSurface(instance.getHandle(), window, nullptr, &m_Handle) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create window surface!");
+    }
+}
+
+const Surface& Surface::operator=(Surface&& other) noexcept
+{
+    if (other.m_Handle != m_Handle)
+    {
+        if (m_Instance && m_Handle != VK_NULL_HANDLE)
+            vkDestroySurfaceKHR(m_Instance->getHandle(), m_Handle, nullptr);
+
+        m_Instance = other.m_Instance;
+        m_Handle = other.m_Handle;
+
+        other.m_Instance = nullptr;
+        other.m_Handle = VK_NULL_HANDLE;
+    }
+
+    return *this;
+}
+
+Surface::~Surface()
+{
+    if (m_Instance && m_Handle != VK_NULL_HANDLE)
+        vkDestroySurfaceKHR(m_Instance->getHandle(), m_Handle, nullptr);
 }
 
 }
