@@ -4,3 +4,6 @@
 [submodule ".\\ComputerGraphicsProject2023\\vendor\\stb"]
 	path = .\\ComputerGraphicsProject2023\\vendor\\stb
 	url = https://github.com/nothings/stb
+[submodule "ComputerGraphicsProject2023\\vendor\\GLFW"]
+	path = ComputerGraphicsProject2023\\vendor\\GLFW
+	url = https://github.com/glfw/glfw.git

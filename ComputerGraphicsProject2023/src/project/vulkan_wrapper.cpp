@@ -75,7 +75,7 @@ static void checkRequiredExstentions(std::vector<std::string> const& requiredExt
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
-    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
         // VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
         // VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
         // VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
@@ -419,7 +419,7 @@ bool isDeviceSuitable(VkPhysicalDevice device, const Surface& surface) {
     return indices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.samplerAnisotropy;
 }
 
-const PhysicalDevice& PhysicalDevice::pickDevice(const Instance& instance, const Surface& surface)
+const PhysicalDevice PhysicalDevice::pickDevice(const Instance& instance, const Surface& surface)
 {
     PhysicalDevice physicalDevice;
 
@@ -435,7 +435,12 @@ const PhysicalDevice& PhysicalDevice::pickDevice(const Instance& instance, const
 
     for (const auto& device : devices) {
         if (isDeviceSuitable(device, surface)) {
+            QueueFamilyIndices indices = findQueueFamilies(device, surface);
+
             physicalDevice.m_Handle = device;
+            physicalDevice.m_QueueGraphicsFamily = indices.graphicsFamily.value();
+            physicalDevice.m_QueuePresentFamily = indices.presentFamily.value();
+
             // TODO m_MsaaSamples = getMaxUsableSampleCount();
             break;
         }
@@ -450,6 +455,83 @@ const PhysicalDevice& PhysicalDevice::pickDevice(const Instance& instance, const
     std::cout << "Device name: " << deviceProperties.deviceName << "\n";
 
     return physicalDevice;
+}
+
+Device::Device() :
+    m_Handle(VK_NULL_HANDLE)
+{
+}
+
+Device::Device(Device&& other) noexcept
+{
+    m_Handle = other.m_Handle;
+    other.m_Handle = VK_NULL_HANDLE;
+}
+
+Device::Device(const PhysicalDevice& physicalDevice)
+{
+    uint32_t queueGraphicsFamily = physicalDevice.getGraphicsQueueFamily();
+    uint32_t queuePresentFamily = physicalDevice.getPresentQueueFamily();
+
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+    std::set<uint32_t> uniqueQueueFamilies = { queueGraphicsFamily, queuePresentFamily };
+
+    float queuePriority = 1.0f;
+    for (uint32_t queueFamily : uniqueQueueFamilies) {
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.pNext = nullptr;
+        queueCreateInfo.queueFamilyIndex = queueFamily;
+        queueCreateInfo.queueCount = 1;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+        queueCreateInfos.push_back(queueCreateInfo);
+    }
+
+    VkPhysicalDeviceFeatures deviceFeatures{};
+    deviceFeatures.samplerAnisotropy = VK_TRUE;
+
+    VkDeviceCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+    createInfo.pNext = nullptr;
+
+    createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+    createInfo.pQueueCreateInfos = queueCreateInfos.data();
+
+    createInfo.pEnabledFeatures = &deviceFeatures;
+
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
+    createInfo.enabledLayerCount = 0;
+    VALIDATION_LAYER_IF(
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    );
+
+    if (vkCreateDevice(physicalDevice.getHandle(), &createInfo, nullptr, &m_Handle) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create logical device!");
+    }
+}
+
+const Device& Device::operator=(Device&& other) noexcept
+{
+    if (other.m_Handle != m_Handle)
+    {
+        if (m_Handle != VK_NULL_HANDLE)
+            vkDestroyDevice(m_Handle, nullptr);
+
+        m_Handle = other.m_Handle;
+        other.m_Handle = VK_NULL_HANDLE;
+    }
+
+    return *this;
+}
+
+Device::~Device()
+{
+    if (m_Handle != VK_NULL_HANDLE)
+        vkDestroyDevice(m_Handle, nullptr);
 }
 
 }
