@@ -3,23 +3,35 @@
 
 #include "project/Application.h"
 
-namespace computergraphicsproject {
-	void Application::setup()
+class TestApplication : public computergraphicsproject::Application
+{
+public:
+	// This inherits the parent class constructors.
+	using Application::Application;
+
+	void setup()
 	{
 
 	}
 
-	void Application::update()
+	void update()
 	{
 
 	}
-}
+};
 
 int main()
 {
-    bool result = computergraphicsproject::launch("Hello Application", 800, 600);
+	try
+	{
+		computergraphicsproject::launch<TestApplication>("Hello Application", 800, 600);
+		return EXIT_SUCCESS;
+	}
+	catch (const std::exception& exception)
+	{
+		std::cerr << exception.what() << std::endl;
+	}
 
-	if (result) return EXIT_SUCCESS;
 	std::cin.get();
 	return EXIT_FAILURE;
 }

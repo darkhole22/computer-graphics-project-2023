@@ -9,28 +9,11 @@
 
 namespace computergraphicsproject {
 
-bool launch(const char* name, uint32_t width, uint32_t height)
-{
-	try
-	{
-		Application application(name, width, height);
-		application.run();
-	}
-	catch (const std::exception& exception)
-	{
-		std::cerr << exception.what() << std::endl;
-		return false;
-	}
-
-	return true;
-}
-
 Application::Application(const char* name, uint32_t width, uint32_t height)
 	: c_width(width), c_height(height), c_name(name)
 {
 	initWindow();
 	initVulkan();
-	setup();
 }
 
 void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -60,6 +43,7 @@ void Application::initVulkan()
 
 void Application::run()
 {
+	setup();
 	while (!glfwWindowShouldClose(m_Window)) {
 		glfwPollEvents();
 
