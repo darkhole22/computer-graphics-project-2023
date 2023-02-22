@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define GLFW_INCLUDE_VULKAN
-#include <glfw3.h>
+#include <GlFW/glfw3.h>
 
 #include "vulkan_wrapper.h"
 

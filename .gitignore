@@ -1,6 +1,7 @@
 # Directories
 
 .vs/
+.vscode/
 bin/
 bin-int/
 
@@ -10,3 +11,7 @@ bin-int/
 *.sln
 *.vcxproj
 *.vcxproj.filters
+*.obj
+*.tlog
+*.idb
+*.pdb
