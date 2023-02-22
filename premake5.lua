@@ -4,8 +4,6 @@ workspace "ComputerGraphicsProject2023"
 
 VULKAN_SDK = os.getenv("VULKAN_SDK")
 
-print(VULKAN_SDK)
-
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDirs = {}
@@ -24,6 +22,8 @@ project "ComputerGraphicsProject2023"
     location "ComputerGraphicsProject2023"
     kind "ConsoleApp"
     language "C++"
+    cppdialect "C++17"
+    staticruntime "On"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -42,18 +42,19 @@ project "ComputerGraphicsProject2023"
         "%{IncludeDirs.VulkanSDK}"
     }
 
-    links { "GLFW","%{Library.Vulkan}" }
-
-    print (os.findlib("m"))
-
-    links (libdirs { os.findlib("vulkan") })
+    links
+    { 
+        "GLFW",
+        "%{Library.Vulkan}"
+    }
 
     filter "system:windows"
-        cppdialect "C++17"
-        staticruntime "On"
         systemversion "latest"
 
         -- defines {  }
+
+    filter "system:linux"
+        systemversion "latest"
     
     filter "configurations:Debug"
         defines "DEBUG"
