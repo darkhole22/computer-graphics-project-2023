@@ -35,7 +35,6 @@ void Application::initWindow()
 void Application::initVulkan()
 {
 	m_Instance = std::move(Instance(c_name));
-	m_DebugMessager = std::move(DebugUtilMessanger(m_Instance));
 	m_Surface = std::move(Surface(m_Instance, m_Window));
 	m_PhysicalDevice = PhysicalDevice::pickDevice(m_Instance, m_Surface);
 	m_Device = std::move(Device(m_PhysicalDevice));
