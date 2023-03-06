@@ -123,6 +123,8 @@ public:
 
 	inline VkDevice getHandle() const { return m_Handle; };
 	inline const PhysicalDevice& getPhysicalDevice() const { return *m_PhysicalDevice; };
+	inline VkQueue getGraphicsQueue() const { return m_GraphicsQueue; }
+	inline VkCommandPool getCommandPool() const { return m_CommandPool; }
 
 	~Device();
 private:
@@ -131,6 +133,33 @@ private:
 
 	VkQueue m_GraphicsQueue = VK_NULL_HANDLE;
 	VkQueue m_PresentQueue = VK_NULL_HANDLE;
+
+	VkCommandPool m_CommandPool;
+
+	void cleanup() noexcept;
+};
+
+class CommandBuffer
+{
+public:
+	CommandBuffer();
+	CommandBuffer(const CommandBuffer& other) = delete;
+	CommandBuffer(CommandBuffer&& other) noexcept;
+	CommandBuffer(const Device& device, bool singleTime = false);
+	
+	const CommandBuffer operator=(const CommandBuffer& other) = delete;
+	const CommandBuffer& operator=(CommandBuffer&& other) noexcept;
+
+	inline VkCommandBuffer getHandle() const { return m_Handle; }
+
+	~CommandBuffer();
+private:
+	VkCommandBuffer m_Handle;
+	Device const* m_Device;
+	bool m_SingleTime = false;
+
+	void cleanup() noexcept;
+
 };
 
 class Image

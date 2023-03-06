@@ -477,7 +477,7 @@ const PhysicalDevice PhysicalDevice::pickDevice(const Instance& instance, const 
 }
 
 Device::Device() :
-    m_Handle(VK_NULL_HANDLE), m_PhysicalDevice(nullptr)
+    m_Handle(VK_NULL_HANDLE), m_PhysicalDevice(nullptr), m_CommandPool(VK_NULL_HANDLE)
 {
 }
 
@@ -487,11 +487,13 @@ Device::Device(Device&& other) noexcept
     m_GraphicsQueue = other.m_GraphicsQueue;
     m_PresentQueue = other.m_PresentQueue;
     m_PhysicalDevice = other.m_PhysicalDevice;
+    m_CommandPool = other.m_CommandPool;
 
     other.m_Handle = VK_NULL_HANDLE;
     other.m_PhysicalDevice = nullptr;
     other.m_GraphicsQueue = VK_NULL_HANDLE;
     other.m_PresentQueue = VK_NULL_HANDLE;
+    other.m_CommandPool = VK_NULL_HANDLE;
 }
 
 Device::Device(const PhysicalDevice& physicalDevice)
@@ -537,24 +539,32 @@ Device::Device(const PhysicalDevice& physicalDevice)
 
     vkGetDeviceQueue(m_Handle, queueGraphicsFamily, 0, &m_GraphicsQueue);
     vkGetDeviceQueue(m_Handle, queuePresentFamily, 0, &m_PresentQueue);
+
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.queueFamilyIndex = queueGraphicsFamily;
+
+    ASSERT_VK_SUCCESS(vkCreateCommandPool(m_Handle, &poolInfo, nullptr, &m_CommandPool), "Failed to create command pool!");
 }
 
 const Device& Device::operator=(Device&& other) noexcept
 {
     if (other.m_Handle != m_Handle)
     {
-        if (m_Handle != VK_NULL_HANDLE)
-            vkDestroyDevice(m_Handle, nullptr);
+        cleanup();
 
         m_Handle = other.m_Handle;
         m_PhysicalDevice = other.m_PhysicalDevice;
         m_GraphicsQueue = other.m_GraphicsQueue;
         m_PresentQueue = other.m_PresentQueue;
+        m_CommandPool = other.m_CommandPool;
 
         other.m_Handle = VK_NULL_HANDLE;
         other.m_PhysicalDevice = nullptr;
         other.m_GraphicsQueue = VK_NULL_HANDLE;
         other.m_PresentQueue = VK_NULL_HANDLE;
+        other.m_CommandPool = VK_NULL_HANDLE;
     }
 
     return *this;
@@ -562,8 +572,97 @@ const Device& Device::operator=(Device&& other) noexcept
 
 Device::~Device()
 {
+    cleanup();
+}
+
+void Device::cleanup() noexcept
+{
     if (m_Handle != VK_NULL_HANDLE)
+    {
+        vkDestroyCommandPool(m_Handle, m_CommandPool, nullptr);
+
         vkDestroyDevice(m_Handle, nullptr);
+    }
+}
+
+
+CommandBuffer::CommandBuffer() :
+    m_Handle(VK_NULL_HANDLE), m_Device(nullptr)
+{
+}
+
+CommandBuffer::CommandBuffer(CommandBuffer&& other) noexcept
+{
+    m_Handle = other.m_Handle;
+    m_Device = other.m_Device;
+
+    other.m_Handle = VK_NULL_HANDLE;
+    other.m_Device = nullptr;
+}
+
+CommandBuffer::CommandBuffer(const Device& device, bool singleTime)
+{
+    m_SingleTime = singleTime;
+    m_Device = &device;
+
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = m_Device->getCommandPool();
+    allocInfo.commandBufferCount = 1;
+
+    vkAllocateCommandBuffers(m_Device->getHandle(), &allocInfo, &m_Handle);
+
+    if (m_SingleTime)
+    {
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        vkBeginCommandBuffer(m_Handle, &beginInfo);
+    }
+}
+
+const CommandBuffer& CommandBuffer::operator=(CommandBuffer&& other) noexcept
+{
+    if (m_Handle != other.m_Handle)
+    {
+        cleanup();
+
+        m_Handle = other.m_Handle;
+        m_Device = other.m_Device;
+
+        other.m_Handle = VK_NULL_HANDLE;
+        other.m_Device = nullptr;
+    }
+
+    return *this;
+}
+
+CommandBuffer::~CommandBuffer()
+{
+    cleanup();
+}
+
+void CommandBuffer::cleanup() noexcept
+{
+    if (m_Handle != VK_NULL_HANDLE)
+    {
+        if (m_SingleTime)
+        {
+            vkEndCommandBuffer(m_Handle);
+
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &m_Handle;
+
+            vkQueueSubmit(m_Device->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(m_Device->getGraphicsQueue());
+        }
+
+        vkFreeCommandBuffers(m_Device->getHandle(), m_Device->getCommandPool(), 1, &m_Handle);
+    }
 }
 
 Image::Image() :
