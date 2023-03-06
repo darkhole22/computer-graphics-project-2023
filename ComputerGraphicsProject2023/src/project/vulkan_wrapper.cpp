@@ -744,9 +744,7 @@ Image::Image(const Device& device, uint32_t width, uint32_t height, uint32_t mip
     imageInfo.samples = numSamples;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateImage(m_Device->getHandle(), &imageInfo, nullptr, &m_Handle) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create image!");
-    }
+    ASSERT_VK_SUCCESS(vkCreateImage(m_Device->getHandle(), &imageInfo, nullptr, &m_Handle), "Failed to create image!");
 
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(m_Device->getHandle(), m_Handle, &memRequirements);
@@ -756,9 +754,7 @@ Image::Image(const Device& device, uint32_t width, uint32_t height, uint32_t mip
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(m_Device->getPhysicalDevice(), memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(m_Device->getHandle(), &allocInfo, nullptr, &m_Memory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate image memory!");
-    }
+    ASSERT_VK_SUCCESS(vkAllocateMemory(m_Device->getHandle(), &allocInfo, nullptr, &m_Memory), "Failed to allocate image memory!");
 
     vkBindImageMemory(m_Device->getHandle(), m_Handle, m_Memory, 0);
 
@@ -769,15 +765,7 @@ const Image& Image::operator=(Image&& other) noexcept
 {
     if (m_Handle != other.m_Handle)
     {
-        if (m_Handle != VK_NULL_HANDLE)
-        {
-            vkDestroyImageView(m_Device->getHandle(), m_View, nullptr);
-            if (m_Memory != VK_NULL_HANDLE)
-            {
-                vkDestroyImage(m_Device->getHandle(), m_Handle, nullptr);
-                vkFreeMemory(m_Device->getHandle(), m_Memory, nullptr);
-            }
-        }
+        cleanup();
 
         m_Handle = other.m_Handle;
         m_Memory = other.m_Memory;
@@ -794,6 +782,11 @@ const Image& Image::operator=(Image&& other) noexcept
 }
 
 Image::~Image()
+{
+    cleanup();
+}
+
+void Image::cleanup() noexcept
 {
     if (m_Handle == VK_NULL_HANDLE) return;
 
@@ -818,7 +811,7 @@ VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<
         }
     }
 
-    throw std::runtime_error("failed to find supported format!");
+    throw std::runtime_error("Failed to find supported format!");
 }
 
 VkFormat findDepthFormat(VkPhysicalDevice physicalDevice) {
@@ -928,9 +921,7 @@ RenderPass::RenderPass(const Device& device, const Surface& surface) :
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(device.getHandle(), &renderPassInfo, nullptr, &m_Handle) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create render pass!");
-    }
+    ASSERT_VK_SUCCESS(vkCreateRenderPass(device.getHandle(), &renderPassInfo, nullptr, &m_Handle), "Failed to create render pass!")
 }
 
 const RenderPass& RenderPass::operator=(RenderPass&& other) noexcept
@@ -1016,6 +1007,75 @@ SwapChain::SwapChain(const Device& device, const Surface& surface, const RenderP
     create();
 }
 
+inline bool hasStencilComponent(VkFormat format) {
+    return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
+
+void transitionImageLayout(const Device& device, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels) {
+    CommandBuffer commandBuffer(device, true);
+
+    VkPipelineStageFlags sourceStage;
+    VkPipelineStageFlags destinationStage;
+
+    VkImageMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = oldLayout;
+    barrier.newLayout = newLayout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = image;
+
+    if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+        if (hasStencilComponent(format)) {
+            barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        }
+    }
+    else {
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    }
+
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = mipLevels;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+
+    if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    }
+    else {
+        throw std::invalid_argument("Unsupported layout transition!");
+    }
+
+    vkCmdPipelineBarrier(
+        commandBuffer.getHandle(),
+        sourceStage, destinationStage,
+        0,
+        0, nullptr,
+        0, nullptr,
+        1, &barrier
+    );
+}
+
 void SwapChain::create()
 {
     const PhysicalDevice& physicalDevice = m_Device->getPhysicalDevice();
@@ -1087,7 +1147,7 @@ void SwapChain::create()
         depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-    // TODO transitionImageLayout(m_DepthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+    transitionImageLayout(*m_Device, m_DepthImage.getHandle(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
     m_Framebuffers.resize(imageCount);
 
     for (size_t i = 0; i < imageCount; i++) {
@@ -1106,9 +1166,7 @@ void SwapChain::create()
         framebufferInfo.height = m_Extent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(m_Device->getHandle(), &framebufferInfo, nullptr, &m_Framebuffers[i]) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create framebuffer!");
-        }
+        ASSERT_VK_SUCCESS(vkCreateFramebuffer(m_Device->getHandle(), &framebufferInfo, nullptr, &m_Framebuffers[i]), "Failed to create framebuffer!");
     }
 }
 
@@ -1121,10 +1179,9 @@ void SwapChain::recreate()
         glfwWaitEvents();
     }
 
-    vkDeviceWaitIdle(m_Device->getHandle());
+    m_Device->waitIdle();
 
     cleanup();
-
     create();
 }
 

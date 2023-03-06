@@ -126,6 +126,8 @@ public:
 	inline VkQueue getGraphicsQueue() const { return m_GraphicsQueue; }
 	inline VkCommandPool getCommandPool() const { return m_CommandPool; }
 
+	inline void waitIdle() const { vkDeviceWaitIdle(m_Handle); }
+
 	~Device();
 private:
 	VkDevice m_Handle;
@@ -159,7 +161,6 @@ private:
 	bool m_SingleTime = false;
 
 	void cleanup() noexcept;
-
 };
 
 class Image
@@ -171,6 +172,7 @@ public:
 	Image(VkImage image, const Device& device, VkFormat format);
 	Image(const Device& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags);
 
+	inline VkImage getHandle() const { return m_Handle; }
 	inline VkImageView getView() const { return m_View; }
 
 	const Image operator=(const Image& other) = delete;
@@ -182,6 +184,8 @@ private:
 	VkImageView m_View;
 	VkDeviceMemory m_Memory;
 	Device const* m_Device;
+
+	void cleanup() noexcept;
 };
 
 class RenderPass

@@ -51,7 +51,7 @@ void Application::run()
 		// drawFrame();
 	}
 
-	// vkDeviceWaitIdle(m_Device);
+	m_Device.waitIdle();
 }
 
 Application::~Application()
