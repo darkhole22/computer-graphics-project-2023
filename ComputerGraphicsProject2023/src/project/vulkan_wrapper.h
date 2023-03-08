@@ -43,7 +43,9 @@ public:
 	~Instance();
 private:
 	VkInstance m_Handle;
-	DebugUtilMessanger m_DebugMessanger;
+	DebugUtilMessanger* m_DebugMessanger; // The debug messanger must be destroyed before the VkInstance, so manual memory management is required.
+
+	void cleanup() noexcept;
 };
 
 class Surface

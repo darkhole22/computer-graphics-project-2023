@@ -3,6 +3,7 @@
 #include <string>
 #include <stdint.h>
 #include <type_traits>
+#include <memory>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GlFW/glfw3.h>
@@ -43,9 +44,9 @@ template<typename T>
 void launch(const char* name, uint32_t width, uint32_t height)
 {
 	static_assert(std::is_base_of<Application, T>::value, "Trying to launch a class that is not an Application!");
-
-	T application(name, width, height);
-	application.run();
+	
+	std::unique_ptr<T> app = std::make_unique<T>(name, width, height);
+	app->run();
 }
 
 }

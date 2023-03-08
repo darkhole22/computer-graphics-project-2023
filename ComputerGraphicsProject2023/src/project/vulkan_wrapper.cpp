@@ -29,11 +29,6 @@ static const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
-Instance::Instance() :
-    m_Handle(VK_NULL_HANDLE)
-{
-}
-
 bool checkValidationLayerSupport()
 {
     uint32_t layerCount;
@@ -96,6 +91,20 @@ void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     createInfo.pfnUserCallback = debugCallback;
+}
+
+Instance::Instance() :
+    m_Handle(VK_NULL_HANDLE), m_DebugMessanger(nullptr)
+{
+}
+
+Instance::Instance(Instance&& other) noexcept
+{
+    m_Handle = other.m_Handle;
+    m_DebugMessanger = other.m_DebugMessanger;
+
+    other.m_Handle = VK_NULL_HANDLE;
+    other.m_DebugMessanger = nullptr;
 }
 
 Instance::Instance(const std::string& applicationName)
@@ -165,28 +174,20 @@ Instance::Instance(const std::string& applicationName)
 
     ASSERT_VK_SUCCESS(vkCreateInstance(&createInfo, nullptr, &m_Handle), "Failed to create instance!");
 
-    m_DebugMessanger = std::move(DebugUtilMessanger(m_Handle));
-}
-
-Instance::Instance(Instance&& other) noexcept
-{
-    m_Handle = other.m_Handle;
-    m_DebugMessanger = std::move(other.m_DebugMessanger);
-
-    other.m_Handle = VK_NULL_HANDLE;
+    m_DebugMessanger = new DebugUtilMessanger(m_Handle);
 }
 
 const Instance& Instance::operator=(Instance&& other) noexcept
 {
     if (other.m_Handle != m_Handle)
     {
-        if (m_Handle != VK_NULL_HANDLE)
-            vkDestroyInstance(m_Handle, nullptr);
+        cleanup();
         
         m_Handle = other.m_Handle;
-        m_DebugMessanger = std::move(other.m_DebugMessanger);
+        m_DebugMessanger = other.m_DebugMessanger;
 
         other.m_Handle = VK_NULL_HANDLE;
+        other.m_DebugMessanger = nullptr;
     }
 
     return *this;
@@ -194,6 +195,13 @@ const Instance& Instance::operator=(Instance&& other) noexcept
 
 Instance::~Instance()
 {
+    cleanup();
+}
+
+void Instance::cleanup() noexcept
+{
+    delete m_DebugMessanger;
+
     if (m_Handle != VK_NULL_HANDLE)
         vkDestroyInstance(m_Handle, nullptr);
 }
