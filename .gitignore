@@ -15,3 +15,5 @@ bin-int/
 *.tlog
 *.idb
 *.pdb
+
+/Makefile
