@@ -6,7 +6,7 @@
 #include <memory>
 
 #define GLFW_INCLUDE_VULKAN
-#include <GlFW/glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include "vulkan_wrapper.h"
 
@@ -35,6 +35,8 @@ private:
 	Surface m_Surface;
 	PhysicalDevice m_PhysicalDevice;
 	Device m_Device;
+	RenderPass m_RenderPass;
+	SwapChain m_SwapChain;
 
 	void initWindow();
 	void initVulkan();

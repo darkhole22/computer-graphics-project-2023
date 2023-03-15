@@ -38,6 +38,8 @@ void Application::initVulkan()
 	m_Surface = std::move(Surface(m_Instance, m_Window));
 	m_PhysicalDevice = PhysicalDevice::pickDevice(m_Instance, m_Surface);
 	m_Device = std::move(Device(m_PhysicalDevice));
+	m_RenderPass = std::move(RenderPass(m_Device, m_Surface));
+	m_SwapChain = std::move(SwapChain(m_Device, m_Surface, m_RenderPass));
 }
 
 void Application::run()
@@ -49,6 +51,9 @@ void Application::run()
 		update();
 
 		// drawFrame();
+
+		// auto renderTarget = RenderTarget(swapchain, device)
+		// (scene/sceneMenager).render(renderTarget)
 	}
 
 	m_Device.waitIdle();

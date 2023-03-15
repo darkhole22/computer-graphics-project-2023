@@ -6,7 +6,6 @@
 #include <optional>
 #include <set>
 #include <algorithm>
-#include <array>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -111,7 +110,7 @@ Instance::Instance(const std::string& applicationName)
 {
     VALIDATION_LAYER_IF(
         if (!checkValidationLayerSupport()) {
-            throw std::runtime_error("validation layers requested, but not available!");
+            throw std::runtime_error("Validation layers requested, but not available!");
         }
     )
     
@@ -384,8 +383,6 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
     return requiredExtensions.empty();
 }
 
-
-
 SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, const Surface& surface) {
     SwapChainSupportDetails details;
 
@@ -593,7 +590,6 @@ void Device::cleanup() noexcept
     }
 }
 
-
 CommandBuffer::CommandBuffer() :
     m_Handle(VK_NULL_HANDLE), m_Device(nullptr)
 {
@@ -629,6 +625,29 @@ CommandBuffer::CommandBuffer(const Device& device, bool singleTime)
 
         vkBeginCommandBuffer(m_Handle, &beginInfo);
     }
+}
+
+template<size_t SIZE>
+std::array<CommandBuffer, SIZE>&& CommandBuffer::getCommandBuffers(const Device& device)
+{
+    std::array<CommandBuffer, SIZE> buffers{};
+    std::array<VkCommandBuffer, SIZE> handles{};
+    
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = device.getCommandPool();
+    allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
+
+    ASSERT_VK_SUCCESS(vkAllocateCommandBuffers(device.getHandle(), &allocInfo, handles.data()), "Failed to allocate command buffers!");
+
+    for (size_t i = 0; i < buffers.size(); i++)
+    {
+        buffers[i].m_Handle = handles[i];
+        buffers[i].m_Device = &device;
+    }
+
+    return std::move(buffers);
 }
 
 const CommandBuffer& CommandBuffer::operator=(CommandBuffer&& other) noexcept
@@ -667,9 +686,9 @@ void CommandBuffer::cleanup() noexcept
 
             vkQueueSubmit(m_Device->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
             vkQueueWaitIdle(m_Device->getGraphicsQueue());
+        
+            vkFreeCommandBuffers(m_Device->getHandle(), m_Device->getCommandPool(), 1, &m_Handle);
         }
-
-        vkFreeCommandBuffers(m_Device->getHandle(), m_Device->getCommandPool(), 1, &m_Handle);
     }
 }
 
@@ -1013,6 +1032,21 @@ SwapChain::SwapChain(const Device& device, const Surface& surface, const RenderP
     m_Device(&device), m_Surface(&surface), m_RenderPass(&renderPass)
 {
     create();
+
+    m_CommandBuffers = CommandBuffer::getCommandBuffers<MAX_FRAMES_IN_FLIGHT>(*m_Device);
+
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        ASSERT_VK_SUCCESS(vkCreateSemaphore(m_Device->getHandle(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]), "Failed to create image semaphores!");
+        ASSERT_VK_SUCCESS(vkCreateSemaphore(m_Device->getHandle(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]), "Failed to create render semaphores!");
+        ASSERT_VK_SUCCESS(vkCreateFence(m_Device->getHandle(), &fenceInfo, nullptr, &m_InFlightFences[i]), "Failed to create Fences!");
+    }
 }
 
 inline bool hasStencilComponent(VkFormat format) {
@@ -1108,10 +1142,9 @@ void SwapChain::create()
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices = findQueueFamilies(physicalDevice.getHandle(), *m_Surface);
     uint32_t queueFamilyIndices[] = { physicalDevice.getGraphicsQueueFamilyIndex(), physicalDevice.getPresentQueueFamilyIndex() };
 
-    if (indices.graphicsFamily != indices.presentFamily) {
+    if (queueFamilyIndices[0] != queueFamilyIndices[1]) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
         createInfo.pQueueFamilyIndices = queueFamilyIndices;

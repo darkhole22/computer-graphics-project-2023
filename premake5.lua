@@ -16,7 +16,9 @@ LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
 Library = {}
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 
-include ("ComputerGraphicsProject2023/vendor/GLFW/")
+if os.get() == "windows" then
+   include ("ComputerGraphicsProject2023/vendor/GLFW/")
+end
 
 project "ComputerGraphicsProject2023"
     location "ComputerGraphicsProject2023"
@@ -37,24 +39,32 @@ project "ComputerGraphicsProject2023"
     includedirs
     {
         "%{prj.name}/vendor/glm/glm",
-        "%{prj.name}/vendor/stb",
-        "%{IncludeDirs.GLFW}",
-        "%{IncludeDirs.VulkanSDK}"
-    }
-
-    links
-    { 
-        "GLFW",
-        "%{Library.Vulkan}"
+        "%{prj.name}/vendor/stb"
     }
 
     filter "system:windows"
         systemversion "latest"
-
+        
+        includedirs {
+            "%{IncludeDirs.GLFW}",
+            "%{IncludeDirs.VulkanSDK}"
+        }
+        
+        links
+        { 
+            "GLFW",
+            "%{Library.Vulkan}"
+        }
+        
         -- defines {  }
 
     filter "system:linux"
         systemversion "latest"
+        
+        links {
+            "vulkan",
+            "glfw"
+        }
     
     filter "configurations:Debug"
         defines "DEBUG"

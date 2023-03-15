@@ -2,11 +2,14 @@
 
 #include <string>
 #include <vector>
+#include <array>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 namespace computergraphicsproject {
+
+const int MAX_FRAMES_IN_FLIGHT = 2;
 
 class DebugUtilMessanger
 {
@@ -150,6 +153,9 @@ public:
 	CommandBuffer(const CommandBuffer& other) = delete;
 	CommandBuffer(CommandBuffer&& other) noexcept;
 	CommandBuffer(const Device& device, bool singleTime = false);
+
+	template<size_t SIZE>
+	static std::array<CommandBuffer, SIZE>&& getCommandBuffers(const Device& device);
 	
 	const CommandBuffer operator=(const CommandBuffer& other) = delete;
 	const CommandBuffer& operator=(CommandBuffer&& other) noexcept;
@@ -229,6 +235,10 @@ private:
 	Image m_ColorImage;
 	Image m_DepthImage;
 	std::vector<VkFramebuffer> m_Framebuffers;
+	std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffers;
+	std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> m_ImageAvailableSemaphores;
+	std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> m_RenderFinishedSemaphores;
+	std::array<VkFence, MAX_FRAMES_IN_FLIGHT> m_InFlightFences;
 	Device const* m_Device;
 	Surface const* m_Surface;
 	RenderPass const* m_RenderPass;
