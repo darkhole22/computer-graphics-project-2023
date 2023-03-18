@@ -51,6 +51,23 @@ bool checkValidationLayerSupport()
     return true;
 }
 
+bool checkIfItHasExtension(const char* ext) {
+    uint32_t extCount;
+    vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExt(extCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &extCount,
+        availableExt.data());
+
+    for (const auto& extProp : availableExt) {
+        if (strcmp(ext, extProp.extensionName) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 std::vector<const char*> getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
@@ -60,14 +77,14 @@ std::vector<const char*> getRequiredExtensions() {
 
     VALIDATION_LAYER_IF(extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME));
 
-    return extensions;
-}
+    if (checkIfItHasExtension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
+        extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    }
+    if (checkIfItHasExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    }
 
-static void checkRequiredExtensions(std::vector<std::string> const& requiredExtensions, std::unordered_set<std::string> const& aviableExtensions)
-{
-    for (const auto& requiredExstention : requiredExtensions)
-        if (aviableExtensions.count(requiredExstention) == 0)
-            std::cerr << "Missing extension: " << requiredExstention << "\n";
+    return extensions;
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -87,23 +104,16 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.messageSeverity = 
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | 
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | 
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageType = 
+        VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | 
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | 
+        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     createInfo.pfnUserCallback = debugCallback;
-}
-
-Instance::Instance() :
-    m_Handle(VK_NULL_HANDLE), m_DebugMessanger(nullptr)
-{
-}
-
-Instance::Instance(Instance&& other) noexcept
-{
-    m_Handle = other.m_Handle;
-    m_DebugMessanger = other.m_DebugMessanger;
-
-    other.m_Handle = VK_NULL_HANDLE;
-    other.m_DebugMessanger = nullptr;
+    createInfo.pUserData = nullptr;
 }
 
 Instance::Instance(const std::string& applicationName)
@@ -130,66 +140,23 @@ Instance::Instance(const std::string& applicationName)
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
+    createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+
     createInfo.enabledLayerCount = 0;
-    VALIDATION_LAYER_IF(
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
-    )
-
-    uint32_t availableExtensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, nullptr);
-
-    std::vector<VkExtensionProperties> avilableExtensions(availableExtensionCount);
-    vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, avilableExtensions.data());
-
-    std::cout << "Available extensions:\n";
-
-    std::unordered_set<std::string> availableExtensionsSet{};
-
-    for (const auto& extension : avilableExtensions) {
-        availableExtensionsSet.insert(std::string(extension.extensionName));
-        std::cout << '\t' << extension.extensionName << '\n';
-    }
-
-    std::vector<std::string> requiredExstention(extensions.size());
-    for (size_t i = 0; i < extensions.size(); i++)
-    {
-        requiredExstention[i] = extensions[i];
-    }
-
-    checkRequiredExtensions(requiredExstention, availableExtensionsSet);
-
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-    createInfo.enabledLayerCount = 0;
-
     createInfo.pNext = nullptr;
     VALIDATION_LAYER_IF(
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
 
         populateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-        )
+    )
 
     ASSERT_VK_SUCCESS(vkCreateInstance(&createInfo, nullptr, &m_Handle), "Failed to create instance!");
 
     m_DebugMessanger = new DebugUtilMessanger(m_Handle);
-}
-
-const Instance& Instance::operator=(Instance&& other) noexcept
-{
-    if (other.m_Handle != m_Handle)
-    {
-        cleanup();
-        
-        m_Handle = other.m_Handle;
-        m_DebugMessanger = other.m_DebugMessanger;
-
-        other.m_Handle = VK_NULL_HANDLE;
-        other.m_DebugMessanger = nullptr;
-    }
-
-    return *this;
 }
 
 Instance::~Instance()
@@ -215,11 +182,6 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMes
     }
 }
 
-DebugUtilMessanger::DebugUtilMessanger() :
-    m_Handle(VK_NULL_HANDLE), m_Instance(VK_NULL_HANDLE)
-{
-}
-
 DebugUtilMessanger::DebugUtilMessanger(const VkInstance& instance)
     : m_Instance(instance)
 {
@@ -232,41 +194,11 @@ DebugUtilMessanger::DebugUtilMessanger(const VkInstance& instance)
     )
 }
 
-DebugUtilMessanger::DebugUtilMessanger(DebugUtilMessanger&& other) noexcept
-{
-    m_Instance = other.m_Instance;
-    m_Handle = other.m_Handle;
-
-    other.m_Instance = VK_NULL_HANDLE;
-    other.m_Handle = VK_NULL_HANDLE;
-}
-
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
     }
-}
-
-const DebugUtilMessanger& DebugUtilMessanger::operator=(DebugUtilMessanger&& other) noexcept
-{
-    if (m_Handle != other.m_Handle)
-    {
-        VALIDATION_LAYER_IF(
-            if (m_Instance != VK_NULL_HANDLE && m_Handle != VK_NULL_HANDLE)
-            {
-                DestroyDebugUtilsMessengerEXT(m_Instance, m_Handle, nullptr);
-            }
-        )
-
-        m_Instance = other.m_Instance;
-        m_Handle = other.m_Handle;
-
-        other.m_Instance = VK_NULL_HANDLE;
-        other.m_Handle = VK_NULL_HANDLE;
-    }
-
-    return *this;
 }
 
 DebugUtilMessanger::~DebugUtilMessanger()
@@ -279,43 +211,10 @@ DebugUtilMessanger::~DebugUtilMessanger()
     )
 }
 
-Surface::Surface() :
-    m_Handle(VK_NULL_HANDLE), m_Instance(nullptr), m_Window(nullptr)
+Surface::Surface(const Instance& instance, const Window& window) :
+    m_Handle(VK_NULL_HANDLE), m_Instance(&instance), m_Window(window.getHandle())
 {
-}
-
-Surface::Surface(Surface&& other) noexcept
-{
-    m_Instance = other.m_Instance;
-    m_Handle = other.m_Handle;
-    m_Window = other.m_Window;
-
-    other.m_Instance = nullptr;
-    other.m_Window = nullptr;
-    other.m_Handle = VK_NULL_HANDLE;
-}
-
-Surface::Surface(const Instance& instance, GLFWwindow* window) :
-    m_Handle(VK_NULL_HANDLE), m_Instance(&instance), m_Window(window)
-{
-    ASSERT_VK_SUCCESS(glfwCreateWindowSurface(instance.getHandle(), window, nullptr, &m_Handle), "Failed to create window surface!")
-}
-
-const Surface& Surface::operator=(Surface&& other) noexcept
-{
-    if (other.m_Handle != m_Handle)
-    {
-        if (m_Instance && m_Handle != VK_NULL_HANDLE)
-            vkDestroySurfaceKHR(m_Instance->getHandle(), m_Handle, nullptr);
-
-        m_Instance = other.m_Instance;
-        m_Handle = other.m_Handle;
-
-        other.m_Instance = nullptr;
-        other.m_Handle = VK_NULL_HANDLE;
-    }
-
-    return *this;
+    ASSERT_VK_SUCCESS(glfwCreateWindowSurface(instance.getHandle(), m_Window, nullptr, &m_Handle), "Failed to create window surface!")
 }
 
 Surface::~Surface()
@@ -363,8 +262,12 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, const Surface& sur
     return indices;
 }
 
-static const std::vector<const char*> deviceExtensions = {
+static const std::vector<const char*> deviceRequiredExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
+static const std::vector<const char*> deviceRequiredIfPresentExtensions = {
+    "VK_KHR_portability_subset"
 };
 
 bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
@@ -374,7 +277,7 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+    std::set<std::string> requiredExtensions(deviceRequiredExtensions.begin(), deviceRequiredExtensions.end());
 
     for (const auto& extension : availableExtensions) {
         requiredExtensions.erase(extension.extensionName);
@@ -481,32 +384,11 @@ const PhysicalDevice PhysicalDevice::pickDevice(const Instance& instance, const 
     return physicalDevice;
 }
 
-Device::Device() :
-    m_Handle(VK_NULL_HANDLE), m_PhysicalDevice(nullptr), m_CommandPool(VK_NULL_HANDLE)
+Device::Device(const Instance& instance, const Surface& surface) :
+    m_PhysicalDevice(PhysicalDevice::pickDevice(instance, surface))
 {
-}
-
-Device::Device(Device&& other) noexcept
-{
-    m_Handle = other.m_Handle;
-    m_GraphicsQueue = other.m_GraphicsQueue;
-    m_PresentQueue = other.m_PresentQueue;
-    m_PhysicalDevice = other.m_PhysicalDevice;
-    m_CommandPool = other.m_CommandPool;
-
-    other.m_Handle = VK_NULL_HANDLE;
-    other.m_PhysicalDevice = nullptr;
-    other.m_GraphicsQueue = VK_NULL_HANDLE;
-    other.m_PresentQueue = VK_NULL_HANDLE;
-    other.m_CommandPool = VK_NULL_HANDLE;
-}
-
-Device::Device(const PhysicalDevice& physicalDevice)
-{
-    m_PhysicalDevice = &physicalDevice;
-
-    uint32_t queueGraphicsFamily = physicalDevice.getGraphicsQueueFamilyIndex();
-    uint32_t queuePresentFamily = physicalDevice.getPresentQueueFamilyIndex();
+    uint32_t queueGraphicsFamily = m_PhysicalDevice.getGraphicsQueueFamilyIndex();
+    uint32_t queuePresentFamily = m_PhysicalDevice.getPresentQueueFamilyIndex();
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = { queueGraphicsFamily, queuePresentFamily };
@@ -515,7 +397,6 @@ Device::Device(const PhysicalDevice& physicalDevice)
     for (uint32_t queueFamily : uniqueQueueFamilies) {
         VkDeviceQueueCreateInfo queueCreateInfo{};
         queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.pNext = nullptr;
         queueCreateInfo.queueFamilyIndex = queueFamily;
         queueCreateInfo.queueCount = 1;
         queueCreateInfo.pQueuePriorities = &queuePriority;
@@ -524,10 +405,27 @@ Device::Device(const PhysicalDevice& physicalDevice)
 
     VkPhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
+    deviceFeatures.sampleRateShading = VK_TRUE;
+
+    std::vector<const char*> deviceExtensions(deviceRequiredExtensions.begin(), deviceRequiredExtensions.end());
+
+    uint32_t extensionCount;
+    vkEnumerateDeviceExtensionProperties(m_PhysicalDevice.getHandle(), nullptr, &extensionCount, nullptr);
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(m_PhysicalDevice.getHandle(), nullptr, &extensionCount, availableExtensions.data());
+
+    for (auto ext : deviceRequiredIfPresentExtensions)
+    {
+        for (const auto& extProp : availableExtensions) {
+            if (strcmp(ext, extProp.extensionName) == 0) {
+                deviceExtensions.push_back(ext);
+                break;
+            }
+        }
+    }
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pNext = nullptr;
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
@@ -540,7 +438,7 @@ Device::Device(const PhysicalDevice& physicalDevice)
         createInfo.ppEnabledLayerNames = validationLayers.data();
     );
 
-    ASSERT_VK_SUCCESS(vkCreateDevice(physicalDevice.getHandle(), &createInfo, nullptr, &m_Handle), "Failed to create logical device!")
+    ASSERT_VK_SUCCESS(vkCreateDevice(m_PhysicalDevice.getHandle(), &createInfo, nullptr, &m_Handle), "Failed to create logical device!")
 
     vkGetDeviceQueue(m_Handle, queueGraphicsFamily, 0, &m_GraphicsQueue);
     vkGetDeviceQueue(m_Handle, queuePresentFamily, 0, &m_PresentQueue);
@@ -551,28 +449,6 @@ Device::Device(const PhysicalDevice& physicalDevice)
     poolInfo.queueFamilyIndex = queueGraphicsFamily;
 
     ASSERT_VK_SUCCESS(vkCreateCommandPool(m_Handle, &poolInfo, nullptr, &m_CommandPool), "Failed to create command pool!");
-}
-
-const Device& Device::operator=(Device&& other) noexcept
-{
-    if (other.m_Handle != m_Handle)
-    {
-        cleanup();
-
-        m_Handle = other.m_Handle;
-        m_PhysicalDevice = other.m_PhysicalDevice;
-        m_GraphicsQueue = other.m_GraphicsQueue;
-        m_PresentQueue = other.m_PresentQueue;
-        m_CommandPool = other.m_CommandPool;
-
-        other.m_Handle = VK_NULL_HANDLE;
-        other.m_PhysicalDevice = nullptr;
-        other.m_GraphicsQueue = VK_NULL_HANDLE;
-        other.m_PresentQueue = VK_NULL_HANDLE;
-        other.m_CommandPool = VK_NULL_HANDLE;
-    }
-
-    return *this;
 }
 
 Device::~Device()
@@ -693,7 +569,7 @@ void CommandBuffer::cleanup() noexcept
 }
 
 Image::Image() :
-    m_Handle(VK_NULL_HANDLE), m_Memory(VK_NULL_HANDLE), m_View(VK_NULL_HANDLE), m_Device(nullptr)
+    m_Handle(VK_NULL_HANDLE), m_Memory(VK_NULL_HANDLE), m_View(VK_NULL_HANDLE), m_Device(nullptr), m_Format(VK_FORMAT_UNDEFINED)
 {
 }
 
@@ -703,6 +579,8 @@ Image::Image(Image&& other) noexcept
     m_Memory = other.m_Memory;
     m_View = other.m_View;
     m_Device = other.m_Device;
+    m_Layout = other.m_Layout;
+    m_Format = other.m_Format;
 
     other.m_Handle = VK_NULL_HANDLE;
     other.m_Memory = VK_NULL_HANDLE;
@@ -732,7 +610,7 @@ VkImageView createImageView(VkImage image, const Device& device, VkFormat format
 }
 
 Image::Image(VkImage image, const Device& device, VkFormat format) :
-    m_Memory(VK_NULL_HANDLE), m_View(VK_NULL_HANDLE)
+    m_Memory(VK_NULL_HANDLE), m_View(VK_NULL_HANDLE), m_Format(format)
 {
     m_Handle = image;
     m_Device = &device;
@@ -752,7 +630,8 @@ uint32_t findMemoryType(const PhysicalDevice& physicalDevice, uint32_t typeFilte
     throw std::runtime_error("Failed to find suitable memory type!");
 }
 
-Image::Image(const Device& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags)
+Image::Image(const Device& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags) :
+    m_Format(format)
 {
     m_Device = &device;
 
@@ -788,6 +667,78 @@ Image::Image(const Device& device, uint32_t width, uint32_t height, uint32_t mip
     m_View = createImageView(m_Handle, device, format, aspectFlags);
 }
 
+inline bool hasStencilComponent(VkFormat format) {
+    return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
+
+void Image::transitionLayout(VkImageLayout newLayout, uint32_t mipLevels)
+{
+    CommandBuffer commandBuffer(*m_Device, true);
+
+    VkPipelineStageFlags sourceStage;
+    VkPipelineStageFlags destinationStage;
+
+    VkImageMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = m_Layout;
+    barrier.newLayout = newLayout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = m_Handle;
+
+    if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+        if (hasStencilComponent(m_Format)) {
+            barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        }
+    }
+    else {
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    }
+
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = mipLevels;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1; // TODO add layer paramether
+
+    if (m_Layout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (m_Layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    else if (m_Layout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    }
+    else {
+        throw std::invalid_argument("Unsupported layout transition!");
+    }
+
+    vkCmdPipelineBarrier(
+        commandBuffer.getHandle(),
+        sourceStage, destinationStage,
+        0,
+        0, nullptr,
+        0, nullptr,
+        1, &barrier
+    );
+
+    m_Layout = newLayout;
+}
+
 const Image& Image::operator=(Image&& other) noexcept
 {
     if (m_Handle != other.m_Handle)
@@ -798,6 +749,8 @@ const Image& Image::operator=(Image&& other) noexcept
         m_Memory = other.m_Memory;
         m_View = other.m_View;
         m_Device = other.m_Device;
+        m_Layout = other.m_Layout;
+        m_Format = other.m_Format;
 
         other.m_Handle = VK_NULL_HANDLE;
         other.m_Memory = VK_NULL_HANDLE;
@@ -934,9 +887,9 @@ RenderPass::RenderPass(const Device& device, const Surface& surface) :
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0;
     dependency.srcAccessMask = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
     std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
     VkRenderPassCreateInfo renderPassInfo{};
@@ -1001,33 +954,6 @@ VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwi
     }
 }
 
-SwapChain::SwapChain() :
-    m_Handle(VK_NULL_HANDLE), m_ImageFormat(VK_FORMAT_UNDEFINED), m_Extent({ 0,0 }), 
-    m_Device(nullptr), m_Surface(nullptr), m_RenderPass(nullptr)
-{
-}
-
-SwapChain::SwapChain(SwapChain&& other) noexcept
-{
-    m_Handle = other.m_Handle;
-    m_Images = std::move(other.m_Images);
-    m_ImageFormat = other.m_ImageFormat;
-    m_Extent = other.m_Extent;
-    m_ColorImage = std::move(other.m_ColorImage);
-    m_DepthImage = std::move(other.m_DepthImage);
-    m_Framebuffers = std::move(other.m_Framebuffers);
-    m_Device = other.m_Device;
-    m_Surface = other.m_Surface;
-    m_RenderPass = other.m_RenderPass;
-
-    other.m_Handle = VK_NULL_HANDLE;
-    other.m_ImageFormat = VK_FORMAT_UNDEFINED;
-    other.m_Extent = { 0,0 };
-    other.m_Device = nullptr;
-    other.m_Surface = nullptr;
-    other.m_RenderPass = nullptr;
-}
-
 SwapChain::SwapChain(const Device& device, const Surface& surface, const RenderPass& renderPass) :
     m_Device(&device), m_Surface(&surface), m_RenderPass(&renderPass)
 {
@@ -1047,75 +973,6 @@ SwapChain::SwapChain(const Device& device, const Surface& surface, const RenderP
         ASSERT_VK_SUCCESS(vkCreateSemaphore(m_Device->getHandle(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]), "Failed to create render semaphores!");
         ASSERT_VK_SUCCESS(vkCreateFence(m_Device->getHandle(), &fenceInfo, nullptr, &m_InFlightFences[i]), "Failed to create Fences!");
     }
-}
-
-inline bool hasStencilComponent(VkFormat format) {
-    return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
-}
-
-void transitionImageLayout(const Device& device, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels) {
-    CommandBuffer commandBuffer(device, true);
-
-    VkPipelineStageFlags sourceStage;
-    VkPipelineStageFlags destinationStage;
-
-    VkImageMemoryBarrier barrier{};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.oldLayout = oldLayout;
-    barrier.newLayout = newLayout;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = image;
-
-    if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-        if (hasStencilComponent(format)) {
-            barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-        }
-    }
-    else {
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    }
-
-    barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = mipLevels;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
-
-    if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-        barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-        sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-        barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-        destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    }
-    else {
-        throw std::invalid_argument("Unsupported layout transition!");
-    }
-
-    vkCmdPipelineBarrier(
-        commandBuffer.getHandle(),
-        sourceStage, destinationStage,
-        0,
-        0, nullptr,
-        0, nullptr,
-        1, &barrier
-    );
 }
 
 void SwapChain::create()
@@ -1188,7 +1045,8 @@ void SwapChain::create()
         depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-    transitionImageLayout(*m_Device, m_DepthImage.getHandle(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+    m_DepthImage.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+
     m_Framebuffers.resize(imageCount);
 
     for (size_t i = 0; i < imageCount; i++) {
@@ -1238,34 +1096,6 @@ void SwapChain::cleanup()
 
     vkDestroySwapchainKHR(m_Device->getHandle(), m_Handle, nullptr);
     m_Handle = VK_NULL_HANDLE;
-}
-
-const SwapChain& SwapChain::operator=(SwapChain&& other) noexcept
-{
-    if (other.m_Handle != m_Handle)
-    {
-        cleanup();
-
-        m_Handle = other.m_Handle;
-        m_Images = std::move(other.m_Images);
-        m_ImageFormat = other.m_ImageFormat;
-        m_Extent = other.m_Extent;
-        m_ColorImage = std::move(other.m_ColorImage);
-        m_DepthImage = std::move(other.m_DepthImage);
-        m_Framebuffers = std::move(other.m_Framebuffers);
-        m_Device = other.m_Device;
-        m_Surface = other.m_Surface;
-        m_RenderPass = other.m_RenderPass;
-
-        other.m_Handle = VK_NULL_HANDLE;
-        other.m_ImageFormat = VK_FORMAT_UNDEFINED;
-        other.m_Extent = { 0,0 };
-        other.m_Device = nullptr;
-        other.m_Surface = nullptr;
-        other.m_RenderPass = nullptr;
-    }
-
-    return *this;
 }
 
 SwapChain::~SwapChain()

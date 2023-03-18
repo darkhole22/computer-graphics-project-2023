@@ -1,14 +1,14 @@
 #pragma once
 
 #include <string>
-#include <stdint.h>
 #include <type_traits>
 #include <memory>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "vulkan_wrapper.h"
+#include <renderer/Window.h>
+#include <renderer/Renderer.h>
 
 namespace computergraphicsproject {
 
@@ -22,24 +22,12 @@ public:
 
 	void run();
 
-	inline void setFrameBufferResized(bool value) { m_FramebufferResized = value; }
-
 	virtual ~Application();
 private:
-	const uint32_t c_width, c_height;
 	const std::string c_name;
-	GLFWwindow* m_Window;
-	bool m_FramebufferResized = false;
+	Window m_Window;
+	Renderer m_Renderer;
 
-	Instance m_Instance;
-	Surface m_Surface;
-	PhysicalDevice m_PhysicalDevice;
-	Device m_Device;
-	RenderPass m_RenderPass;
-	SwapChain m_SwapChain;
-
-	void initWindow();
-	void initVulkan();
 };
 
 template<typename T>

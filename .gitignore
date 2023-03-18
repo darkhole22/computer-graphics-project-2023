@@ -16,4 +16,4 @@ bin-int/
 *.idb
 *.pdb
 
-/Makefile
+**/Makefile

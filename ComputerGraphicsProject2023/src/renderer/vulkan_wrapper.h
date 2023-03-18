@@ -6,8 +6,10 @@
 #include <limits>
 #include <cstring>
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include<renderer/Window.h>
+
+#define NO_COPY(CLASS) CLASS(const CLASS& other) = delete; \
+						const CLASS operator=(const CLASS& other) = delete;
 
 namespace computergraphicsproject {
 
@@ -16,15 +18,11 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 class DebugUtilMessanger
 {
 public:
-	DebugUtilMessanger();
-	DebugUtilMessanger(const DebugUtilMessanger& other) = delete;
-	DebugUtilMessanger(DebugUtilMessanger&& other) noexcept;
+	NO_COPY(DebugUtilMessanger)
+
 	DebugUtilMessanger(const VkInstance& instance);
 
 	inline const VkDebugUtilsMessengerEXT& getHandle() const { return m_Handle; }
-
-	const DebugUtilMessanger operator=(const DebugUtilMessanger& other) = delete;
-	const DebugUtilMessanger& operator=(DebugUtilMessanger&& other) noexcept;
 
 	~DebugUtilMessanger();
 private:
@@ -35,15 +33,11 @@ private:
 class Instance
 {
 public:
-	Instance();
-	Instance(const Instance& other) = delete;
-	Instance(Instance&& other) noexcept;
+	NO_COPY(Instance)
+
 	Instance(const std::string& applicationName);
 
 	inline const VkInstance& getHandle() const { return m_Handle; }
-
-	const Instance operator=(const Instance& other) = delete;
-	const Instance& operator=(Instance&& other) noexcept;
 
 	~Instance();
 private:
@@ -56,16 +50,12 @@ private:
 class Surface
 {
 public:
-	Surface();
-	Surface(const Surface& other) = delete;
-	Surface(Surface&& other) noexcept;
-	Surface(const Instance& instance, GLFWwindow* window);
+	NO_COPY(Surface)
+
+	Surface(const Instance& instance, const Window& window);
 
 	inline const VkSurfaceKHR& getHandle() const { return m_Handle; }
 	inline GLFWwindow* getWindow() const { return m_Window; }
-
-	const Surface operator=(const Surface& other) = delete;
-	const Surface& operator=(Surface&& other) noexcept;
 
 	~Surface();
 private:
@@ -83,11 +73,13 @@ struct SwapChainSupportDetails {
 class PhysicalDevice
 {
 public:
-	inline PhysicalDevice() : 
-		m_Handle(VK_NULL_HANDLE), m_GraphicsQueueFamilyIndex(0), m_PresentQueueFamilyIndex(0) {}
+	inline PhysicalDevice() :
+		m_Handle(VK_NULL_HANDLE), m_GraphicsQueueFamilyIndex(-1),
+		m_PresentQueueFamilyIndex(-1), m_SwapChainSupportDetails() {}
 	inline PhysicalDevice(const PhysicalDevice& other) : 
 		m_Handle(other.m_Handle), m_GraphicsQueueFamilyIndex(other.m_GraphicsQueueFamilyIndex), 
-		m_PresentQueueFamilyIndex(other.m_PresentQueueFamilyIndex) {}
+		m_PresentQueueFamilyIndex(other.m_PresentQueueFamilyIndex), m_MsaaSamples(other.m_MsaaSamples),
+		m_SwapChainSupportDetails(other.m_SwapChainSupportDetails) {}
 
 	static const PhysicalDevice pickDevice(const Instance& instance, const Surface& surface);
 
@@ -96,17 +88,6 @@ public:
 	inline uint32_t getPresentQueueFamilyIndex() const { return m_PresentQueueFamilyIndex; }
 	inline VkSampleCountFlagBits getMsaaSamples() const { return m_MsaaSamples; }
 	inline const SwapChainSupportDetails& getSwapChainSupportDetails() const { return m_SwapChainSupportDetails; }
-
-	inline const PhysicalDevice& operator=(const PhysicalDevice& other) noexcept
-	{
-		m_Handle = other.m_Handle;
-		m_GraphicsQueueFamilyIndex = other.m_GraphicsQueueFamilyIndex;
-		m_PresentQueueFamilyIndex = other.m_PresentQueueFamilyIndex;
-		m_MsaaSamples = other.m_MsaaSamples;
-		m_SwapChainSupportDetails = other.m_SwapChainSupportDetails;
-
-		return *this;
-	}
 
 	inline ~PhysicalDevice() {};
 private:
@@ -120,16 +101,12 @@ private:
 class Device
 {
 public:
-	Device();
-	Device(const Device& other) = delete;
-	Device(Device&& other) noexcept;
-	Device(const PhysicalDevice& physicalDevice);
+	NO_COPY(Device)
 
-	const Device operator=(const Device& other) = delete;
-	const Device& operator=(Device&& other) noexcept;
+	Device(const Instance& instance, const Surface& surface);
 
 	inline VkDevice getHandle() const { return m_Handle; };
-	inline const PhysicalDevice& getPhysicalDevice() const { return *m_PhysicalDevice; };
+	inline const PhysicalDevice& getPhysicalDevice() const { return m_PhysicalDevice; };
 	inline VkQueue getGraphicsQueue() const { return m_GraphicsQueue; }
 	inline VkCommandPool getCommandPool() const { return m_CommandPool; }
 
@@ -138,7 +115,7 @@ public:
 	~Device();
 private:
 	VkDevice m_Handle;
-	PhysicalDevice const* m_PhysicalDevice;
+	PhysicalDevice m_PhysicalDevice;
 
 	VkQueue m_GraphicsQueue = VK_NULL_HANDLE;
 	VkQueue m_PresentQueue = VK_NULL_HANDLE;
@@ -185,6 +162,8 @@ public:
 	inline VkImage getHandle() const { return m_Handle; }
 	inline VkImageView getView() const { return m_View; }
 
+	void transitionLayout(VkImageLayout newLayout, uint32_t mipLevels);
+
 	const Image operator=(const Image& other) = delete;
 	const Image& operator=(Image&& other) noexcept;
 
@@ -193,6 +172,9 @@ private:
 	VkImage m_Handle;
 	VkImageView m_View;
 	VkDeviceMemory m_Memory;
+	VkImageLayout m_Layout = VK_IMAGE_LAYOUT_UNDEFINED;
+	VkFormat m_Format;
+
 	Device const* m_Device;
 
 	void cleanup() noexcept;
@@ -220,13 +202,9 @@ private:
 class SwapChain
 {
 public:
-	SwapChain();
-	SwapChain(const SwapChain& other) = delete;
-	SwapChain(SwapChain&& other) noexcept;
-	SwapChain(const Device& device, const Surface& surface, const RenderPass& renderPass);
+	NO_COPY(SwapChain)
 
-	const SwapChain operator=(const SwapChain& other) = delete;
-	const SwapChain& operator=(SwapChain&& other) noexcept;
+	SwapChain(const Device& device, const Surface& surface, const RenderPass& renderPass);
 
 	~SwapChain();
 private:
@@ -251,3 +229,5 @@ private:
 };
 
 }
+
+#undef NO_COPY

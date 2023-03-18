@@ -38,6 +38,7 @@ project "ComputerGraphicsProject2023"
 
     includedirs
     {
+        "%{prj.name}/src",
         "%{prj.name}/vendor/glm/glm",
         "%{prj.name}/vendor/stb"
     }
