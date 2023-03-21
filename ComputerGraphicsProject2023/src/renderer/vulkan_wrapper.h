@@ -55,13 +55,13 @@ public:
 	Surface(const Instance& instance, const Window& window);
 
 	inline const VkSurfaceKHR& getHandle() const { return m_Handle; }
-	inline GLFWwindow* getWindow() const { return m_Window; }
+	inline const Window& getWindow() const { return *m_Window; }
 
 	~Surface();
 private:
 	VkSurfaceKHR m_Handle;
 	Instance const* m_Instance;
-	GLFWwindow* m_Window;
+	Window const* m_Window;
 };
 
 struct SwapChainSupportDetails {
@@ -108,6 +108,7 @@ public:
 	inline VkDevice getHandle() const { return m_Handle; };
 	inline const PhysicalDevice& getPhysicalDevice() const { return m_PhysicalDevice; };
 	inline VkQueue getGraphicsQueue() const { return m_GraphicsQueue; }
+	inline VkQueue getPresentQueue() const { return m_PresentQueue; }
 	inline VkCommandPool getCommandPool() const { return m_CommandPool; }
 
 	inline void waitIdle() const { vkDeviceWaitIdle(m_Handle); }
@@ -125,21 +126,46 @@ private:
 	void cleanup() noexcept;
 };
 
+class RenderPass
+{
+public:
+	NO_COPY(RenderPass)
+
+	RenderPass(const Device& device, const Surface& surface);
+
+	inline VkRenderPass getHandle() const { return m_Handle; }
+
+	inline const std::vector<VkClearValue>& getClearValues() const { return m_ClearValues; }
+
+	~RenderPass();
+private:
+	VkRenderPass m_Handle;
+	std::vector<VkClearValue> m_ClearValues;
+	Device const* m_Device;
+
+};
+
 class CommandBuffer
 {
 public:
+	template<size_t SIZE>
+	static std::array<CommandBuffer, SIZE> getCommandBuffers(const Device& device);
+
 	CommandBuffer();
 	CommandBuffer(const CommandBuffer& other) = delete;
 	CommandBuffer(CommandBuffer&& other) noexcept;
 	CommandBuffer(const Device& device, bool singleTime = false);
-
-	template<size_t SIZE>
-	static std::array<CommandBuffer, SIZE>&& getCommandBuffers(const Device& device);
 	
 	const CommandBuffer operator=(const CommandBuffer& other) = delete;
 	const CommandBuffer& operator=(CommandBuffer&& other) noexcept;
 
 	inline VkCommandBuffer getHandle() const { return m_Handle; }
+
+	inline void reset() { vkResetCommandBuffer(m_Handle, 0); }
+	void begin();
+	void beginRenderPass(const RenderPass& renderPass, VkFramebuffer frameBuffer, VkExtent2D extent);
+	void endRenderPass();
+	void end();
 
 	~CommandBuffer();
 private:
@@ -180,25 +206,6 @@ private:
 	void cleanup() noexcept;
 };
 
-class RenderPass
-{
-public:
-	RenderPass();
-	RenderPass(const RenderPass& other) = delete;
-	RenderPass(RenderPass&& other) noexcept;
-	RenderPass(const Device& device, const Surface& surface);
-
-	inline VkRenderPass getHandle() const { return m_Handle; }
-
-	const RenderPass operator=(const RenderPass& other) = delete;
-	const RenderPass& operator=(RenderPass&& other) noexcept;
-
-	~RenderPass();
-private:
-	VkRenderPass m_Handle;
-	Device const* m_Device;
-};
-
 class SwapChain
 {
 public:
@@ -207,6 +214,8 @@ public:
 	SwapChain(const Device& device, const Surface& surface, const RenderPass& renderPass);
 
 	~SwapChain();
+
+	friend class RenderTarget;
 private:
 	VkSwapchainKHR m_Handle;
 	std::vector<Image> m_Images;
@@ -226,8 +235,12 @@ private:
 	void create();
 	void recreate();
 	void cleanup();
+
+	uint32_t getImageIndex(uint32_t currentFrame);
+	CommandBuffer& getCommandBuffer(uint32_t currentFrame);
+	void submit(uint32_t currentFrame, uint32_t imageIndex);
 };
 
-}
+} // namespace computergraphicsproject
 
 #undef NO_COPY

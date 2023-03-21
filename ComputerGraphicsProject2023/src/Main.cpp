@@ -27,7 +27,7 @@ int main()
 		computergraphicsproject::launch<TestApplication>("Hello Application", 800, 600);
 		return EXIT_SUCCESS;
 	}
-	catch (const std::exception& exception)
+	catch (const std::exception &exception)
 	{
 		std::cerr << exception.what() << std::endl;
 	}

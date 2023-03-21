@@ -7,8 +7,9 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <renderer/Window.h>
-#include <renderer/Renderer.h>
+#include "renderer/Window.h"
+#include "renderer/Renderer.h"
+#include "scene/Scene.h"
 
 namespace computergraphicsproject {
 
@@ -27,6 +28,8 @@ private:
 	const std::string c_name;
 	Window m_Window;
 	Renderer m_Renderer;
+
+	Scene m_Scene;
 
 };
 

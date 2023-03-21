@@ -18,12 +18,11 @@ void Application::run()
 {
 	setup();
 	while (!m_Window.shouldClose()) {
+		m_Window.pollEvents();
+
 		update();
 
-		// drawFrame();
-
-		// auto renderTarget = RenderTarget(swapchain, device)
-		// (scene/sceneMenager).render(renderTarget)
+		m_Scene.render(m_Renderer.getRenderTarget());
 	}
 }
 
