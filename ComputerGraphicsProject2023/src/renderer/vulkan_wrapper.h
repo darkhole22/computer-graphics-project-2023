@@ -134,6 +134,7 @@ public:
 	RenderPass(const Device& device, const Surface& surface);
 
 	inline VkRenderPass getHandle() const { return m_Handle; }
+	inline const Device& getDevice() const { return *m_Device; }
 
 	inline const std::vector<VkClearValue>& getClearValues() const { return m_ClearValues; }
 
@@ -239,6 +240,69 @@ private:
 	uint32_t getImageIndex(uint32_t currentFrame);
 	CommandBuffer& getCommandBuffer(uint32_t currentFrame);
 	void submit(uint32_t currentFrame, uint32_t imageIndex);
+};
+
+class DescriptorSetLayout
+{
+public:
+	NO_COPY(DescriptorSetLayout)
+
+	DescriptorSetLayout(const Device& device);
+
+	void addBinding(VkDescriptorType type, VkShaderStageFlags target, uint32_t count = 1);
+	void create();
+
+	inline VkDescriptorSetLayout getHandle() const { return m_Handle; }
+
+	~DescriptorSetLayout();
+private:
+	VkDescriptorSetLayout m_Handle;
+	std::vector<VkDescriptorSetLayoutBinding> m_Bindings;
+	Device const* m_Device;
+};
+
+class VertexLayout
+{
+public:
+	NO_COPY(VertexLayout)
+
+	VertexLayout(uint32_t size, const std::vector<std::pair<VkFormat, uint32_t>>& descriptors);
+
+	inline VkVertexInputBindingDescription getBinding() const { return m_Bindings; }
+	inline const std::vector<VkVertexInputAttributeDescription>& getAttributes() const { return m_Attributes; }
+private:
+	VkVertexInputBindingDescription m_Bindings;
+	std::vector<VkVertexInputAttributeDescription> m_Attributes;
+};
+
+class Shader
+{
+public:
+	NO_COPY(Shader)
+
+	Shader(const Device& device, const std::string& name);
+
+	VkPipelineShaderStageCreateInfo getStage(VkShaderStageFlagBits stageType, const char* mainName = "main") const;
+
+	~Shader();
+private:
+	VkShaderModule m_Handle;
+	Device const* m_Device;
+};
+
+class Pipeline
+{
+public:
+	NO_COPY(Pipeline)
+
+	Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, 
+		const DescriptorSetLayout& descriptorSetLayout, const VertexLayout& vertexLayout);
+
+	~Pipeline();
+private:
+	VkPipeline m_Handle;
+	VkPipelineLayout m_Layout;
+	Device const* m_Device;
 };
 
 } // namespace computergraphicsproject
