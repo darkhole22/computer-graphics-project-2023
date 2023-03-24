@@ -4,16 +4,27 @@
 
 namespace computergraphicsproject {
 
+struct FrameInfo
+{
+	uint32_t index;
+	uint32_t count;
+};
+
 class RenderTarget
 {
 public:
 	RenderTarget(const RenderTarget& other) = delete;
 	RenderTarget(RenderTarget&& other) = delete;
 
-	inline uint32_t getCurrentFrame() const { return m_CurrentFrame; }
+	inline FrameInfo getFrameInfo() const { return {m_ImageIndex, m_ImageCount}; }
+
+	// TODO replace with a proper event system
+	inline bool justUpdated() const { return m_Modified__tmp; };
 	
 	void beginCommandRecording();
 	void endCommandRecording();
+
+	void bindPipeline(const Pipeline& pipeline);
 
 	~RenderTarget();
 
@@ -25,6 +36,10 @@ private:
 	uint32_t m_CurrentFrame;
 	uint32_t m_ImageIndex;
 	CommandBuffer* const m_CommandBuffer;
+	uint32_t m_ImageCount;
+
+	// TODO replace with a proper event system
+	bool m_Modified__tmp;
 };
 
 }

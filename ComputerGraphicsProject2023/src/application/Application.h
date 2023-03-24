@@ -30,7 +30,6 @@ private:
 	Renderer m_Renderer;
 
 	Scene m_Scene;
-
 };
 
 template<typename T>

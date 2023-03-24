@@ -74,12 +74,9 @@ class PhysicalDevice
 {
 public:
 	inline PhysicalDevice() :
-		m_Handle(VK_NULL_HANDLE), m_GraphicsQueueFamilyIndex(-1),
-		m_PresentQueueFamilyIndex(-1), m_SwapChainSupportDetails() {}
-	inline PhysicalDevice(const PhysicalDevice& other) : 
-		m_Handle(other.m_Handle), m_GraphicsQueueFamilyIndex(other.m_GraphicsQueueFamilyIndex), 
-		m_PresentQueueFamilyIndex(other.m_PresentQueueFamilyIndex), m_MsaaSamples(other.m_MsaaSamples),
-		m_SwapChainSupportDetails(other.m_SwapChainSupportDetails) {}
+		m_Handle(VK_NULL_HANDLE), m_Surface(nullptr),
+		m_GraphicsQueueFamilyIndex(-1),	m_PresentQueueFamilyIndex(-1),
+		m_SwapChainSupportDetails() {}
 
 	static const PhysicalDevice pickDevice(const Instance& instance, const Surface& surface);
 
@@ -87,15 +84,17 @@ public:
 	inline uint32_t getGraphicsQueueFamilyIndex() const { return m_GraphicsQueueFamilyIndex; }
 	inline uint32_t getPresentQueueFamilyIndex() const { return m_PresentQueueFamilyIndex; }
 	inline VkSampleCountFlagBits getMsaaSamples() const { return m_MsaaSamples; }
-	inline const SwapChainSupportDetails& getSwapChainSupportDetails() const { return m_SwapChainSupportDetails; }
+	const SwapChainSupportDetails& getSwapChainSupportDetails() const;
 
 	inline ~PhysicalDevice() {};
 private:
 	VkPhysicalDevice m_Handle;
+	Surface const* m_Surface;
+
 	uint32_t m_GraphicsQueueFamilyIndex;
 	uint32_t m_PresentQueueFamilyIndex;
 	VkSampleCountFlagBits m_MsaaSamples = VK_SAMPLE_COUNT_1_BIT;
-	SwapChainSupportDetails m_SwapChainSupportDetails;
+	mutable SwapChainSupportDetails m_SwapChainSupportDetails;
 };
 
 class Device
@@ -146,11 +145,14 @@ private:
 
 };
 
+class Pipeline;
+class SwapChain;
+
 class CommandBuffer
 {
 public:
-	template<size_t SIZE>
-	static std::array<CommandBuffer, SIZE> getCommandBuffers(const Device& device);
+
+	static std::vector<CommandBuffer> getCommandBuffers(const Device& device, size_t count);
 
 	CommandBuffer();
 	CommandBuffer(const CommandBuffer& other) = delete;
@@ -165,6 +167,7 @@ public:
 	inline void reset() { vkResetCommandBuffer(m_Handle, 0); }
 	void begin();
 	void beginRenderPass(const RenderPass& renderPass, VkFramebuffer frameBuffer, VkExtent2D extent);
+	void bindPipeline(const Pipeline& pipeline, const SwapChain& swapChain);
 	void endRenderPass();
 	void end();
 
@@ -214,6 +217,14 @@ public:
 
 	SwapChain(const Device& device, const Surface& surface, const RenderPass& renderPass);
 
+	inline const VkExtent2D& getExtent() const { return m_Extent; }
+	inline uint32_t getImageCount() const { return static_cast<uint32_t>(m_Images.size()); }
+
+	// TODO replace with a proper event system
+	bool wasRecreated() const { 
+		return m_Modified__tmp || m_Modified2__tmp;
+	}
+
 	~SwapChain();
 
 	friend class RenderTarget;
@@ -225,21 +236,27 @@ private:
 	Image m_ColorImage;
 	Image m_DepthImage;
 	std::vector<VkFramebuffer> m_Framebuffers;
-	std::array<CommandBuffer, MAX_FRAMES_IN_FLIGHT> m_CommandBuffers;
+	std::vector<CommandBuffer> m_CommandBuffers;
 	std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> m_ImageAvailableSemaphores;
 	std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> m_RenderFinishedSemaphores;
 	std::array<VkFence, MAX_FRAMES_IN_FLIGHT> m_InFlightFences;
+	std::vector<VkFence> m_ImageInFlightFences;
 	Device const* m_Device;
 	Surface const* m_Surface;
 	RenderPass const* m_RenderPass;
 
 	void create();
 	void recreate();
+	void onRecreateCleanup();
 	void cleanup();
 
 	uint32_t getImageIndex(uint32_t currentFrame);
 	CommandBuffer& getCommandBuffer(uint32_t currentFrame);
 	void submit(uint32_t currentFrame, uint32_t imageIndex);
+
+	// TODO replace with a proper event system
+	bool m_Modified__tmp = false;
+	bool m_Modified2__tmp = false;
 };
 
 class DescriptorSetLayout
@@ -297,6 +314,8 @@ public:
 
 	Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, 
 		const DescriptorSetLayout& descriptorSetLayout, const VertexLayout& vertexLayout);
+
+	inline VkPipeline getHandle() const { return m_Handle; }
 
 	~Pipeline();
 private:

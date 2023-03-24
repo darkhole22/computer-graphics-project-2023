@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "project/Application.h"
+#include "application/Application.h"
 
 class TestApplication : public computergraphicsproject::Application
 {
@@ -25,6 +25,8 @@ int main()
 	try
 	{
 		computergraphicsproject::launch<TestApplication>("Hello Application", 800, 600);
+
+		// std::cin.get();
 		return EXIT_SUCCESS;
 	}
 	catch (const std::exception &exception)
@@ -32,6 +34,5 @@ int main()
 		std::cerr << exception.what() << std::endl;
 	}
 
-	std::cin.get();
 	return EXIT_FAILURE;
 }
