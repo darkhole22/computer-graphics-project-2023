@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "project/Application.h"
+#include "application/Application.h"
 
 #include "event/Event.h"
 
@@ -13,12 +13,10 @@ public:
 
 	void setup()
 	{
-
 	}
 
 	void update()
 	{
-
 	}
 };
 
@@ -33,7 +31,7 @@ void fun(int i)
 	std::cout << "Fun:" << i << std::endl;
 }
 
-void f2(const KeyPressed& e)
+void f2(const KeyPressed &e)
 {
 	std::cout << "Key: " << e.keyCode << std::endl;
 }
@@ -44,10 +42,8 @@ class C
 	EVENT(KeyPressed)
 
 public:
-
 	C()
 	{
-		
 	}
 
 	void d()
@@ -56,7 +52,6 @@ public:
 		emit(69);
 		emit(KeyPressed{12});
 	}
-
 };
 
 int main()
@@ -74,11 +69,10 @@ int main()
 		// computergraphicsproject::launch<TestApplication>("Hello Application", 800, 600);
 		return EXIT_SUCCESS;
 	}
-	catch (const std::exception& exception)
+	catch (const std::exception &exception)
 	{
 		std::cerr << exception.what() << std::endl;
 	}
 
-	std::cin.get();
 	return EXIT_FAILURE;
 }

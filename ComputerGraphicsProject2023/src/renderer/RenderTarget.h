@@ -1,0 +1,45 @@
+#pragma once
+
+#include "Renderer.h"
+
+namespace computergraphicsproject {
+
+struct FrameInfo
+{
+	uint32_t index;
+	uint32_t count;
+};
+
+class RenderTarget
+{
+public:
+	RenderTarget(const RenderTarget& other) = delete;
+	RenderTarget(RenderTarget&& other) = delete;
+
+	inline FrameInfo getFrameInfo() const { return {m_ImageIndex, m_ImageCount}; }
+
+	// TODO replace with a proper event system
+	inline bool justUpdated() const { return m_Modified__tmp; };
+	
+	void beginCommandRecording();
+	void endCommandRecording();
+
+	void bindPipeline(const Pipeline& pipeline);
+
+	~RenderTarget();
+
+	friend class Renderer;
+private:
+	RenderTarget(SwapChain& swapChain, const Device& device, uint32_t currentFrame);
+
+	SwapChain* const m_SwapChain;
+	uint32_t m_CurrentFrame;
+	uint32_t m_ImageIndex;
+	CommandBuffer* const m_CommandBuffer;
+	uint32_t m_ImageCount;
+
+	// TODO replace with a proper event system
+	bool m_Modified__tmp;
+};
+
+}
