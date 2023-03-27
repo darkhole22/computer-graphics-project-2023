@@ -1,5 +1,4 @@
 #include "Renderer.h"
-
 #include "RenderTarget.h"
 
 namespace computergraphicsproject {

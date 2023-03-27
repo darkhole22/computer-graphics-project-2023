@@ -16,9 +16,9 @@ class RenderTarget;
 
 struct Vertex
 {
-	glm::vec3 pos = { 0, 0, 0 };
-	glm::vec3 color = { 0, 0 , 0 };
-	glm::vec2 texCoord = { 0, 0 };
+    glm::vec3 pos = { 0, 0, 0 };
+    glm::vec3 color = { 0, 0 , 0 };
+    glm::vec2 texCoord = { 0, 0 };
 };
 
 class Renderer
@@ -36,13 +36,13 @@ public:
 
 	inline const RenderPass& getRenderPass() const { return m_RenderPass; }
 
-	inline static const VertexLayout getVertexLayout() 
+	inline static const VertexLayout getVertexLayout()
 	{
 		return VertexLayout(sizeof(Vertex), {
 			{VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)},
 			{VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)},
 			{VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord)}
-			});
+        });
 	}
 
 	~Renderer();
