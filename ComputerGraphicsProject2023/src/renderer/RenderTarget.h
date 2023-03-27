@@ -30,7 +30,7 @@ public:
 
 	friend class Renderer;
 private:
-	RenderTarget(SwapChain& swapChain, const Device& divice, uint32_t currentFrame);
+	RenderTarget(SwapChain& swapChain, const Device& device, uint32_t currentFrame);
 
 	SwapChain* const m_SwapChain;
 	uint32_t m_CurrentFrame;

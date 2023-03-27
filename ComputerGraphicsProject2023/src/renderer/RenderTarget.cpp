@@ -4,7 +4,7 @@
 
 namespace computergraphicsproject {
 
-RenderTarget::RenderTarget(SwapChain& swapChain, const Device& divice, uint32_t currentFrame) :
+RenderTarget::RenderTarget(SwapChain& swapChain, const Device& device, uint32_t currentFrame) :
 	m_SwapChain(&swapChain), m_CurrentFrame(currentFrame), m_ImageIndex(m_SwapChain->getImageIndex(currentFrame)),
 	m_CommandBuffer(&swapChain.getCommandBuffer(m_ImageIndex)), m_ImageCount(m_SwapChain->getImageCount())
 {
