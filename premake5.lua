@@ -33,12 +33,14 @@ project "ComputerGraphicsProject2023"
     files
     { 
         "%{prj.name}/src/**.h",
+        "%{prj.name}/vendor/glm/glm/**.hpp",
         "%{prj.name}/src/**.cpp"
     }
 
     includedirs
     {
-        "%{prj.name}/vendor/glm/glm",
+        "%{prj.name}/src",
+        "%{prj.name}/vendor/glm",
         "%{prj.name}/vendor/stb"
     }
 
