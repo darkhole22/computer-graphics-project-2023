@@ -1352,11 +1352,12 @@ Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader
 		fragShader.getStage(VK_SHADER_STAGE_FRAGMENT_BIT) };
 
 	auto& attributeDescriptions = vertexLayout.getAttributes();
+	auto vertexBindingDescriptions = vertexLayout.getBinding();
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.pVertexBindingDescriptions = &vertexLayout.getBinding();
+	vertexInputInfo.pVertexBindingDescriptions = &vertexBindingDescriptions;
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
