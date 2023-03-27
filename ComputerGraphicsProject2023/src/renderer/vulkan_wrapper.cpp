@@ -8,8 +8,6 @@
 #include <algorithm>
 #include <fstream>
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 
 #ifndef NDEBUG
 // DEBUG
@@ -160,7 +158,7 @@ Instance::Instance(const std::string& applicationName)
 
 	ASSERT_VK_SUCCESS(vkCreateInstance(&createInfo, nullptr, &m_Handle), "Failed to create instance!");
 
-	m_DebugMessanger = new DebugUtilMessanger(m_Handle);
+	m_DebugMessenger = new DebugUtilMessenger(m_Handle);
 }
 
 Instance::~Instance()
@@ -170,7 +168,7 @@ Instance::~Instance()
 
 void Instance::cleanup() noexcept
 {
-	delete m_DebugMessanger;
+	delete m_DebugMessenger;
 
 	if (m_Handle != VK_NULL_HANDLE)
 		vkDestroyInstance(m_Handle, nullptr);
@@ -186,7 +184,7 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMes
 	}
 }
 
-DebugUtilMessanger::DebugUtilMessanger(const VkInstance& instance)
+DebugUtilMessenger::DebugUtilMessenger(const VkInstance& instance)
 	: m_Instance(instance)
 {
 	m_Handle = VK_NULL_HANDLE;
@@ -205,7 +203,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 	}
 }
 
-DebugUtilMessanger::~DebugUtilMessanger()
+DebugUtilMessenger::~DebugUtilMessenger()
 {
 	VALIDATION_LAYER_IF(
 		if (m_Instance != VK_NULL_HANDLE && m_Handle != VK_NULL_HANDLE)

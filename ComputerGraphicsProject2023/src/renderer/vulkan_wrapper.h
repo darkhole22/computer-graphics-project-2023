@@ -1,5 +1,8 @@
 #pragma once
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
 #include <string>
 #include <vector>
 #include <array>
@@ -15,16 +18,16 @@ namespace computergraphicsproject {
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
-class DebugUtilMessanger
+class DebugUtilMessenger
 {
 public:
-	NO_COPY(DebugUtilMessanger)
+	NO_COPY(DebugUtilMessenger)
 
-	DebugUtilMessanger(const VkInstance& instance);
+	DebugUtilMessenger(const VkInstance& instance);
 
 	inline const VkDebugUtilsMessengerEXT& getHandle() const { return m_Handle; }
 
-	~DebugUtilMessanger();
+	~DebugUtilMessenger();
 private:
 	VkDebugUtilsMessengerEXT m_Handle;
 	VkInstance m_Instance;
@@ -42,7 +45,7 @@ public:
 	~Instance();
 private:
 	VkInstance m_Handle;
-	DebugUtilMessanger* m_DebugMessanger; // The debug messanger must be destroyed before the VkInstance, so manual memory management is required.
+	DebugUtilMessenger* m_DebugMessenger; // The debug messenger must be destroyed before the VkInstance, so manual memory management is required.
 
 	void cleanup() noexcept;
 };
