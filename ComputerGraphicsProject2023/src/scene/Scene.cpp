@@ -19,7 +19,7 @@ Scene::Scene(const Renderer& renderer) :
 
 void Scene::render(RenderTarget target)
 {
-	if (target.justUpdated())
+	if (target.updated())
 	{
 		setModified();
 	}

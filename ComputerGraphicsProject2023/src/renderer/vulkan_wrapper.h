@@ -11,6 +11,8 @@
 
 #include<renderer/Window.h>
 
+#include "event/Event.h"
+
 #define NO_COPY(CLASS) CLASS(const CLASS& other) = delete; \
                        CLASS operator=(const CLASS& other) = delete;
 
@@ -213,8 +215,15 @@ private:
 	void cleanup() noexcept;
 };
 
+struct SwapChainRecreatedEvent
+{
+
+};
+
 class SwapChain
 {
+	EVENT(SwapChainRecreatedEvent)
+
 public:
 	NO_COPY(SwapChain)
 
@@ -222,11 +231,6 @@ public:
 
 	inline const VkExtent2D& getExtent() const { return m_Extent; }
 	inline uint32_t getImageCount() const { return static_cast<uint32_t>(m_Images.size()); }
-
-	// TODO replace with a proper event system
-	bool wasRecreated() const { 
-		return m_Modified__tmp || m_Modified2__tmp;
-	}
 
 	~SwapChain();
 
@@ -256,10 +260,6 @@ private:
 	uint32_t getImageIndex(uint32_t currentFrame);
 	CommandBuffer& getCommandBuffer(uint32_t currentFrame);
 	void submit(uint32_t currentFrame, uint32_t imageIndex);
-
-	// TODO replace with a proper event system
-	bool m_Modified__tmp = false;
-	bool m_Modified2__tmp = false;
 };
 
 class DescriptorSetLayout
