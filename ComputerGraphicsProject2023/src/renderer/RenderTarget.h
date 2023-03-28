@@ -18,8 +18,7 @@ public:
 
 	inline FrameInfo getFrameInfo() const { return {m_ImageIndex, m_ImageCount}; }
 
-	// TODO replace with a proper event system
-	inline bool justUpdated() const { return m_Modified__tmp; };
+	inline bool updated() const { return m_SwapChainRecreated; };
 	
 	void beginCommandRecording();
 	void endCommandRecording();
@@ -30,7 +29,7 @@ public:
 
 	friend class Renderer;
 private:
-	RenderTarget(SwapChain& swapChain, const Device& device, uint32_t currentFrame);
+	RenderTarget(SwapChain& swapChain, const Device& device, uint32_t currentFrame, bool swapChainRecreated);
 
 	SwapChain* const m_SwapChain;
 	uint32_t m_CurrentFrame;
@@ -38,8 +37,7 @@ private:
 	CommandBuffer* const m_CommandBuffer;
 	uint32_t m_ImageCount;
 
-	// TODO replace with a proper event system
-	bool m_Modified__tmp;
+	bool m_SwapChainRecreated;
 };
 
 }

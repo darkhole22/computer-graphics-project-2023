@@ -54,6 +54,7 @@ private:
 	SwapChain m_SwapChain;
 
 	uint32_t m_CurrentFrame = 0;
+	bool m_SwapChainRecreated = false;
 };
 
 }

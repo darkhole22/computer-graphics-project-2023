@@ -1126,14 +1126,11 @@ void SwapChain::recreate()
 	onRecreateCleanup();
 	create();
 
-	m_Modified__tmp = true;
-	m_Modified2__tmp = true;
+	emit(SwapChainRecreatedEvent{});
 }
 
 uint32_t SwapChain::getImageIndex(uint32_t currentFrame)
 {
-	m_Modified__tmp = false;
-
 	uint32_t imageIndex;
 	VkResult result;
 	do
@@ -1198,8 +1195,6 @@ void SwapChain::submit(uint32_t currentFrame, uint32_t imageIndex)
 	VkResult result = vkQueuePresentKHR(m_Device->getPresentQueue(), &presentInfo);
 
 	const Window& window = m_Surface->getWindow();
-
-	m_Modified2__tmp = false;
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.getFrameBufferResized()) {
 		recreate();
