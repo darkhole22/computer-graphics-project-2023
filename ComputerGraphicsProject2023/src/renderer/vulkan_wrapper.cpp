@@ -14,7 +14,7 @@
 #define VALIDATION_LAYER true
 #define VALIDATION_LAYER_IF(x) x
 #else
-// RELESE
+// RELEASE
 #define VALIDATION_LAYER false
 #define VALIDATION_LAYER_IF(x)
 #endif // !NDEBUG
@@ -229,7 +229,7 @@ struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
 
-	bool isComplete() {
+	bool isComplete() const {
 		return graphicsFamily.has_value() && presentFamily.has_value();
 	}
 };
@@ -346,7 +346,7 @@ VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice) {
 	return VK_SAMPLE_COUNT_1_BIT;
 }
 
-const PhysicalDevice PhysicalDevice::pickDevice(const Instance& instance, const Surface& surface)
+PhysicalDevice PhysicalDevice::pickDevice(const Instance& instance, const Surface& surface)
 {
 	PhysicalDevice physicalDevice;
 
@@ -533,7 +533,7 @@ std::vector<CommandBuffer> CommandBuffer::getCommandBuffers(const Device& device
 	return buffers;
 }
 
-const CommandBuffer& CommandBuffer::operator=(CommandBuffer&& other) noexcept
+CommandBuffer& CommandBuffer::operator=(CommandBuffer&& other) noexcept
 {
 	if (m_Handle != other.m_Handle)
 	{
@@ -770,7 +770,7 @@ void Image::transitionLayout(VkImageLayout newLayout, uint32_t mipLevels)
 	barrier.subresourceRange.baseMipLevel = 0;
 	barrier.subresourceRange.levelCount = mipLevels;
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1; // TODO add layer paramether
+	barrier.subresourceRange.layerCount = 1; // TODO add layer parameter
 
 	if (m_Layout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		barrier.srcAccessMask = 0;
@@ -809,7 +809,7 @@ void Image::transitionLayout(VkImageLayout newLayout, uint32_t mipLevels)
 	m_Layout = newLayout;
 }
 
-const Image& Image::operator=(Image&& other) noexcept
+Image& Image::operator=(Image&& other) noexcept
 {
 	if (m_Handle != other.m_Handle)
 	{
@@ -1064,7 +1064,7 @@ void SwapChain::create()
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	ASSERT_VK_SUCCESS(vkCreateSwapchainKHR(m_Device->getHandle(), &createInfo, nullptr, &m_Handle), "Failed to create swap chain!");
+	ASSERT_VK_SUCCESS(vkCreateSwapchainKHR(m_Device->getHandle(), &createInfo, nullptr, &m_Handle), "Failed to create swap chain!")
 
 	std::vector<VkImage> vkImages;
 
@@ -1218,8 +1218,8 @@ void SwapChain::onRecreateCleanup()
 {
 	m_Images.clear();
 
-	for (size_t i = 0; i < m_Framebuffers.size(); i++) {
-		vkDestroyFramebuffer(m_Device->getHandle(), m_Framebuffers[i], nullptr);
+	for (auto & m_Framebuffer : m_Framebuffers) {
+		vkDestroyFramebuffer(m_Device->getHandle(), m_Framebuffer, nullptr);
 	}
 
 	vkDestroySwapchainKHR(m_Device->getHandle(), m_Handle, nullptr);
@@ -1305,11 +1305,11 @@ Shader::Shader(const Device& device, const std::string& name)
 		throw std::runtime_error("Failed to open file!");
 	}
 
-	size_t fileSize = (size_t)file.tellg();
+	auto fileSize = file.tellg();
 	std::vector<char> buffer(fileSize);
 
 	file.seekg(0);
-	file.read(buffer.data(), fileSize);
+	file.read(buffer.data(), static_cast<std::streamsize>(fileSize));
 
 	file.close();
 
