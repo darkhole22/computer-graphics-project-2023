@@ -16,9 +16,9 @@ class RenderTarget;
 
 struct Vertex
 {
-    glm::vec3 pos = { 0, 0, 0 };
-    glm::vec3 color = { 0, 0 , 0 };
-    glm::vec2 texCoord = { 0, 0 };
+	glm::vec3 pos = { 0, 0, 0 };
+	glm::vec3 color = { 0, 0 , 0 };
+	glm::vec2 texCoord = { 0, 0 };
 };
 
 class Renderer
@@ -42,7 +42,7 @@ public:
 			{VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)},
 			{VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)},
 			{VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord)}
-        });
+		});
 	}
 
 	~Renderer();

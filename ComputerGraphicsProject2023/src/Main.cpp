@@ -24,6 +24,13 @@ class KeyPressed
 {
 public:
 	int keyCode;
+	bool repited;
+};
+
+class KeyReleased
+{
+public:
+	int keyCode;
 };
 
 void fun(int i)
@@ -38,8 +45,11 @@ void f2(const KeyPressed &e)
 
 class C
 {
+	EVENT_CLASS
+
 	EVENT(int)
 	EVENT(KeyPressed)
+	EVENT(KeyReleased)
 
 public:
 	C()
@@ -50,19 +60,29 @@ public:
 	{
 		emit(420);
 		emit(69);
-		emit(KeyPressed{12});
+		emit(KeyPressed{12, false});
 	}
 };
 
 int main()
 {
 	C c;
-	c.addCallback(fun);
-	c.addCallback(f2);
 
-	c.removeCallback(fun);
+	auto f = f2;
 
-	c.d();
+	std::vector<void(const KeyPressed&)> list;
+
+	list.push_back(f2);
+	
+	auto it = std::remove_if(list.begin(), list.end(),
+		[=](void(*p)(const KeyPressed&)) {
+		return p == f;
+	});
+	list.erase(it, list.end());
+
+
+	std::cout << list.size() << "  Test\n";
+	
 
 	try
 	{

@@ -1,7 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <tuple>
 #include <functional>
+
+typedef uint32_t CallbackReference;
 
 template<class _Event>
 class EventHandler
@@ -11,31 +14,41 @@ public:
 
 	EventHandler() {}
 
-	inline void addCallback(_CallbackType callback)
+	inline CallbackReference addCallback(_CallbackType callback)
 	{
-		m_callbacks.push_back(callback);
+		CallbackReference reference = m_LastReference++;
+		m_Callbacks.push_back({ reference, callback });
+		return reference;
 	}
 
-	inline void removeCallback(_CallbackType callback)
+	inline void removeCallback(CallbackReference callbackReference)
 	{
-		// TODO remove callback m_callbacks.erase(callback);
+		auto it = std::remove_if(m_Callbacks.begin(), m_Callbacks.end(), 
+			[&](const std::pair<CallbackReference, _CallbackType>& p) {
+			return p.first == callbackReference;
+		});
+		m_Callbacks.erase(it, m_Callbacks.end());
 	}
 
 	inline void emit(const _Event& event) const
 	{
-		for (auto& callback : m_callbacks)
+		for (auto& [ref, callback] : m_Callbacks)
 		{
 			callback(event);
 		}
 	}
 
 private:
-	std::vector<_CallbackType> m_callbacks;
+	CallbackReference m_LastReference = 0;
+	std::vector<std::pair<CallbackReference, _CallbackType>> m_Callbacks;
+	// std::vector<void(const _Event&)> m_Functions;
 };
+
+#define EVENT_CLASS template<class _Event> inline void removeCallback(CallbackReference c) { static_assert(false); }
 
 #define EVENT(E) private: EventHandler<E> m_EventHandler_##E;\
 	inline void emit(const E& e) { m_EventHandler_##E .emit(e); }\
-	public: inline void addCallback(EventHandler<E>::_CallbackType c)\
-		 { m_EventHandler_##E .addCallback(c); }\
-	inline void removeCallback(EventHandler<E>::_CallbackType c)\
+	public: inline CallbackReference addCallback(EventHandler<E>::_CallbackType c)\
+		 { return m_EventHandler_##E .addCallback(c); }\
+	template<> inline void removeCallback<E>(CallbackReference c)\
 		{ m_EventHandler_##E .removeCallback(c); }
