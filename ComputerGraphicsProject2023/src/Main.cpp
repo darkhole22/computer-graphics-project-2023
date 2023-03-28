@@ -11,12 +11,10 @@ public:
 
 	void setup()
 	{
-
 	}
 
 	void update()
 	{
-
 	}
 };
 
@@ -25,8 +23,6 @@ int main()
 	try
 	{
 		computergraphicsproject::launch<TestApplication>("Hello Application", 800, 600);
-
-		// std::cin.get();
 		return EXIT_SUCCESS;
 	}
 	catch (const std::exception &exception)
