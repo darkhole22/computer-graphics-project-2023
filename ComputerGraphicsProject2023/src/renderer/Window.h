@@ -6,10 +6,16 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include "event/Event.h"
+#include "event/WindowEvents.h"
+
 namespace computergraphicsproject {
 
 class Window
 {
+    EVENT(KeyPressedEvent)
+    EVENT(KeyReleasedEvent)
+
 public:
 	Window(const char* name, uint32_t width, uint32_t height);
 
@@ -25,6 +31,8 @@ public:
 	inline bool getFrameBufferResized() const { return m_FramebufferResized; }
 
 	~Window();
+
+    friend void onGlfwKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
 private:
 	const std::string c_Name;
 	GLFWwindow* m_Handle;
