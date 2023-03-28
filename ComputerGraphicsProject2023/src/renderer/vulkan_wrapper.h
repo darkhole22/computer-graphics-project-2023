@@ -12,7 +12,7 @@
 #include<renderer/Window.h>
 
 #define NO_COPY(CLASS) CLASS(const CLASS& other) = delete; \
-						const CLASS operator=(const CLASS& other) = delete;
+                       CLASS operator=(const CLASS& other) = delete;
 
 namespace computergraphicsproject {
 
@@ -23,7 +23,7 @@ class DebugUtilMessenger
 public:
 	NO_COPY(DebugUtilMessenger)
 
-	DebugUtilMessenger(const VkInstance& instance);
+	explicit DebugUtilMessenger(const VkInstance& instance);
 
 	inline const VkDebugUtilsMessengerEXT& getHandle() const { return m_Handle; }
 
@@ -38,7 +38,7 @@ class Instance
 public:
 	NO_COPY(Instance)
 
-	Instance(const std::string& applicationName);
+	explicit Instance(const std::string& applicationName);
 
 	inline const VkInstance& getHandle() const { return m_Handle; }
 
@@ -81,7 +81,7 @@ public:
 		m_GraphicsQueueFamilyIndex(-1),	m_PresentQueueFamilyIndex(-1),
 		m_SwapChainSupportDetails() {}
 
-	static const PhysicalDevice pickDevice(const Instance& instance, const Surface& surface);
+	static PhysicalDevice pickDevice(const Instance& instance, const Surface& surface);
 
 	inline const VkPhysicalDevice& getHandle() const { return m_Handle; }
 	inline uint32_t getGraphicsQueueFamilyIndex() const { return m_GraphicsQueueFamilyIndex; }
@@ -89,7 +89,7 @@ public:
 	inline VkSampleCountFlagBits getMsaaSamples() const { return m_MsaaSamples; }
 	const SwapChainSupportDetails& getSwapChainSupportDetails() const;
 
-	inline ~PhysicalDevice() {};
+	inline ~PhysicalDevice() = default;
 private:
 	VkPhysicalDevice m_Handle;
 	Surface const* m_Surface;
@@ -160,10 +160,10 @@ public:
 	CommandBuffer();
 	CommandBuffer(const CommandBuffer& other) = delete;
 	CommandBuffer(CommandBuffer&& other) noexcept;
-	CommandBuffer(const Device& device, bool singleTime = false);
+	explicit CommandBuffer(const Device& device, bool singleTime = false);
 	
-	const CommandBuffer operator=(const CommandBuffer& other) = delete;
-	const CommandBuffer& operator=(CommandBuffer&& other) noexcept;
+	CommandBuffer operator=(const CommandBuffer& other) = delete;
+	CommandBuffer& operator=(CommandBuffer&& other) noexcept;
 
 	inline VkCommandBuffer getHandle() const { return m_Handle; }
 
@@ -197,8 +197,8 @@ public:
 
 	void transitionLayout(VkImageLayout newLayout, uint32_t mipLevels);
 
-	const Image operator=(const Image& other) = delete;
-	const Image& operator=(Image&& other) noexcept;
+	Image operator=(const Image& other) = delete;
+	Image& operator=(Image&& other) noexcept;
 
 	~Image();
 private:
@@ -267,7 +267,7 @@ class DescriptorSetLayout
 public:
 	NO_COPY(DescriptorSetLayout)
 
-	DescriptorSetLayout(const Device& device);
+	explicit DescriptorSetLayout(const Device& device);
 
 	void addBinding(VkDescriptorType type, VkShaderStageFlags target, uint32_t count = 1);
 	void create();
