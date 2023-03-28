@@ -8,11 +8,19 @@
 #include <iostream>
 #include <chrono>
 
+#include "event/WindowEvents.h"
+
 namespace computergraphicsproject {
+
+void handleKeyPressed(const KeyPressedEvent& e)
+{
+    std::cout << "Pressed: " << e.keyCode << std::endl;
+}
 
 Application::Application(const char* name, uint32_t width, uint32_t height)
 	: c_name(name), m_Window(name, width, height), m_Renderer(m_Window), m_Scene(m_Renderer)
 {
+    m_Window.addCallback(handleKeyPressed);
 }
 
 void Application::run()
