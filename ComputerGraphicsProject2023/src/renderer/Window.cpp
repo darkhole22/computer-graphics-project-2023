@@ -8,7 +8,7 @@ void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 }
 
 void onKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    Window* w = static_cast<Window *>(glfwGetWindowUserPointer(window));
+    auto w = static_cast<Window *>(glfwGetWindowUserPointer(window));
 
     switch (action)
     {
@@ -20,6 +20,8 @@ void onKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
             break;
         case GLFW_REPEAT:
             w->emit(KeyPressedEvent{key, true});
+            break;
+        default:
             break;
     }
 }
