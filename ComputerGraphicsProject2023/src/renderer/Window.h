@@ -32,7 +32,7 @@ public:
 
 	~Window();
 
-    friend void onKey(GLFWwindow* window, int key, int scancode, int action, int mods);
+    friend void onGlfwKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
 private:
 	const std::string c_Name;
 	GLFWwindow* m_Handle;

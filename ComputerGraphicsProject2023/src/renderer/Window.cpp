@@ -7,7 +7,7 @@ void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 	app->setFrameBufferResized(true);
 }
 
-void onKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void onGlfwKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods) {
     auto w = static_cast<Window *>(glfwGetWindowUserPointer(window));
 
     switch (action)
@@ -36,10 +36,8 @@ Window::Window(const char* name, uint32_t width, uint32_t height) : c_Name(name)
 	glfwSetWindowUserPointer(m_Handle, this);
 	glfwSetFramebufferSizeCallback(m_Handle, framebufferResizeCallback);
 
-    glfwSetKeyCallback(m_Handle, onKey);
+    glfwSetKeyCallback(m_Handle, onGlfwKeyEvent);
 }
-
-
 
 bool Window::shouldClose() const
 {
