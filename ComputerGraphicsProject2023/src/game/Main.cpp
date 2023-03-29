@@ -25,11 +25,7 @@ int main()
 	{
         TestGame game;
 
-		Application::launch(game, vulture::AppConfig{
-                .name = "Hello Application",
-                .width = 800,
-                .height = 600
-        });
+		Application::launch(game, vulture::AppConfig{ "Hello Application", 800, 600 });
 
         return EXIT_SUCCESS;
     }
