@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace computergraphicsproject {
+namespace vulture {
 
 struct KeyEvent
 {
@@ -16,4 +16,4 @@ struct KeyPressedEvent : public KeyEvent
 
 struct KeyReleasedEvent : public KeyEvent {};
 
-}
+} // namespace vulture

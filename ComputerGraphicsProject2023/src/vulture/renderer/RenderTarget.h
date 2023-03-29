@@ -2,7 +2,7 @@
 
 #include "Renderer.h"
 
-namespace computergraphicsproject {
+namespace vulture {
 
 struct FrameInfo
 {
@@ -40,4 +40,4 @@ private:
 	bool m_SwapChainRecreated;
 };
 
-}
+} // namespace vulture

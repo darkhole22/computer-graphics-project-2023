@@ -21,7 +21,7 @@
 
 #define ASSERT_VK_SUCCESS(func, message) if (func != VK_SUCCESS) { throw std::runtime_error(message); }
 
-namespace computergraphicsproject {
+namespace vulture {
 
 static const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -1468,4 +1468,4 @@ Pipeline::~Pipeline()
 	vkDestroyPipelineLayout(m_Device->getHandle(), m_Layout, nullptr);
 }
 
-}
+} // namespace vulture

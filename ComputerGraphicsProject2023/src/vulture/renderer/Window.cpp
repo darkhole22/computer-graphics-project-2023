@@ -1,6 +1,6 @@
 #include "Window.h"
 
-namespace computergraphicsproject {
+namespace vulture {
 
 void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 	auto app = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
@@ -68,4 +68,4 @@ Window::~Window()
 	glfwTerminate();
 }
 
-}
+} // namespace vulture

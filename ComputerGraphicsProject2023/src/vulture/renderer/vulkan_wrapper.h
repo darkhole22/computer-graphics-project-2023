@@ -9,14 +9,12 @@
 #include <limits>
 #include <cstring>
 
-#include<renderer/Window.h>
+#include"Window.h"
 
-#include "event/Event.h"
+#include "vulture/core/Core.h"
+#include "vulture/event/Event.h"
 
-#define NO_COPY(CLASS) CLASS(const CLASS& other) = delete; \
-                       CLASS operator=(const CLASS& other) = delete;
-
-namespace computergraphicsproject {
+namespace vulture {
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -327,6 +325,4 @@ private:
 	Device const* m_Device;
 };
 
-} // namespace computergraphicsproject
-
-#undef NO_COPY
+} // namespace vulture

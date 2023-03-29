@@ -2,13 +2,12 @@
 
 #include <iostream>
 
-namespace computergraphicsproject {
+namespace vulture {
 
 SceneObjectList::SceneObjectList(const Renderer& renderer, const std::string& vertexShader, 
 	const std::string& fragmentShader, const DescriptorSetLayout& descriptorSetLayout) :
 	m_Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayout, Renderer::getVertexLayout())
 {
-	
 }
 
 Scene::Scene(const Renderer& renderer) :
@@ -46,12 +45,7 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 	for (auto& objectList : m_ObjectLists)
 	{
 		target.bindPipeline(objectList.getPipeline());
-
-
-
 	}
-
-
 
 	// VkBuffer vertexBuffers[] = { m_VertexBuffer };
 	// VkDeviceSize offsets[] = { 0 };
@@ -71,4 +65,4 @@ void Scene::setModified()
 	}
 }
 
-} // namespace computergraphicsproject
+} // namespace vulture
