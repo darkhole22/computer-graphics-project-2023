@@ -6,10 +6,10 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "event/Event.h"
-#include "event/WindowEvents.h"
+#include "vulture/event/Event.h"
+#include "vulture/event/WindowEvents.h"
 
-namespace computergraphicsproject {
+namespace vulture {
 
 class Window
 {
@@ -39,4 +39,4 @@ private:
 	bool m_FramebufferResized = false;
 };
 
-}
+} // namespace vulture

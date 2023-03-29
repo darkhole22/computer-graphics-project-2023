@@ -3,7 +3,7 @@
 #include <vector>
 #include <functional>
 
-namespace computergraphicsproject {
+namespace vulture {
 
 template<class Event> class EventHandler
 {
@@ -35,4 +35,5 @@ private:
     inline void emit(const E& e) { m_EventHandler_##E .emit(e); }                   \
     public:                                                                         \
     inline void addCallback(EventHandler<E>::Callback cb) { m_EventHandler_##E .addCallback(cb); }
-}
+
+} // namespace vulture

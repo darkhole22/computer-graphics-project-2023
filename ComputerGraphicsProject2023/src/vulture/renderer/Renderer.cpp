@@ -1,7 +1,7 @@
 #include "Renderer.h"
 #include "RenderTarget.h"
 
-namespace computergraphicsproject {
+namespace vulture {
 
 Renderer::Renderer(const Window& window) :
 	m_Instance(window.getName()), m_Surface(m_Instance, window), m_Device(m_Instance, m_Surface),
@@ -26,4 +26,4 @@ Renderer::~Renderer()
 	m_Device.waitIdle();
 }
 
-}
+} // namespace vulture

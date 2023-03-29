@@ -1,7 +1,7 @@
 #pragma once
 
-#include <renderer/Window.h>
-#include <renderer/vulkan_wrapper.h>
+#include "Window.h"
+#include "vulkan_wrapper.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
@@ -10,7 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-namespace computergraphicsproject {
+namespace vulture {
 
 class RenderTarget;
 
@@ -57,4 +57,4 @@ private:
 	bool m_SwapChainRecreated = false;
 };
 
-}
+} // namespace vulture

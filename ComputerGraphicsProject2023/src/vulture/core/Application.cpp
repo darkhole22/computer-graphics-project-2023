@@ -8,10 +8,16 @@
 #include <iostream>
 #include <chrono>
 
-namespace computergraphicsproject {
+namespace vulture {
 
-Application::Application(const char* name, uint32_t width, uint32_t height)
-	: c_name(name), m_Window(name, width, height), m_Renderer(m_Window), m_Scene(m_Renderer)
+std::weak_ptr<Application> Application::s_Instance = std::weak_ptr<Application>();
+
+Application::Application(Game& game, AppConfig config) :
+    c_Name(config.name),
+    m_Window(config.name, config.width, config.height),
+    m_Renderer(m_Window),
+    m_Scene(m_Renderer),
+    m_Game(&game)
 {
 }
 
@@ -27,6 +33,7 @@ void Application::run()
 	const float FPS_AVG_WEIGHT = 0.1; // 0 <= x <= 1
 
 	setup();
+
 	while (!m_Window.shouldClose()) {
 		m_Window.pollEvents();
 
@@ -45,14 +52,22 @@ void Application::run()
 			delta -= 1.0f;
 		}
 
-		update();
+		update(deltaT);
 
 		m_Scene.render(m_Renderer.getRenderTarget());
 	}
 }
 
-Application::~Application()
+void Application::setup()
 {
+    m_Game->setup();
 }
 
+void Application::update(float delta)
+{
+    m_Game->update(delta);
 }
+
+Application::~Application() = default;
+
+} // namespace vulture

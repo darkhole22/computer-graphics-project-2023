@@ -1,12 +1,11 @@
 #pragma once
 
-#include <bitset>
 #include <vector>
 
-#include "renderer/RenderTarget.h"
+#include "vulture/renderer/RenderTarget.h"
 // #include "scene/GameObject.h" TODO
 
-namespace computergraphicsproject {
+namespace vulture {
 
 class SceneObjectList
 {
@@ -24,7 +23,7 @@ private:
 class Scene
 {
 public:
-	Scene(const Renderer& renderer);
+	explicit Scene(const Renderer& renderer);
 
 	void render(RenderTarget target);
 private:
@@ -38,4 +37,4 @@ private:
 	void setModified();
 };
 
-} // namespace computergraphicsproject
+}

@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace computergraphicsproject {
+namespace vulture {
 
 RenderTarget::RenderTarget(SwapChain& swapChain, const Device& device, uint32_t currentFrame, bool swapChainRecreated) :
 	m_SwapChain(&swapChain), m_CurrentFrame(currentFrame), m_ImageIndex(m_SwapChain->getImageIndex(currentFrame)),
@@ -35,4 +35,4 @@ RenderTarget::~RenderTarget()
 	m_SwapChain->submit(m_CurrentFrame, m_ImageIndex);
 }
 
-}
+} // namespace vulture
