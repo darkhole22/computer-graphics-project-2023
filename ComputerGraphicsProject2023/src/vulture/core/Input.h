@@ -3,9 +3,7 @@
 #include <utility>
 
 #include <GLFW/glfw3.h>
-#include <iostream>
 #include <unordered_map>
-#include <set>
 
 #include "vulture/renderer/Window.h"
 #include "vulture/core/Core.h"
@@ -86,34 +84,17 @@ public:
 
 		for (const auto& keyboardBinding : action.keyboardBindings)
 		{
-			bool actionPressed = true;
-			for (auto key : keyboardBinding.keys)
-			{
-				if (!s_InputStatuses[KEY_IDX(key)]->isPressed) actionPressed = false;
-			}
-			if (actionPressed) return true;
+			if (detectActionPressed(keyboardBinding.keys, KEY_IDX(0))) return true;
 		}
 
 		for (const auto& mouseBinding : action.mouseBindings)
 		{
-			bool actionPressed = true;
-			for (auto btn : mouseBinding.buttons)
-			{
-				if (!s_InputStatuses[MOUSE_BTN_IDX(btn)]->isPressed) actionPressed = false;
-			}
-
-			if (actionPressed) return true;
+			if (detectActionPressed(mouseBinding.buttons, MOUSE_BTN_IDX(0))) return true;
 		}
 
 		for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
 		{
-			bool actionPressed = true;
-			for (auto btn : gamepadButtonBinding.buttons)
-			{
-				if (!s_InputStatuses[GAMEPAD_BTN_IDX(btn)]->isPressed) actionPressed = false;
-			}
-
-			if (actionPressed) return true;
+			if (detectActionPressed(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0))) return true;
 		}
 
 		return false;
@@ -129,28 +110,27 @@ public:
 
 		for (const auto& keyboardBinding : action.keyboardBindings)
 		{
-			int res = detectRelease(keyboardBinding.keys, KEY_IDX(0));
+			int res = detectActionReleased(keyboardBinding.keys, KEY_IDX(0));
 			if (res == -1) return false;
 			if (res == 1) mayRelease = true;
 		}
 
 		for (const auto& mouseBinding : action.mouseBindings)
 		{
-			int res = detectRelease(mouseBinding.buttons, MOUSE_BTN_IDX(0));
+			int res = detectActionReleased(mouseBinding.buttons, MOUSE_BTN_IDX(0));
 			if (res == -1) return false;
 			if (res == 1) mayRelease = true;
 		}
 
 		for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
 		{
-			int res = detectRelease(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0));
+			int res = detectActionReleased(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0));
 			if (res == -1) return false;
 			if (res == 1) mayRelease = true;
 		}
 
 		return mayRelease;
 	};
-
 
 	static bool isKeyPressed(int keyCode)
 	{
@@ -245,6 +225,9 @@ private:
 		it->second->isJustReleased = action == GLFW_RELEASE;
 	}
 
+	// getGamepadInputStatus collect the current status of all registered gamepad buttons bindings.
+	// This is necessary since GLFW does not provide any callback-based access to Gamepad events, so
+	// we need to manually collect it each frame.
 	static void getGamepadInputStatus() {
 		GLFWgamepadstate state;
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
@@ -260,7 +243,11 @@ private:
 		}
 	}
 
-	static int detectRelease(const std::vector<int>& bindings, int baseIndex)
+	// detectActionReleased checks if an action bound to the given input binding could be released in the current frame.
+	// It returns 1 if, according to the given bindings, it is released.
+	// It returns 0 if, according to the given bindings, they're not active, but they weren't released this frame.
+	// It returns -1 if, according to the given bindings, the action is active.
+	static int detectActionReleased(const std::vector<int>& bindings, int baseIndex)
 	{
 		bool oneRelease = false, allPressed = true, noDead = true;
 
@@ -277,6 +264,19 @@ private:
 		return 0;
 	}
 
+	// detectActionPressed checks if all the given bindings are pressed at the same time.
+	static bool detectActionPressed(const std::vector<int>& bindings, int baseIndex)
+	{
+		bool actionPressed = true;
+		for (auto binding : bindings)
+		{
+			if (!s_InputStatuses[baseIndex + binding]->isPressed) actionPressed = false;
+		}
+
+		return actionPressed;
+	}
+
+	// resetReleased resets the `isJustReleased` status of every registered binding.
 	static void resetReleased()
 	{
 		for (auto inputStatus: s_InputStatuses)
