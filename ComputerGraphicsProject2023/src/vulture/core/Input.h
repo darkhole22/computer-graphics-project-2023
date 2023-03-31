@@ -11,6 +11,10 @@
 
 namespace vulture {
 
+#define KEY_IDX(K) K
+#define MOUSE_BTN_IDX(BTN) (BTN + GLFW_KEY_LAST + 1)
+#define GAMEPAD_BTN_IDX(BTN) (BTN + GLFW_MOUSE_BUTTON_LAST + 1)
+
 struct InputStatus
 {
 	bool isPressed;
@@ -48,7 +52,15 @@ public:
 		{
 			for (auto key: keyboardBinding.keys)
 			{
-				s_KeyStatuses.try_emplace(key, new InputStatus{});
+				s_InputStatuses.try_emplace(KEY_IDX(key), new InputStatus{});
+			}
+		}
+
+		for (const auto& mouseButtonBinding: action.mouseBindings)
+		{
+			for (auto btn: mouseButtonBinding.buttons)
+			{
+				s_InputStatuses.try_emplace(MOUSE_BTN_IDX(btn), new InputStatus{});
 			}
 		}
 
@@ -60,13 +72,14 @@ public:
 		auto it = s_Actions.find(actionName);
 		if(it == s_Actions.end()) return false;
 
-		auto action = s_Actions[actionName];
+		auto action = it->second;
+
 		for (const auto& keyboardBinding : action.keyboardBindings)
 		{
 			bool actionPressed = true;
 			for (auto key : keyboardBinding.keys)
 			{
-				if (!isKeyPressed(key)) actionPressed = false;
+				if (!s_InputStatuses[KEY_IDX(key)]->isPressed) actionPressed = false;
 			}
 			if (actionPressed) return true;
 		}
@@ -76,7 +89,7 @@ public:
 			bool actionPressed = true;
 			for (auto btn : mouseBinding.buttons)
 			{
-				if (!isMouseButtonPressed(btn)) actionPressed = false;
+				if (!s_InputStatuses[MOUSE_BTN_IDX(btn)]->isPressed) actionPressed = false;
 			}
 
 			if (actionPressed) return true;
@@ -96,10 +109,59 @@ public:
 		return false;
 	};
 
+	static bool isActionReleased(const std::string& actionName)
+	{
+		auto it = s_Actions.find(actionName);
+		if(it == s_Actions.end()) return false;
+
+		auto action = it->second;
+		bool anyRelease = false;
+
+		for (const auto& keyboardBinding : action.keyboardBindings)
+		{
+			bool allPressed = true;
+			for (auto key : keyboardBinding.keys)
+			{
+				auto keyStatus = s_InputStatuses[KEY_IDX(key)];
+				if (!keyStatus->isPressed) allPressed = false;
+				if (keyStatus->isJustReleased) anyRelease = true;
+			}
+
+			if (allPressed) return false;
+		}
+
+		for (const auto& mouseBinding : action.mouseBindings)
+		{
+			bool allPressed = true;
+			for (auto btn : mouseBinding.buttons)
+			{
+				auto btnStatus = s_InputStatuses[MOUSE_BTN_IDX(btn)];
+				if (!btnStatus->isPressed) allPressed = false;
+				if (btnStatus->isJustReleased) anyRelease = true;
+			}
+
+			if (allPressed) return false;
+		}
+
+		for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
+		{
+			bool allPressed = true;
+			for (auto btn : gamepadButtonBinding.buttons)
+			{
+				if (!isGamepadButtonPressed(btn)) allPressed = false;
+			}
+
+			if (allPressed) return false;
+		}
+
+		return anyRelease;
+	};
+
+
 	static bool isKeyPressed(int keyCode)
 	{
-		auto it = s_KeyStatuses.find(keyCode);
-		if (it == s_KeyStatuses.end())
+		auto it = s_InputStatuses.find(KEY_IDX(keyCode));
+		if (it == s_InputStatuses.end())
 		{
 			return glfwGetKey(s_Window->getHandle(), keyCode) == GLFW_PRESS;
 		}
@@ -109,8 +171,8 @@ public:
 
 	static bool isMouseButtonPressed(int buttonCode)
 	{
-		auto it = s_MouseButtonsStatuses.find(buttonCode);
-		if (it == s_MouseButtonsStatuses.end())
+		auto it = s_InputStatuses.find(MOUSE_BTN_IDX(buttonCode));
+		if (it == s_InputStatuses.end())
 		{
 			return glfwGetMouseButton(s_Window->getHandle(), buttonCode) == GLFW_PRESS;
 		}
@@ -149,8 +211,7 @@ private:
 	inline static Window const* s_Window;
 	inline static std::unordered_map<std::string, InputAction> s_Actions;
 
-	inline static std::unordered_map<int, InputStatus*> s_KeyStatuses;
-	inline static std::unordered_map<int, InputStatus*> s_MouseButtonsStatuses;
+	inline static std::unordered_map<int, InputStatus*> s_InputStatuses;
 
 	static void initialize(const Window& window)
 	{
@@ -169,8 +230,8 @@ private:
 
 	static void onGlfwKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
-		auto it = s_KeyStatuses.find(key);
-		if (it == s_KeyStatuses.end()) return;
+		auto it = s_InputStatuses.find(KEY_IDX(key));
+		if (it == s_InputStatuses.end()) return;
 
 		it->second->isPressed = action != GLFW_RELEASE;
 		it->second->isJustReleased = action == GLFW_RELEASE;
@@ -178,8 +239,8 @@ private:
 
 	static void onGlfwMouseButton(GLFWwindow* window, int button, int action, int mods)
 	{
-		auto it = s_MouseButtonsStatuses.find(button);
-		if (it == s_MouseButtonsStatuses.end()) return;
+		auto it = s_InputStatuses.find(MOUSE_BTN_IDX(button));
+		if (it == s_InputStatuses.end()) return;
 
 		it->second->isPressed = action != GLFW_RELEASE;
 		it->second->isJustReleased = action == GLFW_RELEASE;
@@ -187,14 +248,9 @@ private:
 
 	static void resetReleased()
 	{
-		for (auto keyStatus: s_KeyStatuses)
+		for (auto inputStatus: s_InputStatuses)
 		{
-			keyStatus.second->isJustReleased = false;
-		}
-
-		for (auto btnStatus : s_KeyStatuses)
-		{
-			btnStatus.second->isJustReleased = false;
+			inputStatus.second->isJustReleased = false;
 		}
 	}
 

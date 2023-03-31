@@ -36,6 +36,10 @@ public:
 		{
 			std::cout << "Moving Up: " << dt << std::endl;
 		}
+		else if (Input::isActionReleased("MOVE_UP"))
+		{
+			std::cout << "Released Up: " << dt << std::endl;
+		}
 	}
 };
 
