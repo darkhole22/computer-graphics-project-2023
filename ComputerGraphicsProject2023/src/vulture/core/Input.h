@@ -125,48 +125,30 @@ public:
 		if(it == s_Actions.end()) return false;
 
 		auto action = it->second;
-		bool anyRelease = false;
+		bool mayRelease = false;
 
 		for (const auto& keyboardBinding : action.keyboardBindings)
 		{
-			bool allPressed = true;
-			for (auto key : keyboardBinding.keys)
-			{
-				auto keyStatus = s_InputStatuses[KEY_IDX(key)];
-				if (!keyStatus->isPressed) allPressed = false;
-				if (keyStatus->isJustReleased) anyRelease = true;
-			}
-
-			if (allPressed) return false;
+			int res = detectRelease(keyboardBinding.keys, KEY_IDX(0));
+			if (res == -1) return false;
+			if (res == 1) mayRelease = true;
 		}
 
 		for (const auto& mouseBinding : action.mouseBindings)
 		{
-			bool allPressed = true;
-			for (auto btn : mouseBinding.buttons)
-			{
-				auto btnStatus = s_InputStatuses[MOUSE_BTN_IDX(btn)];
-				if (!btnStatus->isPressed) allPressed = false;
-				if (btnStatus->isJustReleased) anyRelease = true;
-			}
-
-			if (allPressed) return false;
+			int res = detectRelease(mouseBinding.buttons, MOUSE_BTN_IDX(0));
+			if (res == -1) return false;
+			if (res == 1) mayRelease = true;
 		}
 
 		for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
 		{
-			bool allPressed = true;
-			for (auto btn : gamepadButtonBinding.buttons)
-			{
-				auto btnStatus = s_InputStatuses[GAMEPAD_BTN_IDX(btn)];
-				if (!btnStatus->isPressed) allPressed = false;
-				if (btnStatus->isJustReleased) anyRelease = true;
-			}
-
-			if (allPressed) return false;
+			int res = detectRelease(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0));
+			if (res == -1) return false;
+			if (res == 1) mayRelease = true;
 		}
 
-		return anyRelease;
+		return mayRelease;
 	};
 
 
@@ -276,6 +258,23 @@ private:
 				it->second->isPressed = (state.buttons[btn] == GLFW_PRESS);
 			}
 		}
+	}
+
+	static int detectRelease(const std::vector<int>& bindings, int baseIndex)
+	{
+		bool oneRelease = false, allPressed = true, noDead = true;
+
+		for (auto binding : bindings)
+		{
+			auto inputStatus = s_InputStatuses[baseIndex + binding];
+			if (!inputStatus->isPressed) allPressed = false;
+			if (!inputStatus->isPressed && !inputStatus->isJustReleased) noDead = false;
+			if (inputStatus->isJustReleased) oneRelease = true;
+		}
+
+		if (allPressed) return -1;
+		if (oneRelease && noDead) return 1;
+		return 0;
 	}
 
 	static void resetReleased()
