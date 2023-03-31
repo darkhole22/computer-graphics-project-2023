@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <unordered_map>
+#include <set>
 
 #include "vulture/renderer/Window.h"
 #include "vulture/core/Core.h"
@@ -13,7 +14,7 @@ namespace vulture {
 
 #define KEY_IDX(K) K
 #define MOUSE_BTN_IDX(BTN) (BTN + GLFW_KEY_LAST + 1)
-#define GAMEPAD_BTN_IDX(BTN) (BTN + GLFW_MOUSE_BUTTON_LAST + 1)
+#define GAMEPAD_BTN_IDX(BTN) (BTN + MOUSE_BTN_IDX(GLFW_MOUSE_BUTTON_LAST) + 1)
 
 struct InputStatus
 {
@@ -64,6 +65,15 @@ public:
 			}
 		}
 
+		for (const auto& gamepadButtonBinding: action.gamepadButtonBindings)
+		{
+			for (auto btn: gamepadButtonBinding.buttons)
+			{
+				s_InputStatuses.try_emplace(GAMEPAD_BTN_IDX(btn), new InputStatus{});
+			}
+		}
+
+
 		s_Actions[actionName] = std::move(action);
 	}
 
@@ -100,7 +110,7 @@ public:
 			bool actionPressed = true;
 			for (auto btn : gamepadButtonBinding.buttons)
 			{
-				if (!isGamepadButtonPressed(btn)) actionPressed = false;
+				if (!s_InputStatuses[GAMEPAD_BTN_IDX(btn)]->isPressed) actionPressed = false;
 			}
 
 			if (actionPressed) return true;
@@ -148,7 +158,9 @@ public:
 			bool allPressed = true;
 			for (auto btn : gamepadButtonBinding.buttons)
 			{
-				if (!isGamepadButtonPressed(btn)) allPressed = false;
+				auto btnStatus = s_InputStatuses[GAMEPAD_BTN_IDX(btn)];
+				if (!btnStatus->isPressed) allPressed = false;
+				if (btnStatus->isJustReleased) anyRelease = true;
 			}
 
 			if (allPressed) return false;
@@ -182,16 +194,20 @@ public:
 
 	static bool isGamepadButtonPressed(int buttonCode)
 	{
-		GLFWgamepadstate state;
-		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+		auto it = s_InputStatuses.find(GAMEPAD_BTN_IDX(buttonCode));
+
+		if (it == s_InputStatuses.end())
 		{
-			if (state.buttons[buttonCode])
+			GLFWgamepadstate state;
+			if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
 			{
-				return true;
+				return state.buttons[buttonCode] == GLFW_PRESS;
 			}
+
+			return false;
 		}
 
-		return false;
+		return it->second->isPressed;
 	}
 
 	static float getGamepadAxis(int axis)
@@ -226,6 +242,7 @@ private:
 	static void cleanup()
 	{
 		resetReleased();
+		getGamepadInputStatus();
 	}
 
 	static void onGlfwKey(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -244,6 +261,21 @@ private:
 
 		it->second->isPressed = action != GLFW_RELEASE;
 		it->second->isJustReleased = action == GLFW_RELEASE;
+	}
+
+	static void getGamepadInputStatus() {
+		GLFWgamepadstate state;
+		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+		{
+			for (int btn = 0; btn <= GLFW_GAMEPAD_BUTTON_LAST; btn++)
+			{
+				auto it = s_InputStatuses.find(GAMEPAD_BTN_IDX(btn));
+				if(it == s_InputStatuses.end()) continue;
+
+				it->second->isJustReleased = (it->second->isPressed && state.buttons[btn] == GLFW_RELEASE);
+				it->second->isPressed = (state.buttons[btn] == GLFW_PRESS);
+			}
+		}
 	}
 
 	static void resetReleased()
