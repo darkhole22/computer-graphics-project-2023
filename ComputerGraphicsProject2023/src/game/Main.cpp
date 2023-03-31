@@ -22,6 +22,9 @@ public:
 			.mouseBindings = {
 					MouseBinding{{GLFW_MOUSE_BUTTON_1}},
 					MouseBinding{{GLFW_MOUSE_BUTTON_3, GLFW_MOUSE_BUTTON_4}}
+			},
+			.gamepadButtonBindings = {
+					GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_A}}
 			}
 		});
 	}

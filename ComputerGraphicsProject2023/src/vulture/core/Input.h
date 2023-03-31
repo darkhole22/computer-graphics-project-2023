@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <GLFW/glfw3.h>
+
 #include "vulture/renderer/Window.h"
 #include "vulture/core/Core.h"
 
@@ -17,10 +19,16 @@ struct MouseBinding
 	std::vector<int> buttons;
 };
 
+struct GamepadButtonBinding
+{
+	std::vector<int> buttons;
+};
+
 struct InputAction
 {
 	std::vector<KeyboardBinding> keyboardBindings;
 	std::vector<MouseBinding> mouseBindings;
+	std::vector<GamepadButtonBinding> gamepadButtonBindings;
 };
 
 class Input
@@ -61,6 +69,17 @@ public:
 			if (actionPressed) return true;
 		}
 
+		for (const auto& gamepadButtonBinding : action.mouseBindings)
+		{
+			bool actionPressed = true;
+			for (auto btn : gamepadButtonBinding.buttons)
+			{
+				if (!isGamepadButtonPressed(btn)) actionPressed = false;
+			}
+
+			if (actionPressed) return true;
+		}
+
 		return false;
 	};
 
@@ -79,6 +98,20 @@ public:
 		if(glfwGetMouseButton(s_Window->getHandle(), buttonCode) == GLFW_PRESS)
 		{
 			return true;
+		}
+
+		return false;
+	}
+
+	static bool isGamepadButtonPressed(int buttonCode)
+	{
+		GLFWgamepadstate state;
+		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+		{
+			if (state.buttons[buttonCode])
+			{
+				return true;
+			}
 		}
 
 		return false;
