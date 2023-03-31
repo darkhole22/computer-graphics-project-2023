@@ -24,14 +24,14 @@ public:
 					MouseBinding{{GLFW_MOUSE_BUTTON_3, GLFW_MOUSE_BUTTON_4}}
 			},
 			.gamepadButtonBindings = {
-					GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_A}}
+					GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_A}},
+					GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_LEFT_THUMB}}
 			}
 		});
 	}
 
 	void update(float dt) override
 	{
-
 		if (Input::isActionPressed("MOVE_UP"))
 		{
 			std::cout << "Moving Up: " << dt << std::endl;
