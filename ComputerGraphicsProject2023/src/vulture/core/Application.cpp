@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "Input.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -60,6 +61,7 @@ void Application::run()
 
 void Application::setup()
 {
+	Input::initialize(m_Window);
     m_Game->setup();
 }
 
