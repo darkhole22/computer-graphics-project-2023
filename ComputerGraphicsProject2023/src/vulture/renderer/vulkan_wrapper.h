@@ -6,10 +6,13 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <unordered_map>
+#include <unordered_set>
 #include <limits>
 #include <cstring>
+#include <memory>
 
-#include"Window.h"
+#include "Window.h"
 
 #include "vulture/core/Core.h"
 #include "vulture/event/Event.h"
@@ -271,6 +274,7 @@ public:
 	void create();
 
 	inline VkDescriptorSetLayout getHandle() const { return m_Handle; }
+	inline const auto& getBindings() const { return m_Bindings; }
 
 	~DescriptorSetLayout();
 private:
@@ -308,13 +312,121 @@ private:
 	Device const* m_Device;
 };
 
+class DescriptorPool;
+
+template <class _Type>
+class Uniform
+{
+public:
+
+	inline VkBuffer getHandle() const { return m_Handle; }
+
+	~Uniform();
+private:
+	VkBuffer m_Handle;
+};
+
+class Texture
+{
+public:
+	VkImageView getView() const;
+	VkSampler getSampler() const;
+	VkImageLayout getLayout() const;
+private:
+
+};
+
+class DescriptorWrite
+{
+public:
+	template <class T>
+	inline DescriptorWrite(const Uniform<T>& uniform) :
+		m_Uniform(uniform.getHandle()), m_UniformSize(sizeof(T)), m_Texture(nullptr) {}
+	inline DescriptorWrite(const Texture& texture) :
+		m_Uniform(VK_NULL_HANDLE), m_UniformSize(0), m_Texture(&texture) {}
+
+	VkWriteDescriptorSet getWriteDescriptorSet(VkDescriptorSet descriptorSet, uint32_t index, uint32_t binding) const;
+
+	~DescriptorWrite() = default;
+private:
+	VkBuffer m_Uniform;
+	size_t m_UniformSize;
+	Texture const* m_Texture;
+};
+
+class DescriptorSet
+{
+public:
+	NO_COPY(DescriptorSet)
+
+	inline const DescriptorSetLayout& getLayout() const { return *m_Layout; }
+
+	~DescriptorSet();
+	friend class DescriptorPool;
+private:
+	DescriptorSet(const DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
+	
+	void create();
+	void cleanup();
+	void recreate();
+
+	std::vector<VkDescriptorSet> m_Handles;
+	DescriptorPool const* m_Pool;
+	DescriptorSetLayout const* m_Layout;
+	std::vector<DescriptorWrite> m_DescriptorWrites;
+};
+
+/*
+*/
+class DescriptorPool
+{
+public:
+	NO_COPY(DescriptorPool)
+
+	/*
+	* Constructor of a DescriptorPool
+	* 
+	* @param device - The logical device on witch the pool will be allocated.
+	* @param frameCount - The number of framebuffers.
+	*/
+	DescriptorPool(const Device& device, uint32_t frameCount);
+
+	inline uint32_t getFrameCount() const { return m_FrameCount; }
+	void setFrameCount(uint32_t frameCount);
+
+	inline VkDescriptorPool getHandle() const { return m_Handle; }
+
+	inline const Device& getDevice() const { return *m_Device; }
+
+	std::weak_ptr<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
+	void freeDescriptorSet(std::weak_ptr<DescriptorSet> descriptorSet);
+
+	~DescriptorPool();
+
+	struct DescriptorTypePoolInfo
+	{
+		uint32_t size;
+		uint32_t count;
+	};
+private:
+	VkDescriptorPool m_Handle = VK_NULL_HANDLE;
+	Device const* m_Device;
+	uint32_t m_FrameCount;
+	uint32_t m_Size = 0;
+	std::unordered_map<VkDescriptorType, DescriptorTypePoolInfo> m_TypeInfos;
+	std::unordered_set<std::shared_ptr<DescriptorSet>> m_Sets;
+
+	void cleanup();
+	void recreate();
+};
+
 class Pipeline
 {
 public:
 	NO_COPY(Pipeline)
 
 	Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, 
-		const DescriptorSetLayout& descriptorSetLayout, const VertexLayout& vertexLayout);
+		const std::vector<DescriptorSetLayout>& descriptorSetLayouts, const VertexLayout& vertexLayout);
 
 	inline VkPipeline getHandle() const { return m_Handle; }
 

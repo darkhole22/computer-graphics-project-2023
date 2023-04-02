@@ -1333,7 +1333,198 @@ Shader::~Shader()
 	vkDestroyShaderModule(m_Device->getHandle(), m_Handle, nullptr);
 }
 
-Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, const DescriptorSetLayout& descriptorSetLayout, const VertexLayout& vertexLayout)
+VkWriteDescriptorSet DescriptorWrite::getWriteDescriptorSet(VkDescriptorSet descriptorSet, uint32_t index, uint32_t binding) const
+{
+	VkWriteDescriptorSet write{};
+
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.dstSet = descriptorSet;
+	write.dstBinding = binding;
+	write.dstArrayElement = 0;
+	if (m_Texture)
+	{
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = m_Texture->getLayout(); // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = m_Texture->getView();
+		imageInfo.sampler = m_Texture->getSampler();
+
+		write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		write.descriptorCount = 1;
+		write.pImageInfo = &imageInfo;
+	}
+	else
+	{
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = m_Uniform;
+		bufferInfo.offset = 0;
+		bufferInfo.range = m_UniformSize;
+
+		write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		write.descriptorCount = 1;
+		write.pBufferInfo = &bufferInfo;
+	}
+
+	return write;
+}
+
+DescriptorSet::DescriptorSet(const DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites) :
+	m_Pool(&pool), m_Layout(&layout), m_DescriptorWrites(descriptorWrites)
+{
+	create();
+}
+
+void DescriptorSet::create()
+{
+	auto& device = m_Pool->getDevice();
+
+	std::vector<VkDescriptorSetLayout> layouts(m_Pool->getFrameCount(), m_Layout->getHandle());
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = m_Pool->getHandle();
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
+	allocInfo.pSetLayouts = layouts.data();
+
+	m_Handles.resize(layouts.size());
+	ASSERT_VK_SUCCESS(vkAllocateDescriptorSets(device.getHandle(), &allocInfo, m_Handles.data()),
+		"Failed to allocate descriptor sets!");
+
+	for (size_t i = 0; i < m_Handles.size(); i++) {
+		std::vector<VkWriteDescriptorSet> writes;
+		writes.reserve(m_DescriptorWrites.size());
+
+		for (uint32_t binding = 0; binding < m_DescriptorWrites.size(); binding++)
+		{
+			writes.push_back(m_DescriptorWrites[binding].getWriteDescriptorSet(m_Handles[i], i, binding));
+		}
+
+		vkUpdateDescriptorSets(device.getHandle(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+	}
+}
+
+void DescriptorSet::cleanup()
+{
+	auto& device = m_Pool->getDevice();
+	vkFreeDescriptorSets(device.getHandle(), m_Pool->getHandle(), static_cast<uint32_t>(m_Handles.size()), m_Handles.data());
+}
+
+void DescriptorSet::recreate()
+{
+	cleanup();
+	m_Handles.resize(0);
+	create();
+}
+
+DescriptorSet::~DescriptorSet()
+{
+	cleanup();
+}
+
+DescriptorPool::DescriptorPool(const Device& device, uint32_t frameCount) :
+	m_Device(&device), m_FrameCount(frameCount)
+{
+}
+
+void DescriptorPool::setFrameCount(uint32_t frameCount)
+{
+	if (m_FrameCount == frameCount) return;
+	
+	m_FrameCount = frameCount;
+	recreate();
+}
+
+std::weak_ptr<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites)
+{
+	bool shouldRecreate = false;
+	if (m_Size <= m_Sets.size()) 
+	{
+		shouldRecreate = true;
+		m_Size++;
+	}
+
+	auto& layoutBindings = layout.getBindings();
+	for (auto& binding : layoutBindings)
+	{
+		auto it = m_TypeInfos.find(binding.descriptorType);
+		if (it != m_TypeInfos.end())
+		{
+			auto& [size, count] = it->second;
+			count++;
+			if (size < count) shouldRecreate = true;
+		}
+		else
+		{
+			m_TypeInfos.insert({ binding.descriptorType, {0, 1} });
+			shouldRecreate = true;
+		}
+	}
+
+	if (shouldRecreate) recreate();
+
+	std::shared_ptr<DescriptorSet> descriprtorSet(new DescriptorSet(*this, layout, descriptorWrites));
+
+	m_Sets.insert(descriprtorSet);
+	
+	return descriprtorSet;
+}
+
+void DescriptorPool::freeDescriptorSet(std::weak_ptr<DescriptorSet> descriptorSet)
+{
+	auto ds = descriptorSet.lock();
+	auto& layoutBindings = ds->getLayout().getBindings();
+	for (auto& binding : layoutBindings)
+	{
+		auto it = m_TypeInfos.find(binding.descriptorType);
+		if (it != m_TypeInfos.end())
+		{
+			it->second.count--;
+		}
+	}
+
+	m_Sets.erase(ds);
+}
+
+void DescriptorPool::cleanup()
+{
+	if (m_Handle != VK_NULL_HANDLE)
+	{
+		vkDestroyDescriptorPool(m_Device->getHandle(), m_Handle, nullptr);
+		m_Handle = VK_NULL_HANDLE;
+	}
+}
+
+void DescriptorPool::recreate()
+{
+	cleanup();
+	std::vector<VkDescriptorPoolSize> poolSizes{};
+	poolSizes.reserve(m_TypeInfos.size());
+
+	for (auto& [type, info] : m_TypeInfos)
+	{
+		info.size = info.count;
+		poolSizes.push_back({ type, info.size * m_FrameCount });
+	}
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = m_Size * m_FrameCount;
+
+	ASSERT_VK_SUCCESS(vkCreateDescriptorPool(m_Device->getHandle(), &poolInfo, nullptr, &m_Handle),
+		"Failed to create descriptor pool!");
+
+	for (auto& set : m_Sets)
+	{
+		set->recreate();
+	}
+}
+
+DescriptorPool::~DescriptorPool()
+{
+	cleanup();
+}
+
+Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, const std::vector<DescriptorSetLayout>& descriptorSetLayouts, const VertexLayout& vertexLayout)
 {
 	m_Device = &renderPass.getDevice();
 
@@ -1417,11 +1608,16 @@ Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader
 	colorBlending.blendConstants[2] = 0.0f; // Optional
 	colorBlending.blendConstants[3] = 0.0f; // Optional
 
+	std::vector<VkDescriptorSetLayout> dsls(descriptorSetLayouts.size());
+	for (size_t i = 0; i < dsls.size(); i++)
+	{
+		dsls[i] = descriptorSetLayouts[i].getHandle();
+	}
+
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 1; // Optional
-	auto dsl = descriptorSetLayout.getHandle();
-	pipelineLayoutInfo.pSetLayouts = &dsl; // Optional
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(dsls.size());
+	pipelineLayoutInfo.pSetLayouts = dsls.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 

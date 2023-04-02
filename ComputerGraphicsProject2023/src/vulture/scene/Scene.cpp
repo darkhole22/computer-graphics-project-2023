@@ -5,8 +5,8 @@
 namespace vulture {
 
 SceneObjectList::SceneObjectList(const Renderer& renderer, const std::string& vertexShader, 
-	const std::string& fragmentShader, const DescriptorSetLayout& descriptorSetLayout) :
-	m_Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayout, Renderer::getVertexLayout())
+	const std::string& fragmentShader, const std::vector<DescriptorSetLayout>& descriptorSetLayouts) :
+	m_Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout())
 {
 }
 

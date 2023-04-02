@@ -39,9 +39,9 @@ public:
 	inline static const VertexLayout getVertexLayout()
 	{
 		return VertexLayout(sizeof(Vertex), {
-			{VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)},
-			{VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)},
-			{VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord)}
+			{VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, pos))},
+			{VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, color))},
+			{VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, texCoord))}
 		});
 	}
 

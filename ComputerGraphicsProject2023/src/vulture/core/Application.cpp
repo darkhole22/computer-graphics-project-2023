@@ -30,7 +30,7 @@ void Application::run()
 	float delta = 0;
 
 	const float WRITE_FPS_TIMEOUT = 0.5; // seconds
-	const float FPS_AVG_WEIGHT = 0.1; // 0 <= x <= 1
+	const float FPS_AVG_WEIGHT = 0.1f; // 0 <= x <= 1
 
 	setup();
 
@@ -44,7 +44,7 @@ void Application::run()
 		lastTime = time;
 
 		delta += deltaT;
-		fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0 / deltaT) * FPS_AVG_WEIGHT;
+		fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0f / deltaT) * FPS_AVG_WEIGHT;
 
         if (delta > WRITE_FPS_TIMEOUT)
 		{
