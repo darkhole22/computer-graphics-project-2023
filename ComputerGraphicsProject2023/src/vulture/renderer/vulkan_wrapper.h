@@ -11,6 +11,7 @@
 #include <limits>
 #include <cstring>
 #include <memory>
+#include <filesystem>
 
 #include "Window.h"
 
@@ -314,26 +315,73 @@ private:
 
 class DescriptorPool;
 
+class Buffer
+{
+public:
+	NO_COPY(Buffer)
+
+	Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+
+	inline VkBuffer getHandle() const { return m_Handle; }
+	inline VkDeviceMemory getMemory() const { return m_Memory; }
+
+	~Buffer();
+private:
+	VkBuffer m_Handle;
+	VkDeviceMemory m_Memory;
+	Device const* m_Device;
+};
+
 template <class _Type>
 class Uniform
 {
 public:
+	NO_COPY(Uniform)
 
-	inline VkBuffer getHandle() const { return m_Handle; }
+	Uniform(const Device& device, uint32_t count) :
+		m_Device(&device)
+	{
+		m_Buffers.reserve(count);
 
-	~Uniform();
+		for (size_t i = 0; i < count; i++)
+		{
+			m_Buffers.emplace_back(m_Device, sizeof(_Type), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		}
+	}
+
+	inline const std::vector<Buffer>& getBuffers() const { return m_Buffers; }
+
+	inline void map(uint32_t index)
+	{
+		void* data;
+
+		vkMapMemory(m_Device->getHandle(), m_Buffers[index].getMemory(), 0, sizeof(_Type), 0, &data);
+		memcpy(data, &m_LocalData, sizeof(_Type));
+		vkUnmapMemory(m_Device->getHandle(), m_Buffers[index].getMemory());
+	}
+
+	inline _Type* operator->() noexcept { return &m_LocalData; }
+
+	~Uniform() = default;
 private:
-	VkBuffer m_Handle;
+	std::vector<Buffer> m_Buffers;
+	Device const* m_Device;
+
+	_Type m_LocalData;
 };
 
 class Texture
 {
 public:
-	VkImageView getView() const;
-	VkSampler getSampler() const;
-	VkImageLayout getLayout() const;
-private:
+	NO_COPY(Texture)
 
+	Texture(const Device& device, std::filesystem::path path);
+
+	inline VkImageView getView() const { return m_Image.getView(); }
+	inline VkSampler getSampler() const;
+	inline VkImageLayout getLayout() const { return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
+private:
+	Image m_Image;
 };
 
 class DescriptorWrite
@@ -341,15 +389,15 @@ class DescriptorWrite
 public:
 	template <class T>
 	inline DescriptorWrite(const Uniform<T>& uniform) :
-		m_Uniform(uniform.getHandle()), m_UniformSize(sizeof(T)), m_Texture(nullptr) {}
+		m_Uniforms(&uniform.getBuffers()), m_UniformSize(sizeof(T)), m_Texture(nullptr) {}
 	inline DescriptorWrite(const Texture& texture) :
-		m_Uniform(VK_NULL_HANDLE), m_UniformSize(0), m_Texture(&texture) {}
+		m_Uniforms(nullptr), m_UniformSize(0), m_Texture(&texture) {}
 
 	VkWriteDescriptorSet getWriteDescriptorSet(VkDescriptorSet descriptorSet, uint32_t index, uint32_t binding) const;
 
 	~DescriptorWrite() = default;
 private:
-	VkBuffer m_Uniform;
+	std::vector<Buffer> const* m_Uniforms;
 	size_t m_UniformSize;
 	Texture const* m_Texture;
 };

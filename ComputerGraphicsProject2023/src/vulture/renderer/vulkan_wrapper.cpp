@@ -1333,6 +1333,42 @@ Shader::~Shader()
 	vkDestroyShaderModule(m_Device->getHandle(), m_Handle, nullptr);
 }
 
+Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) :
+	m_Device(&device)
+{
+	VkBufferCreateInfo bufferInfo{};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	ASSERT_VK_SUCCESS(vkCreateBuffer(m_Device->getHandle(), &bufferInfo, nullptr, &m_Handle), 
+		"Failed to create buffer!");
+
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(m_Device->getHandle(), m_Handle, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(m_Device->getPhysicalDevice(), memRequirements.memoryTypeBits, properties);
+
+	ASSERT_VK_SUCCESS(vkAllocateMemory(m_Device->getHandle(), &allocInfo, nullptr, &m_Memory),
+		"Failed to allocate buffer memory!");
+
+	vkBindBufferMemory(m_Device->getHandle(), m_Handle, m_Memory, 0);
+}
+
+Buffer::~Buffer()
+{
+	vkFreeMemory(m_Device->getHandle(), m_Memory, nullptr);
+	vkDestroyBuffer(m_Device->getHandle(), m_Handle, nullptr);
+}
+
+Texture::Texture(const Device& device, std::filesystem::path path)
+{
+}
+
 VkWriteDescriptorSet DescriptorWrite::getWriteDescriptorSet(VkDescriptorSet descriptorSet, uint32_t index, uint32_t binding) const
 {
 	VkWriteDescriptorSet write{};
@@ -1344,7 +1380,7 @@ VkWriteDescriptorSet DescriptorWrite::getWriteDescriptorSet(VkDescriptorSet desc
 	if (m_Texture)
 	{
 		VkDescriptorImageInfo imageInfo{};
-		imageInfo.imageLayout = m_Texture->getLayout(); // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageLayout = m_Texture->getLayout();
 		imageInfo.imageView = m_Texture->getView();
 		imageInfo.sampler = m_Texture->getSampler();
 
@@ -1355,7 +1391,7 @@ VkWriteDescriptorSet DescriptorWrite::getWriteDescriptorSet(VkDescriptorSet desc
 	else
 	{
 		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = m_Uniform;
+		bufferInfo.buffer = (*m_Uniforms)[index].getHandle();
 		bufferInfo.offset = 0;
 		bufferInfo.range = m_UniformSize;
 
@@ -1394,7 +1430,7 @@ void DescriptorSet::create()
 
 		for (uint32_t binding = 0; binding < m_DescriptorWrites.size(); binding++)
 		{
-			writes.push_back(m_DescriptorWrites[binding].getWriteDescriptorSet(m_Handles[i], i, binding));
+			writes.push_back(m_DescriptorWrites[binding].getWriteDescriptorSet(m_Handles[i], static_cast<uint32_t>(i), binding));
 		}
 
 		vkUpdateDescriptorSets(device.getHandle(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
