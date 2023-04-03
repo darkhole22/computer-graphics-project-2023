@@ -41,6 +41,7 @@ private:
 	std::vector<SceneObjectList> m_ObjectLists; // TODO consider changing this to an unordered_set
 
 	void recordCommandBuffer(RenderTarget& target);
+	void updateUniforms(RenderTarget& target);
 
 	void setModified();
 };

@@ -1672,6 +1672,28 @@ void DescriptorPool::setFrameCount(uint32_t frameCount)
 	recreate();
 }
 
+void DescriptorPool::reserveSpace(uint32_t count, const DescriptorSetLayout& layout)
+{
+	m_Size += count;
+
+	auto& layoutBindings = layout.getBindings();
+	for (auto& binding : layoutBindings)
+	{
+		auto it = m_TypeInfos.find(binding.descriptorType);
+		if (it != m_TypeInfos.end())
+		{
+			auto& [size, space] = it->second;
+			space += count;
+		}
+		else
+		{
+			m_TypeInfos.insert({ binding.descriptorType, {0, count} });
+		}
+	}
+
+	recreate();
+}
+
 std::weak_ptr<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites)
 {
 	bool shouldRecreate = false;

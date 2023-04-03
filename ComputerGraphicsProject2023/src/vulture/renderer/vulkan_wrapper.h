@@ -464,6 +464,8 @@ public:
 
 	inline const Device& getDevice() const { return *m_Device; }
 
+	void reserveSpace(uint32_t count, const DescriptorSetLayout& layout);
+
 	std::weak_ptr<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
 	void freeDescriptorSet(std::weak_ptr<DescriptorSet> descriptorSet);
 

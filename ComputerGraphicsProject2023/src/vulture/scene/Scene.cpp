@@ -35,7 +35,7 @@ void Scene::render(RenderTarget target)
 		m_FrameModified[index] = false;
 	}
 
-	// updateUniformBuffer(target);
+	updateUniforms(target);
 }
 
 void Scene::recordCommandBuffer(RenderTarget& target)
@@ -55,6 +55,11 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 	// vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_Indices.size()), 2, 0, 0, 0);
 
 	target.endCommandRecording();
+}
+
+void Scene::updateUniforms(RenderTarget& target)
+{
+
 }
 
 void Scene::setModified()
