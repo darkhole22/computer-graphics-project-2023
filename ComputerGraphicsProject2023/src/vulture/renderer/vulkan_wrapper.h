@@ -187,6 +187,8 @@ private:
 	void cleanup() noexcept;
 };
 
+class Buffer;
+
 class Image
 {
 public:
@@ -195,11 +197,14 @@ public:
 	Image(Image&& other) noexcept;
 	Image(VkImage image, const Device& device, VkFormat format);
 	Image(const Device& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags);
-
+	
 	inline VkImage getHandle() const { return m_Handle; }
 	inline VkImageView getView() const { return m_View; }
+	inline VkFormat getFormat() const { return m_Format; }
 
 	void transitionLayout(VkImageLayout newLayout, uint32_t mipLevels);
+	void copyFromBuffer(const Buffer& buffer);
+	void generateMipmaps(uint32_t mipLevels);
 
 	Image operator=(const Image& other) = delete;
 	Image& operator=(Image&& other) noexcept;
@@ -212,6 +217,9 @@ private:
 	VkImageLayout m_Layout = VK_IMAGE_LAYOUT_UNDEFINED;
 	VkFormat m_Format;
 
+	int64_t m_Width = -1;
+	int64_t m_Height = -1;
+
 	Device const* m_Device;
 
 	void cleanup() noexcept;
@@ -219,7 +227,6 @@ private:
 
 struct SwapChainRecreatedEvent
 {
-
 };
 
 class SwapChain
@@ -325,6 +332,8 @@ public:
 	inline VkBuffer getHandle() const { return m_Handle; }
 	inline VkDeviceMemory getMemory() const { return m_Memory; }
 
+	void map(VkDeviceSize size, void* data);
+
 	~Buffer();
 private:
 	VkBuffer m_Handle;
@@ -353,11 +362,7 @@ public:
 
 	inline void map(uint32_t index)
 	{
-		void* data;
-
-		vkMapMemory(m_Device->getHandle(), m_Buffers[index].getMemory(), 0, sizeof(_Type), 0, &data);
-		memcpy(data, &m_LocalData, sizeof(_Type));
-		vkUnmapMemory(m_Device->getHandle(), m_Buffers[index].getMemory());
+		m_Buffers[index].map(sizeof(_Type), &m_LocalData);
 	}
 
 	inline _Type* operator->() noexcept { return &m_LocalData; }
@@ -375,13 +380,18 @@ class Texture
 public:
 	NO_COPY(Texture)
 
-	Texture(const Device& device, std::filesystem::path path);
+	Texture(const Device& device, const std::string& path);
 
 	inline VkImageView getView() const { return m_Image.getView(); }
-	inline VkSampler getSampler() const;
+	inline VkSampler getSampler() const { return m_Sampler; };
 	inline VkImageLayout getLayout() const { return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
+	
+	~Texture() = default;
 private:
 	Image m_Image;
+	VkSampler m_Sampler;
+	uint32_t m_MipLevels;
+	Device const* m_Device;
 };
 
 class DescriptorWrite
