@@ -1453,6 +1453,22 @@ Shader::~Shader()
 	vkDestroyShaderModule(m_Device->getHandle(), m_Handle, nullptr);
 }
 
+Buffer::Buffer() :
+	m_Handle(VK_NULL_HANDLE), m_Memory(VK_NULL_HANDLE), m_Device(nullptr)
+{
+}
+
+Buffer::Buffer(Buffer&& other) noexcept
+{
+	m_Handle = other.m_Handle;
+	m_Memory = other.m_Memory;
+	m_Device = other.m_Device;
+
+	other.m_Handle = VK_NULL_HANDLE;
+	other.m_Memory = VK_NULL_HANDLE;
+	other.m_Device = nullptr;
+}
+
 Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) :
 	m_Device(&device)
 {
@@ -1488,10 +1504,45 @@ void Buffer::map(VkDeviceSize size, void* data)
 	vkUnmapMemory(m_Device->getHandle(), m_Memory);
 }
 
+void Buffer::copyToBuffer(VkDeviceSize size, const Buffer& destination)
+{
+	CommandBuffer commandBuffer(*m_Device, true);
+
+	VkBufferCopy copyRegion{};
+	copyRegion.size = size;
+	vkCmdCopyBuffer(commandBuffer.getHandle(), m_Handle, destination.m_Handle, 1, &copyRegion);
+}
+
+Buffer& Buffer::operator=(Buffer&& other) noexcept
+{
+	if (m_Handle != other.m_Handle)
+	{
+		cleanup();
+
+		m_Handle = other.m_Handle;
+		m_Memory = other.m_Memory;
+		m_Device = other.m_Device;
+
+		other.m_Handle = VK_NULL_HANDLE;
+		other.m_Memory = VK_NULL_HANDLE;
+		other.m_Device = nullptr;
+	}
+
+	return *this;
+}
+
 Buffer::~Buffer()
 {
-	vkFreeMemory(m_Device->getHandle(), m_Memory, nullptr);
-	vkDestroyBuffer(m_Device->getHandle(), m_Handle, nullptr);
+	cleanup();
+}
+
+void Buffer::cleanup() noexcept
+{
+	if (m_Handle != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(m_Device->getHandle(), m_Memory, nullptr);
+		vkDestroyBuffer(m_Device->getHandle(), m_Handle, nullptr);
+	}
 }
 
 Texture::Texture(const Device& device, const std::string& path) :

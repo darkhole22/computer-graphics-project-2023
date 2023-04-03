@@ -325,7 +325,9 @@ class DescriptorPool;
 class Buffer
 {
 public:
-	NO_COPY(Buffer)
+	Buffer();
+	Buffer(const Buffer& other) = delete;
+	Buffer(Buffer&& other) noexcept;
 
 	Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 
@@ -333,12 +335,18 @@ public:
 	inline VkDeviceMemory getMemory() const { return m_Memory; }
 
 	void map(VkDeviceSize size, void* data);
+	void copyToBuffer(VkDeviceSize size, const Buffer& destination);
+
+	Buffer& operator=(const Buffer& other) = delete;
+	Buffer& operator=(Buffer&& other) noexcept;
 
 	~Buffer();
 private:
 	VkBuffer m_Handle;
 	VkDeviceMemory m_Memory;
 	Device const* m_Device;
+
+	void cleanup() noexcept;
 };
 
 template <class _Type>
