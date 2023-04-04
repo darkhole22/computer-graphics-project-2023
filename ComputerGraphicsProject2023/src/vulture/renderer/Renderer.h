@@ -2,24 +2,36 @@
 
 #include "Window.h"
 #include "vulkan_wrapper.h"
+#include "Model.h"
 
+
+namespace vulture {
+
+class RenderTarget;
+/*
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-namespace vulture {
-
-class RenderTarget;
-
 struct Vertex
 {
 	glm::vec3 pos = { 0, 0, 0 };
 	glm::vec3 norm = { 0, 0 , 0 };
 	glm::vec2 texCoord = { 0, 0 };
 };
+
+struct VertexBuilder
+{
+	Vertex operator()(const Model::_BaseVertex& vertex)
+	{
+		Vertex v;
+
+		return v;
+	}
+};
+*/
 
 class Renderer
 {
@@ -34,10 +46,18 @@ public:
 
 	// update descriptor sets
 
+	inline void waitIdle() const { m_Device.waitIdle(); }
+
 	inline const RenderPass& getRenderPass() const { return m_RenderPass; }
 	inline DescriptorPool makeDescriptorPool() const { return DescriptorPool(m_Device, m_SwapChain.getImageCount()); }
-	inline DescriptorSetLayout makeDescriptorSetLayout() const { return DescriptorSetLayout(m_Device); }
+	inline Ref<DescriptorSetLayout> makeDescriptorSetLayout() const { return Ref<DescriptorSetLayout>(new DescriptorSetLayout(m_Device)); }
 	template <class T> inline Uniform<T> makeUniform() const { return Uniform<T>(m_Device, m_SwapChain.getImageCount()); }
+	inline Ref<Texture> makeTexture(const std::string& path) const { return Ref<Texture>(new Texture(m_Device, path)); }
+	inline Ref<Model> makeBaseModel(const std::string& modelPath) const 
+	{
+		// return Ref<Model>(Model::make<Vertex, VertexBuilder>(m_Device, modelPath));
+		return Ref<Model>(Model::make(m_Device, modelPath));
+	}
 
 	inline static const VertexLayout getVertexLayout()
 	{

@@ -598,9 +598,26 @@ void CommandBuffer::bindPipeline(const Pipeline& pipeline, const SwapChain& swap
 	vkCmdSetScissor(m_Handle, 0, 1, &scissor);
 }
 
-void CommandBuffer::bindDescriptorSet(const Pipeline& pipeline, VkDescriptorSet descriptorSet)
+void CommandBuffer::bindDescriptorSet(const Pipeline& pipeline, VkDescriptorSet descriptorSet, uint32_t set)
 {
-	vkCmdBindDescriptorSets(m_Handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getLayout(), 0, 1, &descriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(m_Handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getLayout(), set, 1, &descriptorSet, 0, nullptr);
+}
+
+void CommandBuffer::bindVertexBuffer(const Buffer& buffer)
+{
+	VkBuffer vertexBuffers[] = { buffer.getHandle()};
+	VkDeviceSize offsets[] = { 0 };
+	vkCmdBindVertexBuffers(m_Handle, 0, 1, vertexBuffers, offsets);
+}
+
+void CommandBuffer::bindIndexBuffer(const Buffer& buffer)
+{
+	vkCmdBindIndexBuffer(m_Handle, buffer.getHandle(), 0, VK_INDEX_TYPE_UINT32);
+}
+
+void CommandBuffer::drawIndexed(uint32_t indexCount)
+{
+	vkCmdDrawIndexed(m_Handle, indexCount, 1, 0, 0, 0);
 }
 
 void CommandBuffer::endRenderPass()
@@ -1371,12 +1388,13 @@ VertexLayout::VertexLayout(uint32_t size, const std::vector<std::pair<VkFormat, 
 	m_Bindings.stride = size;
 	m_Bindings.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
+	uint32_t location = 0;
 	m_Attributes.reserve(descriptors.size());
 	for (auto& [format, offset] : descriptors)
 	{
 		VkVertexInputAttributeDescription descriptor{};
 		descriptor.binding = 0;
-		descriptor.location = 0;
+		descriptor.location = location++;
 		descriptor.format = format;
 		descriptor.offset = offset;
 
@@ -1418,7 +1436,8 @@ DescriptorSetLayout::~DescriptorSetLayout()
 	}
 }
 
-Shader::Shader(const Device& device, const std::string& name)
+Shader::Shader(const Device& device, const std::string& name) :
+	m_Device(&device)
 {
 	std::ifstream file(name, std::ios::ate | std::ios::binary);
 	if (!file.is_open()) {
@@ -1576,6 +1595,35 @@ Texture::Texture(const Device& device, const std::string& path) :
 	
 	m_Image.copyFromBuffer(stagingBuffer);
 	m_Image.generateMipmaps(m_MipLevels);
+
+	VkPhysicalDeviceProperties properties{};
+	vkGetPhysicalDeviceProperties(m_Device->getPhysicalDevice().getHandle(), &properties);
+
+	VkSamplerCreateInfo samplerInfo{};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_LINEAR;
+	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.anisotropyEnable = VK_TRUE; // TODO Dissable if not aviable
+	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	samplerInfo.unnormalizedCoordinates = VK_FALSE;
+	samplerInfo.compareEnable = VK_FALSE;
+	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	samplerInfo.minLod = 0.0f; // Optional
+	samplerInfo.maxLod = static_cast<float>(m_MipLevels);
+	samplerInfo.mipLodBias = 0.0f; // Optional
+
+	ASSERT_VK_SUCCESS(vkCreateSampler(m_Device->getHandle(), &samplerInfo, nullptr, &m_Sampler),
+		"Failed to create texture sampler!");
+}
+
+Texture::~Texture()
+{
+	vkDestroySampler(m_Device->getHandle(), m_Sampler, nullptr);
 }
 
 VkWriteDescriptorSet DescriptorWrite::getWriteDescriptorSet(VkDescriptorSet descriptorSet, uint32_t index, uint32_t binding) const
@@ -1586,27 +1634,17 @@ VkWriteDescriptorSet DescriptorWrite::getWriteDescriptorSet(VkDescriptorSet desc
 	write.dstSet = descriptorSet;
 	write.dstBinding = binding;
 	write.dstArrayElement = 0;
-	if (m_Texture)
+	if (m_TextureInfo)
 	{
-		VkDescriptorImageInfo imageInfo{};
-		imageInfo.imageLayout = m_Texture->getLayout();
-		imageInfo.imageView = m_Texture->getView();
-		imageInfo.sampler = m_Texture->getSampler();
-
 		write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		write.descriptorCount = 1;
-		write.pImageInfo = &imageInfo;
+		write.pImageInfo = &(*m_TextureInfo);
 	}
 	else
 	{
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = (*m_Uniforms)[index].getHandle();
-		bufferInfo.offset = 0;
-		bufferInfo.range = m_UniformSize;
-
 		write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		write.descriptorCount = 1;
-		write.pBufferInfo = &bufferInfo;
+		write.pBufferInfo = &m_UniformInfos[index];
 	}
 
 	return write;
@@ -1652,9 +1690,10 @@ void DescriptorSet::cleanup()
 	vkFreeDescriptorSets(device.getHandle(), m_Pool->getHandle(), static_cast<uint32_t>(m_Handles.size()), m_Handles.data());
 }
 
-void DescriptorSet::recreate()
+void DescriptorSet::recreate(bool clean)
 {
-	cleanup();
+	if (clean) cleanup();
+
 	m_Handles.resize(0);
 	create();
 }
@@ -1755,7 +1794,6 @@ void DescriptorPool::cleanup()
 	if (m_Handle != VK_NULL_HANDLE)
 	{
 		vkDestroyDescriptorPool(m_Device->getHandle(), m_Handle, nullptr);
-		m_Handle = VK_NULL_HANDLE;
 	}
 }
 
@@ -1773,6 +1811,7 @@ void DescriptorPool::recreate()
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = m_Size * m_FrameCount;
@@ -1782,12 +1821,13 @@ void DescriptorPool::recreate()
 
 	for (auto& set : m_Sets)
 	{
-		set->recreate();
+		set->recreate(false);
 	}
 }
 
 DescriptorPool::~DescriptorPool()
 {
+	m_Sets.clear();
 	cleanup();
 }
 

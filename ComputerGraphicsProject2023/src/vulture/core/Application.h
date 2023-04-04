@@ -28,28 +28,34 @@ class Application
 public:
     NO_COPY(Application)
 
-    inline static void launch(Game& game, AppConfig config)
+    inline static Ref<Application> launch(Game& game, AppConfig config)
     {
         if (!s_Instance.expired())
         {
             throw std::runtime_error("Application is already running!");
         }
 
-        auto instance = std::shared_ptr<Application>(new Application(game, config));
+        auto instance = Ref<Application>(new Application(game, config));
         s_Instance = instance;
 
         instance->run();
+
+        return getInstance();
     }
 
-    inline static std::shared_ptr<Application> getInstance() { return s_Instance.lock(); }
+    inline static Ref<Application> getInstance() { return s_Instance.lock(); }
 
-    inline static const Scene& getScene() { return getInstance()->m_Scene; }
-
+    inline static Scene* getScene() { return &getInstance()->m_Scene; }
+    inline static Ref<DescriptorSetLayout> makeDescriptorSetLayout() { return getInstance()->m_Renderer.makeDescriptorSetLayout(); }
+    inline static Ref<Model> makeModel(const std::string& path) { return getInstance()->m_Renderer.makeBaseModel(path); }
+    template <class T> inline static Uniform<T> makeUniform() { return getInstance()->m_Renderer.makeUniform<T>(); }
+    inline static Ref<Texture> makeTexture(const std::string& path) { return getInstance()->m_Renderer.makeTexture(path); }
+    
     ~Application();
 private:
     Application(Game& game, AppConfig config);
 
-    static std::weak_ptr<Application> s_Instance;
+    static WRef<Application> s_Instance;
 
     const std::string c_Name;
 	Window m_Window;

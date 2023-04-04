@@ -6,7 +6,21 @@
 
 #include "vulkan_wrapper.h"
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 namespace vulture {
+
+struct Vertex
+{
+	glm::vec3 pos = { 0, 0, 0 };
+	glm::vec3 norm = { 0, 0 , 0 };
+	glm::vec2 texCoord = { 0, 0 };
+};
 
 class Model
 {
@@ -26,6 +40,13 @@ public:
 		// Texture coordinates
 		tinyobj::real_t u;
 		tinyobj::real_t v;
+
+		bool operator==(const _BaseVertex o)
+		{
+#define E(m) (o. m == m)
+			return E(x) && E(y) && E(z) && E(nx) && E(ny) && E(nz) && E(u) && E(v);
+#undef E
+		}
 	};
 
 	struct _BaseVertexHash
@@ -40,10 +61,21 @@ public:
 		}
 	};
 
-	template<class _Vertex>
-	Model(const Device& device, const std::string& modelPath,
-		const std::function<_Vertex(const _BaseVertex&)> vertexBuilder)
+	struct VertexBuilder
 	{
+		Vertex operator()(const _BaseVertex& vertex)
+		{
+			Vertex v;
+
+			return v;
+		}
+	};
+
+	// template<class _Vertex, class _VertexBuilder>
+	static Model* make(const Device& device, const std::string& modelPath)
+	{
+		Model* m = new Model();
+
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -53,9 +85,9 @@ public:
 			throw std::runtime_error(warn + err);
 		}
 
-		std::vector<_Vertex> vertices{};
+		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indecies{};
-		std::unordered_map<_BaseVertex, uint32_t, _BaseVertexHash> uniqueVertices{};
+		// std::unordered_map<_BaseVertex, uint32_t, _BaseVertexHash> uniqueVertices{};
 
 		for (const auto& shape : shapes) {
 			for (const auto& index : shape.mesh.indices) {
@@ -70,31 +102,39 @@ public:
 					1.0f - attrib.texcoords[2LL * index.texcoord_index + 1]
 				};
 
-				if (uniqueVertices.count(vertex) == 0) {
-					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-					vertices.push_back(vertexBuilder(vertex));
-				}
+				// if (uniqueVertices.count(vertex) == 0) {
+					//uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size()); }
+				vertices.push_back(VertexBuilder()(vertex));
 
-				indecies.push_back(uniqueVertices[vertex]);
+				// indecies.push_back(uniqueVertices[vertex]);
+				indecies.push_back(static_cast<uint32_t>(vertices.size()));
 			}
 		}
 
-		VkDeviceSize vertexBufferSize = sizeof(_Vertex) * vertices.size();
+		VkDeviceSize vertexBufferSize = sizeof(Vertex) * vertices.size();
 		Buffer vertexStagingBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		vertexStagingBuffer.map(vertexBufferSize, vertices.data());
-		m_VertexBuffer = Buffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		vertexStagingBuffer.copyToBuffer(vertexBufferSize, m_VertexBuffer);
+		m->m_VertexBuffer = Buffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		vertexStagingBuffer.copyToBuffer(vertexBufferSize, m->m_VertexBuffer);
 
 		VkDeviceSize indexBufferSize = sizeof(uint32_t) * indecies.size();
 		Buffer indexStagingBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		indexStagingBuffer.map(indexBufferSize, indecies.data());
-		m_IndexBuffer = Buffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		indexStagingBuffer.copyToBuffer(vertexBufferSize, m_IndexBuffer);
+		m->m_IndexBuffer = Buffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		indexStagingBuffer.copyToBuffer(indexBufferSize, m->m_IndexBuffer);
+
+		m->m_IndexCount = static_cast<uint32_t>(indecies.size());
+
+		return m;
 	}
 
+	inline const Buffer& getVertexBuffer() const { return m_VertexBuffer; }
+	inline const Buffer& getIndexBuffer() const { return m_IndexBuffer; }
+	inline uint32_t getIndexCount() const { return m_IndexCount; }
 private:
 	Buffer m_VertexBuffer;
 	Buffer m_IndexBuffer;
+	uint32_t m_IndexCount = 0;
 };
 
-} // namespace vulture 
+} // namespace vulture

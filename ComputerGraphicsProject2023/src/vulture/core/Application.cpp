@@ -56,6 +56,8 @@ void Application::run()
 
 		m_Scene.render(m_Renderer.getRenderTarget());
 	}
+
+	m_Renderer.waitIdle();
 }
 
 void Application::setup()
@@ -68,6 +70,9 @@ void Application::update(float delta)
     m_Game->update(delta);
 }
 
-Application::~Application() = default;
+Application::~Application()
+{
+	m_Renderer.waitIdle();
+}
 
 } // namespace vulture

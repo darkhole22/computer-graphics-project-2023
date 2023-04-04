@@ -11,11 +11,16 @@ namespace vulture {
 class RenderableObject
 {
 public:
-	RenderableObject(const Pipeline& pipeline, const std::filesystem::path& path);
+	RenderableObject(Ref<Model> model, WRef<DescriptorSet> descriptorSet);
 
+	inline const DescriptorSet& getDescriptorSet() { return *m_DescriptorSet.lock(); }
+	inline const Model& getModel() { return *m_Model.get(); }
 private:
-
+	Ref<Model> m_Model;
+	WRef<DescriptorSet> m_DescriptorSet;
 };
+
+using ObjectHandle = int64_t;
 
 class SceneObjectList
 {
@@ -24,10 +29,17 @@ public:
 		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts);
 	
 	inline const Pipeline& getPipeline() const { return *m_Pipeline; }
+	ObjectHandle addObject(RenderableObject obj);
+
+	auto begin() { return m_Objects.begin(); }
+	auto end() { return m_Objects.end(); }
 private:
-	std::shared_ptr<Pipeline> m_Pipeline;
-	std::vector<RenderableObject> m_Objects;
+	Ref<Pipeline> m_Pipeline;
+	ObjectHandle m_NextObjectHandle = 0;
+	std::unordered_map<ObjectHandle, RenderableObject> m_Objects;
 };
+
+using PipileneHandle = int64_t;
 
 class Scene
 {
@@ -36,16 +48,19 @@ public:
 
 	void render(RenderTarget target);
 
-	~Scene();
+	PipileneHandle makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
+	ObjectHandle addObject(PipileneHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
+
+	~Scene() = default;
 private:
 	Renderer const* m_Renderer;
 	DescriptorPool m_DescriptorsPool;
-	DescriptorSetLayout m_ObjectDSL;
 	
 	Camera m_Camera;
 
 	std::vector<bool> m_FrameModified;
-	std::vector<SceneObjectList> m_ObjectLists; // TODO consider changing this to an unordered_set
+	PipileneHandle m_NextPipelineHandle = 0;
+	std::unordered_map<PipileneHandle, SceneObjectList> m_ObjectLists;
 
 	void recordCommandBuffer(RenderTarget& target);
 	void updateUniforms(RenderTarget& target);

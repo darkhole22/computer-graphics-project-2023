@@ -12,6 +12,7 @@
 #include <cstring>
 #include <memory>
 #include <filesystem>
+#include <optional>
 
 #include "Window.h"
 
@@ -155,6 +156,7 @@ private:
 class Pipeline;
 class SwapChain;
 class DescriptorSet;
+class Buffer;
 
 class CommandBuffer
 {
@@ -176,7 +178,10 @@ public:
 	void begin();
 	void beginRenderPass(const RenderPass& renderPass, VkFramebuffer frameBuffer, VkExtent2D extent);
 	void bindPipeline(const Pipeline& pipeline, const SwapChain& swapChain);
-	void bindDescriptorSet(const Pipeline& pipeline, VkDescriptorSet descriptorSet);
+	void bindDescriptorSet(const Pipeline& pipeline, VkDescriptorSet descriptorSet, uint32_t set);
+	void bindVertexBuffer(const Buffer& buffer);
+	void bindIndexBuffer(const Buffer& buffer);
+	void drawIndexed(uint32_t indexCount);
 	void endRenderPass();
 	void end();
 
@@ -342,6 +347,11 @@ public:
 	Buffer& operator=(const Buffer& other) = delete;
 	Buffer& operator=(Buffer&& other) noexcept;
 
+	bool operator==(const Buffer& other)
+	{
+		return other.m_Handle == m_Handle;
+	}
+
 	~Buffer();
 private:
 	VkBuffer m_Handle;
@@ -355,7 +365,16 @@ template <class _Type>
 class Uniform
 {
 public:
-	NO_COPY(Uniform)
+	Uniform() = default;
+	Uniform(const Uniform& other) = delete;
+	Uniform(Uniform&& other)
+	{
+		m_Buffers = std::move(other.m_Buffers);
+		m_Device = other.m_Device;
+		m_LocalData = other.m_LocalData;
+
+		other.m_Device = nullptr;
+	}
 
 	Uniform(const Device& device, uint32_t count) :
 		m_Device(&device)
@@ -375,14 +394,35 @@ public:
 		m_Buffers[index].map(sizeof(_Type), &m_LocalData);
 	}
 
+	inline void map()
+	{
+		for (auto& b : m_Buffers)
+		{
+			b.map(sizeof(_Type), &m_LocalData);
+		}
+	}
+
 	inline _Type* operator->() noexcept { return &m_LocalData; }
+
+	Uniform& operator=(const Uniform& other) = delete;
+	Uniform& operator=(Uniform&& other) noexcept {
+		if (m_Buffers.size() != other.m_Buffers.size())
+		{
+			m_Buffers = std::move(other.m_Buffers);
+			m_Device = other.m_Device;
+			m_LocalData = other.m_LocalData;
+
+			other.m_Device = nullptr;
+		}
+		return *this;
+	}
 
 	~Uniform() = default;
 private:
 	std::vector<Buffer> m_Buffers;
-	Device const* m_Device;
+	Device const* m_Device = nullptr;
 
-	_Type m_LocalData;
+	_Type m_LocalData = _Type();
 };
 
 class Texture
@@ -396,7 +436,7 @@ public:
 	inline VkSampler getSampler() const { return m_Sampler; };
 	inline VkImageLayout getLayout() const { return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
 	
-	~Texture() = default;
+	~Texture();
 private:
 	Image m_Image;
 	VkSampler m_Sampler;
@@ -408,18 +448,37 @@ class DescriptorWrite
 {
 public:
 	template <class T>
-	inline DescriptorWrite(const Uniform<T>& uniform) :
-		m_Uniforms(&uniform.getBuffers()), m_UniformSize(sizeof(T)), m_Texture(nullptr) {}
-	inline DescriptorWrite(const Texture& texture) :
-		m_Uniforms(nullptr), m_UniformSize(0), m_Texture(&texture) {}
+	inline DescriptorWrite(const Uniform<T>& uniform)
+	{
+		auto& uniforms = uniform.getBuffers();
+		m_UniformInfos.reserve(uniforms.size());
+		for (auto& uniform : uniforms)
+		{
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = uniform.getHandle();
+			bufferInfo.offset = 0;
+			bufferInfo.range = sizeof(T);
+
+			m_UniformInfos.push_back(bufferInfo);
+		}
+	}
+
+	inline DescriptorWrite(const Texture& texture)
+	{
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = texture.getLayout();
+		imageInfo.imageView = texture.getView();
+		imageInfo.sampler = texture.getSampler();
+
+		m_TextureInfo = imageInfo;
+	}
 
 	VkWriteDescriptorSet getWriteDescriptorSet(VkDescriptorSet descriptorSet, uint32_t index, uint32_t binding) const;
 
 	~DescriptorWrite() = default;
 private:
-	std::vector<Buffer> const* m_Uniforms;
-	size_t m_UniformSize;
-	Texture const* m_Texture;
+	std::vector<VkDescriptorBufferInfo> m_UniformInfos;
+	std::optional<VkDescriptorImageInfo> m_TextureInfo;
 };
 
 class DescriptorSet
@@ -438,7 +497,7 @@ private:
 	
 	void create();
 	void cleanup();
-	void recreate();
+	void recreate(bool clean = true);
 
 	std::vector<VkDescriptorSet> m_Handles;
 	DescriptorPool const* m_Pool;
