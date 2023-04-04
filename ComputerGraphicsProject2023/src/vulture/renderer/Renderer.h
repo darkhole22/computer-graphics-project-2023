@@ -17,7 +17,7 @@ class RenderTarget;
 struct Vertex
 {
 	glm::vec3 pos = { 0, 0, 0 };
-	glm::vec3 color = { 0, 0 , 0 };
+	glm::vec3 norm = { 0, 0 , 0 };
 	glm::vec2 texCoord = { 0, 0 };
 };
 
@@ -35,12 +35,15 @@ public:
 	// update descriptor sets
 
 	inline const RenderPass& getRenderPass() const { return m_RenderPass; }
+	inline DescriptorPool makeDescriptorPool() const { return DescriptorPool(m_Device, m_SwapChain.getImageCount()); }
+	inline DescriptorSetLayout makeDescriptorSetLayout() const { return DescriptorSetLayout(m_Device); }
+	template <class T> inline Uniform<T> makeUniform() const { return Uniform<T>(m_Device, m_SwapChain.getImageCount()); }
 
 	inline static const VertexLayout getVertexLayout()
 	{
 		return VertexLayout(sizeof(Vertex), {
 			{VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, pos))},
-			{VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, color))},
+			{VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, norm))},
 			{VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, texCoord))}
 		});
 	}

@@ -154,6 +154,7 @@ private:
 
 class Pipeline;
 class SwapChain;
+class DescriptorSet;
 
 class CommandBuffer
 {
@@ -175,6 +176,7 @@ public:
 	void begin();
 	void beginRenderPass(const RenderPass& renderPass, VkFramebuffer frameBuffer, VkExtent2D extent);
 	void bindPipeline(const Pipeline& pipeline, const SwapChain& swapChain);
+	void bindDescriptorSet(const Pipeline& pipeline, VkDescriptorSet descriptorSet);
 	void endRenderPass();
 	void end();
 
@@ -362,7 +364,7 @@ public:
 
 		for (size_t i = 0; i < count; i++)
 		{
-			m_Buffers.emplace_back(m_Device, sizeof(_Type), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			m_Buffers.emplace_back(*m_Device, sizeof(_Type), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		}
 	}
 
@@ -426,6 +428,8 @@ public:
 	NO_COPY(DescriptorSet)
 
 	inline const DescriptorSetLayout& getLayout() const { return *m_Layout; }
+
+	inline VkDescriptorSet getHandle(uint32_t index) const { return m_Handles[index]; }
 
 	~DescriptorSet();
 	friend class DescriptorPool;
@@ -494,9 +498,10 @@ public:
 	NO_COPY(Pipeline)
 
 	Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, 
-		const std::vector<DescriptorSetLayout>& descriptorSetLayouts, const VertexLayout& vertexLayout);
+		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, const VertexLayout& vertexLayout);
 
 	inline VkPipeline getHandle() const { return m_Handle; }
+	inline VkPipelineLayout getLayout() const { return m_Layout; }
 
 	~Pipeline();
 private:

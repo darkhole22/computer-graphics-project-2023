@@ -30,6 +30,11 @@ void RenderTarget::bindPipeline(const Pipeline& pipeline)
 	m_CommandBuffer->bindPipeline(pipeline, *m_SwapChain);
 }
 
+void RenderTarget::bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet)
+{
+	m_CommandBuffer->bindDescriptorSet(pipeline, descriptorSet.getHandle(m_ImageIndex));
+}
+
 RenderTarget::~RenderTarget()
 {
 	m_SwapChain->submit(m_CurrentFrame, m_ImageIndex);

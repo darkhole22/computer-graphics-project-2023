@@ -24,6 +24,7 @@ public:
 	void endCommandRecording();
 
 	void bindPipeline(const Pipeline& pipeline);
+	void bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& camera);
 
 	~RenderTarget();
 

@@ -12,9 +12,11 @@ bin-int/
 *.sln
 *.vcxproj
 *.vcxproj.filters
-*.obj
+
 *.tlog
 *.idb
 *.pdb
+
+*.spv
 
 **/Makefile

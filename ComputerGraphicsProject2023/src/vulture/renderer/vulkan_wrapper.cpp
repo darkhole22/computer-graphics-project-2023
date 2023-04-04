@@ -598,6 +598,11 @@ void CommandBuffer::bindPipeline(const Pipeline& pipeline, const SwapChain& swap
 	vkCmdSetScissor(m_Handle, 0, 1, &scissor);
 }
 
+void CommandBuffer::bindDescriptorSet(const Pipeline& pipeline, VkDescriptorSet descriptorSet)
+{
+	vkCmdBindDescriptorSets(m_Handle, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getLayout(), 0, 1, &descriptorSet, 0, nullptr);
+}
+
 void CommandBuffer::endRenderPass()
 {
 	vkCmdEndRenderPass(m_Handle);
@@ -1786,7 +1791,7 @@ DescriptorPool::~DescriptorPool()
 	cleanup();
 }
 
-Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, const std::vector<DescriptorSetLayout>& descriptorSetLayouts, const VertexLayout& vertexLayout)
+Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, const VertexLayout& vertexLayout)
 {
 	m_Device = &renderPass.getDevice();
 
@@ -1873,7 +1878,7 @@ Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader
 	std::vector<VkDescriptorSetLayout> dsls(descriptorSetLayouts.size());
 	for (size_t i = 0; i < dsls.size(); i++)
 	{
-		dsls[i] = descriptorSetLayouts[i].getHandle();
+		dsls[i] = descriptorSetLayouts[i]->getHandle();
 	}
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};

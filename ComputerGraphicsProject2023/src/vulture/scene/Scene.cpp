@@ -4,16 +4,33 @@
 
 namespace vulture {
 
+RenderableObject::RenderableObject(const Pipeline& pipeline, const std::filesystem::path& path)
+{
+
+}
+
 SceneObjectList::SceneObjectList(const Renderer& renderer, const std::string& vertexShader, 
-	const std::string& fragmentShader, const std::vector<DescriptorSetLayout>& descriptorSetLayouts) :
-	m_Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout())
+	const std::string& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
+	m_Pipeline(new Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
 {
 }
 
 Scene::Scene(const Renderer& renderer) :
-	m_Renderer(&renderer), m_FrameModified()
+	m_Renderer(&renderer), m_DescriptorsPool(renderer.makeDescriptorPool()), 
+	m_ObjectDSL(m_Renderer->makeDescriptorSetLayout()), m_Camera(renderer, m_DescriptorsPool)
 {
 	setModified();
+
+	m_ObjectDSL.addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	m_ObjectDSL.addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_ObjectDSL.create();
+
+	std::vector<DescriptorSetLayout*> layouts{};
+	layouts.push_back(m_Camera.getDescriptorSetLayout());
+	layouts.push_back(&m_ObjectDSL);
+
+	m_ObjectLists.emplace_back(renderer, std::string("res/shaders/baseVert.spv"), std::string("res/shaders/baseFrag.spv"), layouts);
+
 }
 
 void Scene::render(RenderTarget target)
@@ -27,8 +44,10 @@ void Scene::render(RenderTarget target)
 	if (m_FrameModified.size() < count)
 	{
 		m_FrameModified.resize(count);
+		m_DescriptorsPool.setFrameCount(count);
 		setModified();
 	}
+
 	if (m_FrameModified[index])
 	{
 		recordCommandBuffer(target);
@@ -38,6 +57,10 @@ void Scene::render(RenderTarget target)
 	updateUniforms(target);
 }
 
+Scene::~Scene()
+{
+}
+
 void Scene::recordCommandBuffer(RenderTarget& target)
 {
 	target.beginCommandRecording();
@@ -45,6 +68,9 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 	for (auto& objectList : m_ObjectLists)
 	{
 		target.bindPipeline(objectList.getPipeline());
+
+		target.bindDescriptorSet(objectList.getPipeline(), m_Camera.getDescriptorSet());
+
 	}
 
 	// VkBuffer vertexBuffers[] = { m_VertexBuffer };

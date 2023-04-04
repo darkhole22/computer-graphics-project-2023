@@ -11,7 +11,7 @@ class TestGame : public Game
 public:
 	void setup() override
 	{
-        auto& s = Application::getScene();
+		auto& s = Application::getScene();
 	}
 
 	void update(float dt) override
@@ -23,16 +23,16 @@ int main()
 {
 	try
 	{
-        TestGame game;
+		TestGame game;
 
 		Application::launch(game, vulture::AppConfig{ "Hello Application", 800, 600 });
 
-        return EXIT_SUCCESS;
-    }
+		return EXIT_SUCCESS;
+	}
 	catch (const std::exception &exception)
 	{
 		std::cerr << exception.what() << std::endl;
-    }
+	}
 
 	return EXIT_FAILURE;
 }
