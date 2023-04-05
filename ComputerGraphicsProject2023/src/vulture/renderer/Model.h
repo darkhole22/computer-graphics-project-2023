@@ -65,7 +65,11 @@ public:
 	{
 		Vertex operator()(const _BaseVertex& vertex)
 		{
-			Vertex v;
+			Vertex v = {
+				{vertex.x, vertex.y, vertex.z},
+				{vertex.nx, vertex.ny, vertex.nz},
+				{vertex.u, vertex.v}
+			};
 
 			return v;
 		}
@@ -107,7 +111,7 @@ public:
 				vertices.push_back(VertexBuilder()(vertex));
 
 				// indecies.push_back(uniqueVertices[vertex]);
-				indecies.push_back(static_cast<uint32_t>(vertices.size()));
+				indecies.push_back(static_cast<uint32_t>(vertices.size()-1));
 			}
 		}
 

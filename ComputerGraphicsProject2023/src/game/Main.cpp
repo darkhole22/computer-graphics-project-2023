@@ -8,7 +8,7 @@ using namespace vulture;
 
 struct ModelBufferObject
 {
-	glm::mat4 model;
+	glm::mat4 model = glm::mat4(1);
 };
 
 class TestGame : public Game
@@ -37,16 +37,17 @@ public:
 		objTexture = Application::makeTexture("res/textures/vulture.png");
 
 		scene->addObject(pipeline, model, descriptorSetLayout, { objUniform , *objTexture });
+		// scene->addObject(pipeline, model, descriptorSetLayout, { objUniform });
 
-		objUniform->model = glm::mat4(1.0f) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		// objUniform->model = glm::mat4(1.0f) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	}
 
 	void update(float dt) override
 	{
 		static float time = 0;
 		time += dt;
-		objUniform->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-		
+		// objUniform->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		// objUniform->model = {abs(cos(time * 0.5)), 0, 0, 1};
 		objUniform.map();
 	}
 };
@@ -59,7 +60,7 @@ int main()
 		{
 			TestGame game;
 
-			app = Application::launch(game, vulture::AppConfig{ "Hello Application", 800, 600 });
+			app = Application::launch(game, vulture::AppConfig{ "Vulture demo", 800, 600 });
 		}
 
 		return EXIT_SUCCESS;

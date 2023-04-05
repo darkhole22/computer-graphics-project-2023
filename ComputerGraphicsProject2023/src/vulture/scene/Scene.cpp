@@ -80,8 +80,6 @@ ObjectHandle Scene::addObject(PipileneHandle pipeline, Ref<Model> model, Ref<Des
 
 void Scene::recordCommandBuffer(RenderTarget& target)
 {
-	std::cout << "Begin Command Recording!" << std::endl;
-
 	target.beginCommandRecording();
 
 	for (auto& [pipelineHandle, objectList] : m_ObjectLists)
@@ -100,7 +98,6 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 	}
 
 	target.endCommandRecording();
-	std::cout << "End Command Recording!" << std::endl;
 }
 
 void Scene::updateUniforms(RenderTarget& target)
