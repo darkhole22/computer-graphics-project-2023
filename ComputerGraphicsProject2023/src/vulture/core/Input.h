@@ -4,6 +4,7 @@
 
 #include <GLFW/glfw3.h>
 #include <unordered_map>
+#include <iostream>
 
 #include "vulture/renderer/Window.h"
 #include "vulture/core/Core.h"
@@ -14,14 +15,16 @@ namespace vulture {
 #define MOUSE_BTN_IDX(BTN) (BTN + GLFW_KEY_LAST + 1)
 #define GAMEPAD_BTN_IDX(BTN) (BTN + MOUSE_BTN_IDX(GLFW_MOUSE_BUTTON_LAST) + 1)
 #define GAMEPAD_AXIS_IDX(AXIS) (AXIS + GAMEPAD_BTN_IDX(GLFW_GAMEPAD_BUTTON_LAST) + 1)
-#define GAMEPAD_AXIS_POS true
-#define GAMEPAD_AXIS_NEG false
+#define GAMEPAD_AXIS_POS 1
+#define GAMEPAD_AXIS_NEG -1
 
 struct InputStatus
 {
 	bool isPressed;
 	bool isJustReleased;
+
 	float strength;
+	float lastStrength;
 };
 
 struct KeyboardBinding
@@ -41,7 +44,7 @@ struct GamepadButtonBinding
 
 struct GamepadAxisBinding
 {
-	std::vector<std::pair<int, bool>> axes;
+	std::vector<std::pair<int, int>> axes;
 };
 
 struct InputAction
@@ -124,6 +127,11 @@ public:
 			int res = detectActionReleased(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0));
 			if (res == -1) return false;
 			if (res == 1) mayRelease = true;
+		}
+
+		for (const auto& gamepadAxisBinding : action.gamepadAxisBindings)
+		{
+			return detectGamepadAxisActionReleased(gamepadAxisBinding.axes);
 		}
 
 		return mayRelease;
@@ -292,6 +300,8 @@ private:
 
 				it->second->isJustReleased = std::abs(raw_str) < GAMEPAD_AXIS_DEADZONE && it->second->isPressed;
 				it->second->isPressed = std::abs(raw_str) >= GAMEPAD_AXIS_DEADZONE;
+
+				it->second->lastStrength = it->second->strength;
 				it->second->strength = it->second->isPressed ? raw_str : 0.0f;
 			}
 		}
@@ -318,6 +328,23 @@ private:
 		return 0;
 	}
 
+	// This detects when an action performed via gamepad axes is released.
+	// Be careful: this could also detect "false positives" (which, however, are valid releases)
+	// caused by the gamepads analog sticks quickly bouncing from one side to the other when quickly released.
+	inline static bool detectGamepadAxisActionReleased(const std::vector<std::pair<int, int>>& bindings)
+	{
+		float strength = getActionAxisStrength(bindings);
+		if (strength > 0) return false;
+
+		for (auto binding: bindings)
+		{
+			auto status = s_InputStatuses[GAMEPAD_AXIS_IDX(binding.first)];
+			if (!status->isJustReleased || status->lastStrength * binding.second <= 0) return false;
+		}
+
+		return true;
+	}
+
 	// detectActionPressed checks if all the given bindings are pressed at the same time.
 	inline static bool detectActionPressed(const std::vector<int>& bindings, int baseIndex)
 	{
@@ -330,7 +357,7 @@ private:
 	}
 
 	// This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
-	inline static float getActionAxisStrength(const std::vector<std::pair<int, bool>>& bindings)
+	inline static float getActionAxisStrength(const std::vector<std::pair<int, int>>& bindings)
 	{
 		float minStrength = 1.0f;
 
@@ -338,8 +365,7 @@ private:
 		{
 			auto status = s_InputStatuses[GAMEPAD_AXIS_IDX(binding.first)];
 			if (!status->isPressed ||
-				status->strength < 0 && binding.second ||
-				status->strength > 0 && !binding.second) return 0.0f;
+				status->strength * binding.second <= 0) return 0.0f;
 
 			if (std::abs(status->strength) < minStrength) minStrength = std::abs(status->strength);
 		}

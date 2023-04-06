@@ -71,8 +71,6 @@ public:
 
 	void update(float dt) override
 	{
-		std::cout << "Horiz: " << Input::getAxis("MOVE_LEFT", "MOVE_RIGHT") << std::endl;
-
 		static float time = 0;
 		time += dt;
 		// objUniform->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
