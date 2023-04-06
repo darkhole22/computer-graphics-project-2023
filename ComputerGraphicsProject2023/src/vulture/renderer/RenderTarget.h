@@ -24,6 +24,8 @@ public:
 	void endCommandRecording();
 
 	void bindPipeline(const Pipeline& pipeline);
+	void bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet, uint32_t set);
+	void drawModel(const Model& model);
 
 	~RenderTarget();
 
