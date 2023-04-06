@@ -71,7 +71,6 @@ public:
 			}
 		}
 
-
 		s_Actions[actionName] = std::move(action);
 	}
 
@@ -177,7 +176,7 @@ public:
 		GLFWgamepadstate state;
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
 		{
-			return state.axes[axis];
+			if(std::abs(state.axes[axis]) >= GAMEPAD_AXIS_DEADZONE) return state.axes[axis];
 		}
 
 		return 0.0f;
@@ -190,6 +189,8 @@ private:
 	inline static std::unordered_map<std::string, InputAction> s_Actions;
 
 	inline static std::unordered_map<int, InputStatus*> s_InputStatuses;
+
+	inline static const float GAMEPAD_AXIS_DEADZONE = 0.25f;
 
 	static void initialize(const Window& window)
 	{
