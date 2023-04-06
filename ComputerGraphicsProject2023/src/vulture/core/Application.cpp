@@ -36,7 +36,7 @@ void Application::run()
 	setup();
 
 	while (!m_Window.shouldClose()) {
-		Input::cleanup();
+		Input::reset();
 		m_Window.pollEvents();
 
 		auto currentTime = std::chrono::high_resolution_clock::now();

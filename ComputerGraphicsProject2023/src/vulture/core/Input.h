@@ -86,7 +86,7 @@ public:
 
 		for (const auto& gamepadAxisBinding: action.gamepadAxisBindings)
 		{
-			for (auto axis: gamepadAxisBinding.axes)
+			for (auto& axis: gamepadAxisBinding.axes)
 			{
 				s_InputStatuses.try_emplace(GAMEPAD_AXIS_IDX(axis.first), new InputStatus{});
 			}
@@ -105,7 +105,7 @@ public:
 		auto it = s_Actions.find(actionName);
 		if(it == s_Actions.end()) return false;
 
-		auto action = it->second;
+		auto& action = it->second;
 		bool mayRelease = false;
 
 		for (const auto& keyboardBinding : action.keyboardBindings)
@@ -142,7 +142,7 @@ public:
 		auto it = s_Actions.find(actionName);
 		if(it == s_Actions.end()) return false;
 
-		auto action = it->second;
+		auto& action = it->second;
 
 		for (const auto& keyboardBinding : action.keyboardBindings)
 		{
@@ -250,7 +250,7 @@ private:
 
 	// This should be called once per frame, before polling
 	// events from the window.
-	inline static void cleanup()
+	inline static void reset()
 	{
 		resetReleased();
 		getGamepadInputStatus();
@@ -336,7 +336,7 @@ private:
 		float strength = getActionAxisStrength(bindings);
 		if (strength > 0) return false;
 
-		for (auto binding: bindings)
+		for (auto& binding: bindings)
 		{
 			auto status = s_InputStatuses[GAMEPAD_AXIS_IDX(binding.first)];
 			if (!status->isJustReleased || status->lastStrength * binding.second <= 0) return false;
@@ -361,7 +361,7 @@ private:
 	{
 		float minStrength = 1.0f;
 
-		for (auto binding : bindings)
+		for (auto& binding : bindings)
 		{
 			auto status = s_InputStatuses[GAMEPAD_AXIS_IDX(binding.first)];
 			if (!status->isPressed ||
@@ -376,7 +376,7 @@ private:
 	// resetReleased resets the `isJustReleased` status of every registered binding.
 	inline static void resetReleased()
 	{
-		for (auto inputStatus: s_InputStatuses)
+		for (auto& inputStatus : s_InputStatuses)
 		{
 			inputStatus.second->isJustReleased = false;
 		}
