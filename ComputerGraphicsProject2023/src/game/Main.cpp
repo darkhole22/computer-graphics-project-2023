@@ -24,31 +24,31 @@ public:
 
 	void setup() override
 	{
-		Input::setAction("MOVE_LEFT", InputAction{
-				.keyboardBindings = {
-						KeyboardBinding{{GLFW_KEY_A}},
-						KeyboardBinding{{GLFW_KEY_LEFT}}
-				},
-				.gamepadButtonBindings = {
-						GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_LEFT}}
-				},
-				.gamepadAxisBindings = {
-						GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}}
-				}
-		});
+		InputAction leftAction{};
+		leftAction.keyboardBindings = { 
+			KeyboardBinding{{GLFW_KEY_A}}, 
+			KeyboardBinding{{GLFW_KEY_LEFT}} 
+		};
+		leftAction.gamepadButtonBindings = { 
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_LEFT}}
+		};
+		leftAction.gamepadAxisBindings = { 
+			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}}
+		};
+		Input::setAction("MOVE_LEFT", leftAction);
 
-		Input::setAction("MOVE_RIGHT", InputAction{
-				.keyboardBindings = {
-						KeyboardBinding{{GLFW_KEY_D}},
-						KeyboardBinding{{GLFW_KEY_RIGHT}}
-				},
-				.gamepadButtonBindings = {
-						GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_RIGHT}}
-				},
-				.gamepadAxisBindings = {
-						GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}}
-				}
-		});
+		InputAction rightAction{};
+		rightAction.keyboardBindings = {
+			KeyboardBinding{{GLFW_KEY_D}},
+			KeyboardBinding{{GLFW_KEY_RIGHT}}
+		};
+		rightAction.gamepadButtonBindings = {
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_RIGHT}}
+		};
+		rightAction.gamepadAxisBindings = {
+			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}}
+		};
+		Input::setAction("MOVE_RIGHT", rightAction);
 
 		scene = Application::getScene();
 
