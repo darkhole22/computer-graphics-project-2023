@@ -39,7 +39,7 @@ private:
 	std::unordered_map<ObjectHandle, RenderableObject> m_Objects;
 };
 
-using PipileneHandle = int64_t;
+using PipelineHandle = int64_t;
 
 class Scene
 {
@@ -48,8 +48,8 @@ public:
 
 	void render(RenderTarget target);
 
-	PipileneHandle makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
-	ObjectHandle addObject(PipileneHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
+	PipelineHandle makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
+	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
 	~Scene() = default;
 private:
@@ -59,8 +59,8 @@ private:
 	Camera m_Camera;
 
 	std::vector<bool> m_FrameModified;
-	PipileneHandle m_NextPipelineHandle = 0;
-	std::unordered_map<PipileneHandle, SceneObjectList> m_ObjectLists;
+	PipelineHandle m_NextPipelineHandle = 0;
+	std::unordered_map<PipelineHandle, SceneObjectList> m_ObjectLists;
 
 	void recordCommandBuffer(RenderTarget& target);
 	void updateUniforms(RenderTarget& target);

@@ -56,9 +56,9 @@ void Scene::render(RenderTarget target)
 	updateUniforms(target);
 }
 
-PipileneHandle Scene::makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
+PipelineHandle Scene::makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
 {
-	PipileneHandle handle = m_NextPipelineHandle++; // Consider using a pseudo number generator
+	PipelineHandle handle = m_NextPipelineHandle++; // Consider using a pseudo number generator
 
 	std::vector<DescriptorSetLayout*> layouts{};
 	layouts.push_back(m_Camera.getDescriptorSetLayout());
@@ -69,7 +69,7 @@ PipileneHandle Scene::makePipeline(const std::string& vertexShader, const std::s
 	return handle;
 }
 
-ObjectHandle Scene::addObject(PipileneHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites)
+ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites)
 {
 	auto& p = m_ObjectLists.at(pipeline);
 

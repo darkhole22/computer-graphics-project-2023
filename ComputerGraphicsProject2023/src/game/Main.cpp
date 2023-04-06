@@ -16,7 +16,7 @@ class TestGame : public Game
 public:
 	Scene* scene = nullptr;
 	Ref<DescriptorSetLayout> descriptorSetLayout;
-	PipileneHandle pipeline = -1;
+	PipelineHandle pipeline = -1;
 	Ref<Model> model;
 	Uniform<ModelBufferObject> objUniform;
 	Ref<Texture> objTexture;
@@ -56,7 +56,7 @@ int main()
 {
 	try
 	{
-		Ref<Application> app; // The game must be destructed before the application
+		Ref<Application> app; // The game must be destroyed before the application
 		{
 			TestGame game;
 
