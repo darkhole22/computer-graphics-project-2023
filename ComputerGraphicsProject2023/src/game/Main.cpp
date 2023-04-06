@@ -66,33 +66,7 @@ public:
 
 	void update(float dt) override
 	{
-		glm::vec2 oldPos(position);
-
-		if (Input::isActionPressed("MOVE_UP"))
-		{
-			position.y -= SPEED * dt;
-		}
-
-		if (Input::isActionPressed("MOVE_DOWN"))
-		{
-			position.y += SPEED * dt;
-		}
-
-		if (Input::isActionPressed("MOVE_RIGHT"))
-		{
-			position.x += SPEED * dt;
-		}
-
-		if (Input::isActionPressed("MOVE_LEFT"))
-		{
-			position.x -= SPEED * dt;
-		}
-
-		if (oldPos != position)
-		{
-			std::printf("(%.2f, %.2f)\n", position.x, position.y);
-		}
-	}
+		std::cout << "Horiz: " << Input::getAxis("MOVE_LEFT", "MOVE_RIGHT") << std::endl;}
 private:
 	glm::vec2 position;
 	const float SPEED = 100.0f;

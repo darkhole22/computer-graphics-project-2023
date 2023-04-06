@@ -94,32 +94,7 @@ public:
 
 	static bool isActionPressed(const std::string& actionName)
 	{
-		auto it = s_Actions.find(actionName);
-		if(it == s_Actions.end()) return false;
-
-		auto action = it->second;
-
-		for (const auto& keyboardBinding : action.keyboardBindings)
-		{
-			if (detectActionPressed(keyboardBinding.keys, KEY_IDX(0))) return true;
-		}
-
-		for (const auto& mouseBinding : action.mouseBindings)
-		{
-			if (detectActionPressed(mouseBinding.buttons, MOUSE_BTN_IDX(0))) return true;
-		}
-
-		for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
-		{
-			if (detectActionPressed(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0))) return true;
-		}
-
-		for (const auto& gamepadAxisBinding: action.gamepadAxisBindings)
-		{
-			if (detectActionPressed(gamepadAxisBinding.axes, GAMEPAD_AXIS_IDX(0))) return true;
-		}
-
-		return false;
+		return getActionStrength(actionName) > 0.0f;
 	};
 
 	static bool isActionReleased(const std::string& actionName)
@@ -153,6 +128,42 @@ public:
 
 		return mayRelease;
 	};
+
+	static float getActionStrength(const std::string& actionName)
+	{
+		auto it = s_Actions.find(actionName);
+		if(it == s_Actions.end()) return false;
+
+		auto action = it->second;
+
+		for (const auto& keyboardBinding : action.keyboardBindings)
+		{
+			if (detectActionPressed(keyboardBinding.keys, KEY_IDX(0))) return 1.0f;
+		}
+
+		for (const auto& mouseBinding : action.mouseBindings)
+		{
+			if (detectActionPressed(mouseBinding.buttons, MOUSE_BTN_IDX(0))) return 1.0f;
+		}
+
+		for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
+		{
+			if (detectActionPressed(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0))) return 1.0f;
+		}
+
+		float maxStrength = 0.0f;
+		for (const auto& gamepadAxisBinding: action.gamepadAxisBindings)
+		{
+			float str = getActionAxisStrength(gamepadAxisBinding.axes);
+			if (str > maxStrength) maxStrength = str;
+		}
+
+		return maxStrength;
+	}
+
+	static float getAxis(const std::string& negativeAction, const std::string& positiveAction) {
+		return getActionStrength(positiveAction) - getActionStrength(negativeAction);
+	}
 
 	static bool isKeyPressed(int keyCode)
 	{
@@ -319,17 +330,21 @@ private:
 	}
 
 	// This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
-	static bool detectActionPressed(const std::vector<std::pair<int, bool>>& bindings, int baseIndex)
+	static float getActionAxisStrength(const std::vector<std::pair<int, bool>>& bindings)
 	{
+		float minStrength = 1.0f;
+
 		for (auto binding : bindings)
 		{
-			auto status = s_InputStatuses[baseIndex + binding.first];
+			auto status = s_InputStatuses[GAMEPAD_AXIS_IDX(binding.first)];
 			if (!status->isPressed ||
 				status->strength < 0 && binding.second ||
-				status->strength > 0 && !binding.second) return false;
+				status->strength > 0 && !binding.second) return 0.0f;
+
+			if (std::abs(status->strength) < minStrength) minStrength = std::abs(status->strength);
 		}
 
-		return true;
+		return minStrength;
 	}
 
 	// resetReleased resets the `isJustReleased` status of every registered binding.
