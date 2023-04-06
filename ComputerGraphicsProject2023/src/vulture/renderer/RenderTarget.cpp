@@ -30,6 +30,20 @@ void RenderTarget::bindPipeline(const Pipeline& pipeline)
 	m_CommandBuffer->bindPipeline(pipeline, *m_SwapChain);
 }
 
+void RenderTarget::bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet, uint32_t set)
+{
+	m_CommandBuffer->bindDescriptorSet(pipeline, descriptorSet.getHandle(m_ImageIndex), set);
+}
+
+void RenderTarget::drawModel(const Model& model)
+{
+	m_CommandBuffer->bindVertexBuffer(model.getVertexBuffer());
+
+	m_CommandBuffer->bindIndexBuffer(model.getIndexBuffer());
+
+	m_CommandBuffer->drawIndexed(model.getIndexCount());
+}
+
 RenderTarget::~RenderTarget()
 {
 	m_SwapChain->submit(m_CurrentFrame, m_ImageIndex);

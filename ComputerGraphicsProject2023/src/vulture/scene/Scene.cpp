@@ -4,14 +4,30 @@
 
 namespace vulture {
 
+RenderableObject::RenderableObject(Ref<Model> model, WRef<DescriptorSet> descriptorSet) :
+	m_Model(model), m_DescriptorSet(descriptorSet)
+{
+
+}
+
 SceneObjectList::SceneObjectList(const Renderer& renderer, const std::string& vertexShader, 
-	const std::string& fragmentShader, const DescriptorSetLayout& descriptorSetLayout) :
-	m_Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayout, Renderer::getVertexLayout())
+	const std::string& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
+	m_Pipeline(new Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
 {
 }
 
+ObjectHandle SceneObjectList::addObject(RenderableObject obj)
+{
+	ObjectHandle handle = m_NextObjectHandle++; // Replace with a pseudo random number generator
+
+	m_Objects.insert({ handle, obj });
+
+	return handle;
+}
+
 Scene::Scene(const Renderer& renderer) :
-	m_Renderer(&renderer), m_FrameModified()
+	m_Renderer(&renderer), m_DescriptorsPool(renderer.makeDescriptorPool()), 
+	m_Camera(renderer, m_DescriptorsPool)
 {
 	setModified();
 }
@@ -27,34 +43,70 @@ void Scene::render(RenderTarget target)
 	if (m_FrameModified.size() < count)
 	{
 		m_FrameModified.resize(count);
+		m_DescriptorsPool.setFrameCount(count);
 		setModified();
 	}
+
 	if (m_FrameModified[index])
 	{
 		recordCommandBuffer(target);
 		m_FrameModified[index] = false;
 	}
 
-	// updateUniformBuffer(target);
+	updateUniforms(target);
+}
+
+PipelineHandle Scene::makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
+{
+	PipelineHandle handle = m_NextPipelineHandle++; // Consider using a pseudo number generator
+
+	std::vector<DescriptorSetLayout*> layouts{};
+	layouts.push_back(m_Camera.getDescriptorSetLayout());
+	layouts.push_back(descriptorSetLayout.get());
+
+	m_ObjectLists.insert({ handle, SceneObjectList(*m_Renderer, vertexShader, fragmentShader, layouts) });
+
+	return handle;
+}
+
+ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites)
+{
+	auto& p = m_ObjectLists.at(pipeline);
+
+	auto handle = p.addObject(RenderableObject(model, m_DescriptorsPool.getDescriptorSet(*layout.get(), descriptorWrites)));
+
+	return handle;
 }
 
 void Scene::recordCommandBuffer(RenderTarget& target)
 {
 	target.beginCommandRecording();
 
-	for (auto& objectList : m_ObjectLists)
+	for (auto& [pipelineHandle, objectList] : m_ObjectLists)
 	{
-		target.bindPipeline(objectList.getPipeline());
+		auto& pipeline = objectList.getPipeline();
+		target.bindPipeline(pipeline);
+
+		target.bindDescriptorSet(pipeline, m_Camera.getDescriptorSet(), 0);
+
+		for (auto& [objectHandle, object] : objectList)
+		{
+			target.bindDescriptorSet(pipeline, object.getDescriptorSet(), 1);
+
+			target.drawModel(object.getModel());
+		}
 	}
 
-	// VkBuffer vertexBuffers[] = { m_VertexBuffer };
-	// VkDeviceSize offsets[] = { 0 };
-	// vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-	// vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-	// vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSets[currentFrame], 0, nullptr);
-	// vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(m_Indices.size()), 2, 0, 0, 0);
-
 	target.endCommandRecording();
+}
+
+void Scene::updateUniforms(RenderTarget& target)
+{
+	auto [index, count] = target.getFrameInfo();
+
+	m_Camera.update();
+
+	m_Camera.map(index);
 }
 
 void Scene::setModified()

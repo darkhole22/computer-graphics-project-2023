@@ -31,7 +31,7 @@ void Application::run()
 	float delta = 0;
 
 	const float WRITE_FPS_TIMEOUT = 0.5; // seconds
-	const float FPS_AVG_WEIGHT = 0.1; // 0 <= x <= 1
+	const float FPS_AVG_WEIGHT = 0.1f; // 0 <= x <= 1
 
 	setup();
 
@@ -46,7 +46,7 @@ void Application::run()
 		lastTime = time;
 
 		delta += deltaT;
-		fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0 / deltaT) * FPS_AVG_WEIGHT;
+		fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0f / deltaT) * FPS_AVG_WEIGHT;
 
         if (delta > WRITE_FPS_TIMEOUT)
 		{
@@ -58,6 +58,8 @@ void Application::run()
 
 		m_Scene.render(m_Renderer.getRenderTarget());
 	}
+
+	m_Renderer.waitIdle();
 }
 
 void Application::setup()
@@ -71,6 +73,9 @@ void Application::update(float delta)
     m_Game->update(delta);
 }
 
-Application::~Application() = default;
+Application::~Application()
+{
+	m_Renderer.waitIdle();
+}
 
 } // namespace vulture

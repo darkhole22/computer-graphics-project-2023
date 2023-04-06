@@ -41,7 +41,12 @@ project "ComputerGraphicsProject2023"
     {
         "%{prj.name}/src",
         "%{prj.name}/vendor/glm",
-        "%{prj.name}/vendor/stb"
+        "%{prj.name}/vendor/stb",
+        "%{prj.name}/vendor/tinyobj"
+    }
+    
+    postbuildcommands {
+        "{COPYDIR} %{prj.location}/res %{cfg.targetdir}/res"
     }
 
     filter "system:windows"
