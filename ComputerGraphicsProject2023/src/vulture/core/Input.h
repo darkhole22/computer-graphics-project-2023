@@ -55,7 +55,7 @@ struct InputAction
 class Input
 {
 public:
-	static void setAction(const std::string& actionName, InputAction action)
+	inline static void setAction(const std::string& actionName, InputAction action)
 	{
 		for (const auto& keyboardBinding: action.keyboardBindings)
 		{
@@ -92,12 +92,12 @@ public:
 		s_Actions[actionName] = std::move(action);
 	}
 
-	static bool isActionPressed(const std::string& actionName)
+	inline static bool isActionPressed(const std::string& actionName)
 	{
 		return getActionStrength(actionName) > 0.0f;
 	};
 
-	static bool isActionReleased(const std::string& actionName)
+	inline static bool isActionReleased(const std::string& actionName)
 	{
 		auto it = s_Actions.find(actionName);
 		if(it == s_Actions.end()) return false;
@@ -129,7 +129,7 @@ public:
 		return mayRelease;
 	};
 
-	static float getActionStrength(const std::string& actionName)
+	inline static float getActionStrength(const std::string& actionName)
 	{
 		auto it = s_Actions.find(actionName);
 		if(it == s_Actions.end()) return false;
@@ -161,11 +161,11 @@ public:
 		return maxStrength;
 	}
 
-	static float getAxis(const std::string& negativeAction, const std::string& positiveAction) {
+	inline static float getAxis(const std::string& negativeAction, const std::string& positiveAction) {
 		return getActionStrength(positiveAction) - getActionStrength(negativeAction);
 	}
 
-	static bool isKeyPressed(int keyCode)
+	inline static bool isKeyPressed(int keyCode)
 	{
 		auto it = s_InputStatuses.find(KEY_IDX(keyCode));
 		if (it == s_InputStatuses.end())
@@ -176,7 +176,7 @@ public:
 		return it->second->isPressed;
 	}
 
-	static bool isMouseButtonPressed(int buttonCode)
+	inline static bool isMouseButtonPressed(int buttonCode)
 	{
 		auto it = s_InputStatuses.find(MOUSE_BTN_IDX(buttonCode));
 		if (it == s_InputStatuses.end())
@@ -187,7 +187,7 @@ public:
 		return it->second->isPressed;
 	}
 
-	static bool isGamepadButtonPressed(int buttonCode)
+	inline static bool isGamepadButtonPressed(int buttonCode)
 	{
 		auto it = s_InputStatuses.find(GAMEPAD_BTN_IDX(buttonCode));
 
@@ -205,7 +205,7 @@ public:
 		return it->second->isPressed;
 	}
 
-	static float getGamepadAxis(int axis)
+	inline static float getGamepadAxis(int axis)
 	{
 		auto it = s_InputStatuses.find(GAMEPAD_AXIS_IDX(axis));
 		if (it == s_InputStatuses.end())
@@ -232,7 +232,7 @@ private:
 
 	inline static const float GAMEPAD_AXIS_DEADZONE = 0.25f;
 
-	static void initialize(const Window& window)
+	inline static void initialize(const Window& window)
 	{
 		s_Window = &window;
 
@@ -242,13 +242,13 @@ private:
 
 	// This should be called once per frame, before polling
 	// events from the window.
-	static void cleanup()
+	inline static void cleanup()
 	{
 		resetReleased();
 		getGamepadInputStatus();
 	}
 
-	static void onGlfwKey(GLFWwindow* window, int key, int scancode, int action, int mods)
+	inline static void onGlfwKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		auto it = s_InputStatuses.find(KEY_IDX(key));
 		if (it == s_InputStatuses.end()) return;
@@ -257,7 +257,7 @@ private:
 		it->second->isJustReleased = action == GLFW_RELEASE;
 	}
 
-	static void onGlfwMouseButton(GLFWwindow* window, int button, int action, int mods)
+	inline static void onGlfwMouseButton(GLFWwindow* window, int button, int action, int mods)
 	{
 		auto it = s_InputStatuses.find(MOUSE_BTN_IDX(button));
 		if (it == s_InputStatuses.end()) return;
@@ -269,7 +269,7 @@ private:
 	// getGamepadInputStatus collect the current status of all registered gamepad buttons bindings.
 	// This is necessary since GLFW does not provide any callback-based access to Gamepad events, so
 	// we need to manually collect it each frame.
-	static void getGamepadInputStatus() {
+	inline static void getGamepadInputStatus() {
 		GLFWgamepadstate state;
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
 		{
@@ -301,7 +301,7 @@ private:
 	// It returns 1 if, according to the given bindings, it is released.
 	// It returns 0 if, according to the given bindings, they're not active, but they weren't released this frame.
 	// It returns -1 if, according to the given bindings, the action is active.
-	static int detectActionReleased(const std::vector<int>& bindings, int baseIndex)
+	inline static int detectActionReleased(const std::vector<int>& bindings, int baseIndex)
 	{
 		bool oneRelease = false, allPressed = true, noDead = true;
 
@@ -319,7 +319,7 @@ private:
 	}
 
 	// detectActionPressed checks if all the given bindings are pressed at the same time.
-	static bool detectActionPressed(const std::vector<int>& bindings, int baseIndex)
+	inline static bool detectActionPressed(const std::vector<int>& bindings, int baseIndex)
 	{
 		for (auto binding : bindings)
 		{
@@ -330,7 +330,7 @@ private:
 	}
 
 	// This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
-	static float getActionAxisStrength(const std::vector<std::pair<int, bool>>& bindings)
+	inline static float getActionAxisStrength(const std::vector<std::pair<int, bool>>& bindings)
 	{
 		float minStrength = 1.0f;
 
@@ -348,7 +348,7 @@ private:
 	}
 
 	// resetReleased resets the `isJustReleased` status of every registered binding.
-	static void resetReleased()
+	inline static void resetReleased()
 	{
 		for (auto inputStatus: s_InputStatuses)
 		{
