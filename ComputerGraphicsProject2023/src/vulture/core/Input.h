@@ -13,11 +13,15 @@ namespace vulture {
 #define KEY_IDX(K) K
 #define MOUSE_BTN_IDX(BTN) (BTN + GLFW_KEY_LAST + 1)
 #define GAMEPAD_BTN_IDX(BTN) (BTN + MOUSE_BTN_IDX(GLFW_MOUSE_BUTTON_LAST) + 1)
+#define GAMEPAD_AXIS_IDX(AXIS) (AXIS + GAMEPAD_BTN_IDX(GLFW_GAMEPAD_BUTTON_LAST) + 1)
+#define GAMEPAD_AXIS_POS true
+#define GAMEPAD_AXIS_NEG false
 
 struct InputStatus
 {
 	bool isPressed;
 	bool isJustReleased;
+	float strength;
 };
 
 struct KeyboardBinding
@@ -35,11 +39,17 @@ struct GamepadButtonBinding
 	std::vector<int> buttons;
 };
 
+struct GamepadAxisBinding
+{
+	std::vector<std::pair<int, bool>> axes;
+};
+
 struct InputAction
 {
 	std::vector<KeyboardBinding> keyboardBindings;
 	std::vector<MouseBinding> mouseBindings;
 	std::vector<GamepadButtonBinding> gamepadButtonBindings;
+	std::vector<GamepadAxisBinding> gamepadAxisBindings;
 };
 
 class Input
@@ -71,6 +81,14 @@ public:
 			}
 		}
 
+		for (const auto& gamepadAxisBinding: action.gamepadAxisBindings)
+		{
+			for (auto axis: gamepadAxisBinding.axes)
+			{
+				s_InputStatuses.try_emplace(GAMEPAD_AXIS_IDX(axis.first), new InputStatus{});
+			}
+		}
+
 		s_Actions[actionName] = std::move(action);
 	}
 
@@ -94,6 +112,11 @@ public:
 		for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
 		{
 			if (detectActionPressed(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0))) return true;
+		}
+
+		for (const auto& gamepadAxisBinding: action.gamepadAxisBindings)
+		{
+			if (detectActionPressed(gamepadAxisBinding.axes, GAMEPAD_AXIS_IDX(0))) return true;
 		}
 
 		return false;
@@ -173,13 +196,19 @@ public:
 
 	static float getGamepadAxis(int axis)
 	{
-		GLFWgamepadstate state;
-		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+		auto it = s_InputStatuses.find(GAMEPAD_AXIS_IDX(axis));
+		if (it == s_InputStatuses.end())
 		{
-			if(std::abs(state.axes[axis]) >= GAMEPAD_AXIS_DEADZONE) return state.axes[axis];
+			GLFWgamepadstate state;
+			if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+			{
+				if (std::abs(state.axes[axis]) >= GAMEPAD_AXIS_DEADZONE) return state.axes[axis];
+			}
+
+			return 0.0f;
 		}
 
-		return 0.0f;
+		return it->second->strength;
 	}
 
 private:
@@ -240,6 +269,19 @@ private:
 
 				it->second->isJustReleased = (it->second->isPressed && state.buttons[btn] == GLFW_RELEASE);
 				it->second->isPressed = (state.buttons[btn] == GLFW_PRESS);
+				it->second->strength = it->second->isPressed ? 1.0f : 0.0f;
+			}
+
+			for (int axis = 0; axis <= GLFW_GAMEPAD_AXIS_LAST; axis++)
+			{
+				auto it = s_InputStatuses.find(GAMEPAD_AXIS_IDX(axis));
+				if (it == s_InputStatuses.end()) continue;
+
+				float raw_str = state.axes[axis];
+
+				it->second->isJustReleased = std::abs(raw_str) < GAMEPAD_AXIS_DEADZONE && it->second->isPressed;
+				it->second->isPressed = std::abs(raw_str) >= GAMEPAD_AXIS_DEADZONE;
+				it->second->strength = it->second->isPressed ? raw_str : 0.0f;
 			}
 		}
 	}
@@ -268,13 +310,26 @@ private:
 	// detectActionPressed checks if all the given bindings are pressed at the same time.
 	static bool detectActionPressed(const std::vector<int>& bindings, int baseIndex)
 	{
-		bool actionPressed = true;
 		for (auto binding : bindings)
 		{
-			if (!s_InputStatuses[baseIndex + binding]->isPressed) actionPressed = false;
+			if (!s_InputStatuses[baseIndex + binding]->isPressed) return false;
 		}
 
-		return actionPressed;
+		return true;
+	}
+
+	// This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
+	static bool detectActionPressed(const std::vector<std::pair<int, bool>>& bindings, int baseIndex)
+	{
+		for (auto binding : bindings)
+		{
+			auto status = s_InputStatuses[baseIndex + binding.first];
+			if (!status->isPressed ||
+				status->strength < 0 && binding.second ||
+				status->strength > 0 && !binding.second) return false;
+		}
+
+		return true;
 	}
 
 	// resetReleased resets the `isJustReleased` status of every registered binding.

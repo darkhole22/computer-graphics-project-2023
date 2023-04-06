@@ -41,6 +41,9 @@ public:
 				},
 				.gamepadButtonBindings = {
 						GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_LEFT}}
+				},
+				.gamepadAxisBindings = {
+						GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}}
 				}
 		});
 
@@ -51,6 +54,9 @@ public:
 				},
 				.gamepadButtonBindings = {
 						GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_RIGHT}}
+				},
+				.gamepadAxisBindings = {
+						GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}}
 				}
 		});
 
@@ -86,9 +92,6 @@ public:
 		{
 			std::printf("(%.2f, %.2f)\n", position.x, position.y);
 		}
-
-		float axisValue = Input::getGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X);
-		if (axisValue != 0) std::cout << axisValue << std::endl;
 	}
 private:
 	glm::vec2 position;
