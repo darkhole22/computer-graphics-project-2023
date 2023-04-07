@@ -15,8 +15,9 @@ namespace vulture {
 #define MOUSE_BTN_IDX(BTN) (BTN + GLFW_KEY_LAST + 1)
 #define GAMEPAD_BTN_IDX(BTN) (BTN + MOUSE_BTN_IDX(GLFW_MOUSE_BUTTON_LAST) + 1)
 #define GAMEPAD_AXIS_IDX(AXIS) (AXIS + GAMEPAD_BTN_IDX(GLFW_GAMEPAD_BUTTON_LAST) + 1)
-#define GAMEPAD_AXIS_POS 1
-#define GAMEPAD_AXIS_NEG -1
+
+constexpr int GAMEPAD_AXIS_POS = 1;
+constexpr int GAMEPAD_AXIS_NEG = -1;
 
 struct InputStatus
 {
@@ -98,7 +99,7 @@ public:
 	inline static bool isActionPressed(const std::string& actionName)
 	{
 		return getActionStrength(actionName) > 0.0f;
-	};
+	}
 
 	inline static bool isActionReleased(const std::string& actionName)
 	{
@@ -135,7 +136,7 @@ public:
 		}
 
 		return mayRelease;
-	};
+	}
 
 	inline static float getActionStrength(const std::string& actionName)
 	{
@@ -380,6 +381,18 @@ private:
 		{
 			inputStatus.second->isJustReleased = false;
 		}
+	}
+
+	inline static void cleanup()
+	{
+		s_Actions.clear();
+
+		for (auto& status : s_InputStatuses)
+		{
+			free(status.second);
+		}
+
+		s_InputStatuses.clear();
 	}
 
 	friend class Application;

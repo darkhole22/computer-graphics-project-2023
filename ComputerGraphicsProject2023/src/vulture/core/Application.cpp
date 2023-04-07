@@ -75,6 +75,7 @@ void Application::update(float delta)
 
 Application::~Application()
 {
+	Input::cleanup();
 	m_Renderer.waitIdle();
 }
 
