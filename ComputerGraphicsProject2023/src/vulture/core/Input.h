@@ -1,10 +1,7 @@
 #pragma once
 
-#include <utility>
-
 #include <GLFW/glfw3.h>
 #include <unordered_map>
-#include <iostream>
 
 #include "vulture/renderer/Window.h"
 #include "vulture/core/Core.h"
