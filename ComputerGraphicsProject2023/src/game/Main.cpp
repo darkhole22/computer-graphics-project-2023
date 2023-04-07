@@ -3,6 +3,7 @@
 
 #include "vulture/core/Game.h"
 #include "vulture/core/Application.h"
+#include "vulture/core/Input.h"
 
 using namespace vulture;
 
@@ -23,6 +24,32 @@ public:
 
 	void setup() override
 	{
+		InputAction leftAction{};
+		leftAction.keyboardBindings = { 
+			KeyboardBinding{{GLFW_KEY_A}}, 
+			KeyboardBinding{{GLFW_KEY_LEFT}} 
+		};
+		leftAction.gamepadButtonBindings = { 
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_LEFT}}
+		};
+		leftAction.gamepadAxisBindings = { 
+			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}}
+		};
+		Input::setAction("MOVE_LEFT", leftAction);
+
+		InputAction rightAction{};
+		rightAction.keyboardBindings = {
+			KeyboardBinding{{GLFW_KEY_D}},
+			KeyboardBinding{{GLFW_KEY_RIGHT}}
+		};
+		rightAction.gamepadButtonBindings = {
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_RIGHT}}
+		};
+		rightAction.gamepadAxisBindings = {
+			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}}
+		};
+		Input::setAction("MOVE_RIGHT", rightAction);
+
 		scene = Application::getScene();
 
 		descriptorSetLayout = Application::makeDescriptorSetLayout();
@@ -48,8 +75,15 @@ public:
 		time += dt;
 		// objUniform->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 		// objUniform->model = {abs(cos(time * 0.5)), 0, 0, 1};
+
+		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
+
+		objUniform->model = glm::translate(objUniform->model, glm::vec3(x * SPEED * dt, 0.0f, 0.0f));
+
 		objUniform.map();
 	}
+private:
+	const float SPEED = 100;
 };
 
 int main()

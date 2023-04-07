@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "Input.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -35,6 +36,7 @@ void Application::run()
 	setup();
 
 	while (!m_Window.shouldClose()) {
+		Input::reset();
 		m_Window.pollEvents();
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -62,6 +64,7 @@ void Application::run()
 
 void Application::setup()
 {
+	Input::initialize(m_Window);
     m_Game->setup();
 }
 
@@ -72,6 +75,7 @@ void Application::update(float delta)
 
 Application::~Application()
 {
+	Input::cleanup();
 	m_Renderer.waitIdle();
 }
 
