@@ -75,8 +75,15 @@ public:
 		time += dt;
 		// objUniform->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 		// objUniform->model = {abs(cos(time * 0.5)), 0, 0, 1};
+
+		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
+
+		objUniform->model = glm::translate(objUniform->model, glm::vec3(x * SPEED * dt, 0.0f, 0.0f));
+
 		objUniform.map();
 	}
+private:
+	const float SPEED = 100;
 };
 
 int main()
