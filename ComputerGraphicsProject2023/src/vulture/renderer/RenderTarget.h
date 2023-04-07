@@ -18,7 +18,8 @@ public:
 
 	inline FrameInfo getFrameInfo() const { return {m_ImageIndex, m_ImageCount}; }
 
-	inline bool updated() const { return m_SwapChainRecreated; };
+	inline bool updated() const { return m_SwapChainRecreated; }
+	inline const VkExtent2D& getExtent() const { return m_SwapChain->getExtent(); }
 	
 	void beginCommandRecording();
 	void endCommandRecording();

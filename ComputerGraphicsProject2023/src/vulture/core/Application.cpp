@@ -14,11 +14,11 @@ namespace vulture {
 std::weak_ptr<Application> Application::s_Instance = std::weak_ptr<Application>();
 
 Application::Application(Game& game, AppConfig config) :
-    c_Name(config.name),
-    m_Window(config.name, config.width, config.height),
-    m_Renderer(m_Window),
-    m_Scene(m_Renderer),
-    m_Game(&game)
+	c_Name(config.name),
+	m_Window(config.name, config.width, config.height),
+	m_Renderer(m_Window),
+	m_Scene(m_Renderer),
+	m_Game(&game)
 {
 }
 
@@ -48,7 +48,7 @@ void Application::run()
 		delta += deltaT;
 		fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0f / deltaT) * FPS_AVG_WEIGHT;
 
-        if (delta > WRITE_FPS_TIMEOUT)
+		if (delta > WRITE_FPS_TIMEOUT)
 		{
 			std::cout << '\r' << "[FPS]: " << fps << "      " << std::flush;
 			delta -= 1.0f;
@@ -56,7 +56,7 @@ void Application::run()
 
 		update(deltaT);
 
-		m_Scene.render(m_Renderer.getRenderTarget());
+		m_Scene.render(m_Renderer.getRenderTarget(), deltaT);
 	}
 
 	m_Renderer.waitIdle();
@@ -65,12 +65,12 @@ void Application::run()
 void Application::setup()
 {
 	Input::initialize(m_Window);
-    m_Game->setup();
+	m_Game->setup();
 }
 
 void Application::update(float delta)
 {
-    m_Game->update(delta);
+	m_Game->update(delta);
 }
 
 Application::~Application()

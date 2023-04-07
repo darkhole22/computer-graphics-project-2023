@@ -46,10 +46,12 @@ class Scene
 public:
 	explicit Scene(const Renderer& renderer);
 
-	void render(RenderTarget target);
+	void render(RenderTarget target, float dt);
 
 	PipelineHandle makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
 	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
+
+	Camera* getCamera() { return &m_Camera; }
 
 	~Scene() = default;
 private:

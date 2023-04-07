@@ -16,6 +16,7 @@ class TestGame : public Game
 {
 public:
 	Scene* scene = nullptr;
+	Camera* camera;
 	Ref<DescriptorSetLayout> descriptorSetLayout;
 	PipelineHandle pipeline = -1;
 	Ref<Model> model;
@@ -50,7 +51,34 @@ public:
 		};
 		Input::setAction("MOVE_RIGHT", rightAction);
 
+		InputAction upAction{};
+		upAction.keyboardBindings = {
+			KeyboardBinding{{GLFW_KEY_W}},
+			KeyboardBinding{{GLFW_KEY_UP}}
+		};
+		upAction.gamepadButtonBindings = {
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_UP}}
+		};
+		upAction.gamepadAxisBindings = {
+			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_NEG}}}
+		};
+		Input::setAction("MOVE_UP", upAction);
+
+		InputAction downAction{};
+		downAction.keyboardBindings = {
+			KeyboardBinding{{GLFW_KEY_S}},
+			KeyboardBinding{{GLFW_KEY_DOWN}}
+		};
+		downAction.gamepadButtonBindings = {
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_DOWN}}
+		};
+		downAction.gamepadAxisBindings = {
+			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_POS}}}
+		};
+		Input::setAction("MOVE_DOWN", downAction);
+
 		scene = Application::getScene();
+		camera = scene->getCamera();
 
 		descriptorSetLayout = Application::makeDescriptorSetLayout();
 		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
@@ -64,9 +92,8 @@ public:
 		objTexture = Application::makeTexture("res/textures/vulture.png");
 
 		scene->addObject(pipeline, model, descriptorSetLayout, { objUniform , *objTexture });
-		// scene->addObject(pipeline, model, descriptorSetLayout, { objUniform });
 
-		// objUniform->model = glm::mat4(1.0f) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		camera->position = glm::vec3(10, 5, 10);
 	}
 
 	void update(float dt) override
@@ -77,13 +104,21 @@ public:
 		// objUniform->model = {abs(cos(time * 0.5)), 0, 0, 1};
 
 		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
+		float y = Input::getAxis("MOVE_DOWN", "MOVE_UP");
 
-		objUniform->model = glm::translate(objUniform->model, glm::vec3(x * SPEED * dt, 0.0f, 0.0f));
+
+		static glm::vec3 objPos{};
+
+		objPos += glm::vec3(x * SPEED * dt, y * SPEED * dt, 0.0f);
+		
+		objUniform->model = glm::translate(glm::mat4(1), objPos);
+		
+		camera->lookAt(objPos);
 
 		objUniform.map();
 	}
 private:
-	const float SPEED = 100;
+	const float SPEED = 10;
 };
 
 int main()

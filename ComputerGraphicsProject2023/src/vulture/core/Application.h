@@ -4,9 +4,6 @@
 #include <string>
 #include <memory>
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
 #include "vulture/core/Game.h"
 #include "vulture/core/Core.h"
 
