@@ -1,11 +1,11 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform CameraBufferObject {
+layout(set = 1, binding = 0) uniform CameraBufferObject {
     mat4 view;
     mat4 proj;
 } cbo;
 
-layout(set = 1, binding = 0) uniform ModelBufferObject {
+layout(set = 0, binding = 0) uniform ModelBufferObject {
     mat4 model;
 } mbo;
 

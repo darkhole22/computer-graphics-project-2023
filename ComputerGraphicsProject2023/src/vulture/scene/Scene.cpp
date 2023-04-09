@@ -65,8 +65,8 @@ PipelineHandle Scene::makePipeline(const std::string& vertexShader, const std::s
 	PipelineHandle handle = m_NextPipelineHandle++; // Consider using a pseudo number generator
 
 	std::vector<DescriptorSetLayout*> layouts{};
-	layouts.push_back(m_Camera.getDescriptorSetLayout());
 	layouts.push_back(descriptorSetLayout.get());
+	layouts.push_back(m_Camera.getDescriptorSetLayout());
 
 	m_ObjectLists.insert({ handle, SceneObjectList(*m_Renderer, vertexShader, fragmentShader, layouts) });
 
@@ -91,11 +91,11 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 		auto& pipeline = objectList.getPipeline();
 		target.bindPipeline(pipeline);
 
-		target.bindDescriptorSet(pipeline, m_Camera.getDescriptorSet(), 0);
+		target.bindDescriptorSet(pipeline, m_Camera.getDescriptorSet(), 1);
 
 		for (auto& [objectHandle, object] : objectList)
 		{
-			target.bindDescriptorSet(pipeline, object.getDescriptorSet(), 1);
+			target.bindDescriptorSet(pipeline, object.getDescriptorSet(), 0);
 
 			target.drawModel(object.getModel());
 		}
@@ -109,6 +109,14 @@ void Scene::updateUniforms(RenderTarget& target)
 	auto [index, count] = target.getFrameInfo();
 
 	m_Camera.map(index);
+
+	for (auto& [pipelineHandle, objectList] : m_ObjectLists)
+	{
+		for (auto& [objectHandle, object] : objectList)
+		{
+			object.getDescriptorSet().map(index);
+		}
+	}
 }
 
 void Scene::setModified()

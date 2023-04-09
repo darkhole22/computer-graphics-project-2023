@@ -16,7 +16,7 @@ class TestGame : public Game
 {
 public:
 	Scene* scene = nullptr;
-	Camera* camera;
+	Camera* camera = nullptr;
 	Ref<DescriptorSetLayout> descriptorSetLayout;
 	PipelineHandle pipeline = -1;
 	Ref<Model> model;
@@ -114,8 +114,6 @@ public:
 		objUniform->model = glm::translate(glm::mat4(1), objPos);
 		
 		camera->lookAt(objPos);
-
-		objUniform.map();
 	}
 private:
 	const float SPEED = 10;
