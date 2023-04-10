@@ -30,7 +30,7 @@ UIHandler::UIHandler(const Renderer& renderer, DescriptorPool& descriptorsPool) 
 			{VK_FORMAT_R32G32_SFLOAT , offsetof(UIVertex, textureCoordinate)} }),
 		pipelineConfig));
 
-	m_FontAtlas = renderer.makeTexture("res/textures/FiraCode.png");
+	m_Font = Font::getDefault(renderer);
 
 	makeText("Test");
 }
@@ -39,7 +39,7 @@ Ref<UIText> UIHandler::makeText(std::string text, glm::vec2 positon, float scale
 {
 	UITextHandle handle = m_NextTextHandle++;
 	auto uiText = Ref<UIText>(new UIText(handle, *m_Renderer, *m_DescriptorPool,
-		m_TextDSLayout, m_FontAtlas));
+		m_TextDSLayout, *m_Font));
 	m_Texts.insert({ handle, uiText });
 	return uiText;
 }
@@ -79,6 +79,49 @@ void UIHandler::update(float dt)
 
 
 
+}
+
+UIText::UIText(UITextHandle handle, const Renderer& renderer, 
+	DescriptorPool& descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout, 
+	const Font& font) :
+	m_Hndle(handle)
+{
+	const Device& device = renderer.getDevice();
+
+	m_Uniform = renderer.makeUniform<TextBufferObject>();
+
+	m_DescriptorSet = descriptorPool.getDescriptorSet(*descriptorSetLayout,
+		{ font.getTexture(), m_Uniform });
+
+	std::vector<UIVertex> vertices{};
+	std::vector<uint32_t> indecies{};
+
+	vertices.push_back({ { 0, 0 }, { 0, 0 } });
+	vertices.push_back({ { 1, 0 }, { 1, 0 } });
+	vertices.push_back({ { 0, 1 }, { 0, 1 } });
+	vertices.push_back({ { 1, 1 }, { 1, 1 } });
+
+	indecies.push_back(0);
+	indecies.push_back(2);
+	indecies.push_back(1);
+
+	indecies.push_back(1);
+	indecies.push_back(2);
+	indecies.push_back(3);
+
+	VkDeviceSize vertexBufferSize = sizeof(UIVertex) * vertices.size();
+	Buffer vertexStagingBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	vertexStagingBuffer.map(vertices.data());
+	m_VertexBuffer = Buffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	vertexStagingBuffer.copyToBuffer(vertexBufferSize, m_VertexBuffer);
+
+	VkDeviceSize indexBufferSize = sizeof(uint32_t) * indecies.size();
+	Buffer indexStagingBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	indexStagingBuffer.map(indecies.data());
+	m_IndexBuffer = Buffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	indexStagingBuffer.copyToBuffer(indexBufferSize, m_IndexBuffer);
+
+	m_IndexCount = static_cast<uint32_t>(indecies.size());
 }
 
 } // namespace vulture

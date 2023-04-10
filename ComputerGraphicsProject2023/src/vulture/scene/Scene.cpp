@@ -58,8 +58,8 @@ void Scene::render(RenderTarget target, float dt)
 	m_Camera.m_AspectRatio = aspectRatio;
 	m_Camera.update(dt);
 
-	m_UIHandler.m_ScreenUniform->width = width;
-	m_UIHandler.m_ScreenUniform->height = height;
+	m_UIHandler.m_ScreenUniform->width = static_cast<float>(width);
+	m_UIHandler.m_ScreenUniform->height = static_cast<float>(height);
 	m_UIHandler.update(dt);
 
 	updateUniforms(target);

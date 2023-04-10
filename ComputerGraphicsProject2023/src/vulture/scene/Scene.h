@@ -5,7 +5,7 @@
 
 #include "vulture/renderer/RenderTarget.h"
 #include "vulture/scene/Camera.h"
-#include "vulture/scene/UIHandler.h"
+#include "vulture/scene/ui/UIHandler.h"
 
 namespace vulture {
 
