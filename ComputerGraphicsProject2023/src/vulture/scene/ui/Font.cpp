@@ -14,7 +14,7 @@ bool parseCommonLine(std::stringstream& stream, int32_t* lineHeight, uint32_t* w
 bool parseCharLine(std::stringstream& stream, Font::CharacterMapping* c);
 bool parseKerningLine(std::stringstream& stream, Font::Kerning* k);
 
-#define KERNING_MAP_KEY(k) (static_cast<uint64_t>(k.first) << 32 | static_cast<uint64_t>(k.second))
+#define KERNING_MAP_KEY(v1, v2) (static_cast<uint64_t>(v1) << 32 | static_cast<uint64_t>(v2))
 
 WRef<Font> Font::s_DefaultFont{};
 
@@ -29,6 +29,54 @@ Font::Font(const Renderer& renderer, const std::string& name)
 	{
 		std::cerr << "Unable to load [" << fontPath << "]" << std::endl;
 	}
+
+	auto& space = getCharacterMapping(' ');
+	if (space.codepoint == ' ')
+	{
+		m_TabXAdvance = static_cast<float>(space.xAdvance * 4);
+	}
+	else
+	{
+		CharacterMapping c;
+		c.codepoint = ' ';
+		c.x = 0;
+		c.y = 0;
+		c.width = 0;
+		c.height = 0;
+		c.xOffset = 0;
+		c.yOffset = 0;
+		c.xAdvance = m_CharacterSize;
+		m_CharacterSet.insert({ c.codepoint , c });
+		m_TabXAdvance = static_cast<float>(m_CharacterSize * 4);
+	}
+	auto& tab = getCharacterMapping('\t');
+	if (tab.codepoint == '\t')
+	{
+		m_TabXAdvance = tab.xAdvance;
+	}
+}
+
+const Font::CharacterMapping& Font::getCharacterMapping(int32_t code) const
+{
+	auto& it = m_CharacterSet.find(code);
+
+	if (it != m_CharacterSet.end())
+	{
+		return it->second;
+	}
+
+	it = m_CharacterSet.find(-1);
+	return it->second;
+}
+
+const Font::Kerning* Font::getKerning(int32_t code1, int32_t code2) const
+{
+	auto& it = m_KerningSet.find(KERNING_MAP_KEY(code1, code2));
+	if (it != m_KerningSet.end())
+	{
+		return &it->second;
+	}
+	return nullptr;
 }
 
 bool Font::loadFnt(const std::string& path)
@@ -36,6 +84,10 @@ bool Font::loadFnt(const std::string& path)
 	std::ifstream file(path);
 
 	if (!file.is_open()) return false;
+
+	CharacterMapping c{};
+	c.codepoint = -1;
+	m_CharacterSet.insert({ c.codepoint, c });
 
 	std::string lineToken;
 	for (std::string line; getline(file, line); )
@@ -49,15 +101,18 @@ bool Font::loadFnt(const std::string& path)
 			Kerning k;
 			if (parseKerningLine(lineStream, &k))
 			{
-				m_KerningSet.insert({ KERNING_MAP_KEY(k) , k });
+				m_KerningSet.insert({ KERNING_MAP_KEY(k.first, k.second) , k });
 			} // TODO else Log
 		}
 		else if (lineToken == "char")
 		{
-			CharacterMapping c;
 			if (parseCharLine(lineStream, &c))
 			{
 				m_CharacterSet.insert({ c.codepoint, c });
+				if (c.codepoint == '?')
+				{
+					m_CharacterSet.insert_or_assign(-1, c);
+				}
 			} // TODO else Log
 		}
 		else if (lineToken == "info") 

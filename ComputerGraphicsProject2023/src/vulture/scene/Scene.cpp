@@ -30,6 +30,13 @@ Scene::Scene(const Renderer& renderer) :
 	m_Camera(renderer, m_DescriptorsPool), m_UIHandler(renderer, m_DescriptorsPool)
 {
 	setModified();
+
+	m_UIHandler.addCallback([this](const UIModified& event) {
+		setModified();
+		std::cout << "Text recreated" << std::endl;
+	});
+
+	m_UIHandler.makeText("Test Vulkan\n\tTab\nNo Tab!");
 }
 
 void Scene::render(RenderTarget target, float dt)

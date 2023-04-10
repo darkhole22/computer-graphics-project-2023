@@ -41,6 +41,14 @@ public:
 
 	inline const Texture& getTexture() const { return *m_Texture; }
 
+	const CharacterMapping& getCharacterMapping(int32_t code) const;
+	const Kerning* getKerning(int32_t code1, int32_t code2) const;
+	inline float getCharacterSize() const { return static_cast<float>(m_CharacterSize); }
+	inline int32_t getLineHeight() const { return m_LineHeight; }
+	inline uint32_t getAtlasWidth() const { return m_TextureWidth; }
+	inline uint32_t getAtlasHeight() const { return m_TextureHeight; }
+	inline float getTabXAdvance() const { return m_TabXAdvance; }
+
 	friend class UIHandler;
 private:
 	static WRef<Font> s_DefaultFont;

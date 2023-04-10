@@ -14,8 +14,8 @@ struct UIVertex
 
 struct TextBufferObject
 {
-	glm::vec2 position = { 50 , 50 };
-	float scale = 100.0f;
+	glm::vec2 position = { 0 , 0 };
+	float scale = 1.0f;
 };
 
 using UITextHandle = int64_t;
@@ -28,11 +28,16 @@ class UIText
 
 public:
 	UIText(UITextHandle handle, const Renderer& renderer, DescriptorPool& descriptorPool,
-		Ref<DescriptorSetLayout> descriptorSetLayout, const Font& font);
+		Ref<DescriptorSetLayout> descriptorSetLayout, const Font& font, 
+		const std::string text, glm::vec2 position, float scale);
 
 	friend class UIHandler;
 private:
 	const UITextHandle m_Hndle;
+	Device const* m_Device;
+	Font const* m_Font;
+
+	std::string m_Text;
 
 	Buffer m_VertexBuffer;
 	Buffer m_IndexBuffer;
@@ -42,6 +47,8 @@ private:
 
 	WRef<DescriptorSet> m_DescriptorSet;
 	inline const DescriptorSet& getDescriptorSet() const { return *m_DescriptorSet.lock(); }
+
+	void recreate();
 };
 
 struct ScreenBufferObject
@@ -57,7 +64,7 @@ class UIHandler
 	EVENT(UIModified)
 
 public:
-	Ref<UIText> makeText(std::string text, glm::vec2 position = {0.5, 0.5}, float scale = 1.0f);
+	Ref<UIText> makeText(std::string text, glm::vec2 position = {20, 0.5}, float scale = 22.0f);
 
 	friend class Scene;
 private:
