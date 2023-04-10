@@ -402,6 +402,7 @@ public:
 	inline const std::vector<Buffer>* getBuffers() const { return &m_Buffers; }
 
 	inline _Type* operator->() noexcept { return m_LocalData; }
+	inline const _Type* operator->() const noexcept { return m_LocalData; }
 
 	Uniform& operator=(const Uniform& other) = delete;
 	Uniform& operator=(Uniform&& other) noexcept {

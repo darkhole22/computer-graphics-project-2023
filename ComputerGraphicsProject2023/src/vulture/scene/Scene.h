@@ -53,6 +53,7 @@ public:
 	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
 	Camera* getCamera() { return &m_Camera; }
+	UIHandler* getUIHandle() { return &m_UIHandler; }
 
 	~Scene() = default;
 private:

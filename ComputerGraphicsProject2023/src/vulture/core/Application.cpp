@@ -27,12 +27,6 @@ void Application::run()
 	auto startTime = std::chrono::high_resolution_clock::now();
 	float lastTime = 0.0f;
 
-	float fps = 60.0f;
-	float delta = 0;
-
-	const float WRITE_FPS_TIMEOUT = 0.5; // seconds
-	const float FPS_AVG_WEIGHT = 0.1f; // 0 <= x <= 1
-
 	setup();
 
 	while (!m_Window.shouldClose()) {
@@ -44,15 +38,6 @@ void Application::run()
 			(currentTime - startTime).count();
 		float deltaT = time - lastTime;
 		lastTime = time;
-
-		delta += deltaT;
-		fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0f / deltaT) * FPS_AVG_WEIGHT;
-
-		if (delta > WRITE_FPS_TIMEOUT)
-		{
-			std::cout << '\r' << "[FPS]: " << fps << "      " << std::flush;
-			delta -= 1.0f;
-		}
 
 		update(deltaT);
 

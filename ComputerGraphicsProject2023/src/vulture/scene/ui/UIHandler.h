@@ -29,7 +29,15 @@ class UIText
 public:
 	UIText(UITextHandle handle, const Renderer& renderer, DescriptorPool& descriptorPool,
 		Ref<DescriptorSetLayout> descriptorSetLayout, const Font& font, 
-		const std::string text, glm::vec2 position, float scale);
+		const std::string& text, glm::vec2 position, float scale);
+
+	void setText(const std::string& text);
+	void setPosition(glm::vec2 position) { m_Uniform->position = position; } // TODO boundary check
+	void setSize(float size) { m_Uniform->scale = size; } // TODO boundary check
+
+	inline const std::string& getText() const { return m_Text; }
+	inline glm::vec2 getPosition() const { return m_Uniform->position; }
+	inline float getSize() const { return m_Uniform->scale; }
 
 	friend class UIHandler;
 private:
@@ -38,6 +46,7 @@ private:
 	Font const* m_Font;
 
 	std::string m_Text;
+	bool m_Modified = false;
 
 	Buffer m_VertexBuffer;
 	Buffer m_IndexBuffer;
@@ -49,6 +58,7 @@ private:
 	inline const DescriptorSet& getDescriptorSet() const { return *m_DescriptorSet.lock(); }
 
 	void recreate();
+	void update(float dt);
 };
 
 struct ScreenBufferObject

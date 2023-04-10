@@ -17,11 +17,13 @@ class TestGame : public Game
 public:
 	Scene* scene = nullptr;
 	Camera* camera = nullptr;
+	UIHandler* handlerUI = nullptr;
 	Ref<DescriptorSetLayout> descriptorSetLayout;
 	PipelineHandle pipeline = -1;
 	Ref<Model> model;
 	Uniform<ModelBufferObject> objUniform;
 	Ref<Texture> objTexture;
+	Ref<UIText> text;
 
 	void setup() override
 	{
@@ -79,6 +81,7 @@ public:
 
 		scene = Application::getScene();
 		camera = scene->getCamera();
+		handlerUI = scene->getUIHandle();
 
 		descriptorSetLayout = Application::makeDescriptorSetLayout();
 		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
@@ -94,26 +97,42 @@ public:
 		scene->addObject(pipeline, model, descriptorSetLayout, { objUniform , *objTexture });
 
 		camera->position = glm::vec3(10, 5, 10);
+
+		text = handlerUI->makeText("0123546879");
+		text->setSize(30);
 	}
 
 	void update(float dt) override
 	{
 		static float time = 0;
 		time += dt;
-		// objUniform->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-		// objUniform->model = {abs(cos(time * 0.5)), 0, 0, 1};
 
 		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
 		float y = Input::getAxis("MOVE_DOWN", "MOVE_UP");
 
+		{
+			static glm::vec3 objPos{};
+			objPos += glm::vec3(x * SPEED * dt, y * SPEED * dt, 0.0f);
+			objUniform->model = glm::translate(glm::mat4(1), objPos);
+			camera->lookAt(objPos);
+		}
 
-		static glm::vec3 objPos{};
+		{
+			static float fps = 60.0f;
+			static float delta = 0;
+			
+			static const float WRITE_FPS_TIMEOUT = 0.5; // seconds
+			static const float FPS_AVG_WEIGHT = 0.1f; // 0 <= x <= 1
+			
+			delta += dt;
+			fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0f / dt) * FPS_AVG_WEIGHT;
 
-		objPos += glm::vec3(x * SPEED * dt, y * SPEED * dt, 0.0f);
-		
-		objUniform->model = glm::translate(glm::mat4(1), objPos);
-		
-		camera->lookAt(objPos);
+			if (delta > WRITE_FPS_TIMEOUT)
+			{
+				text->setText("FPS: " + std::to_string(fps));
+				delta -= 1.0f;
+			}
+		}
 	}
 private:
 	const float SPEED = 10;

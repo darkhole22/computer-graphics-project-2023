@@ -44,6 +44,7 @@ Ref<UIText> UIHandler::makeText(std::string text, glm::vec2 position, float scal
 		emit(UIModified());
 	});
 
+	emit(UIModified());
 	return uiText;
 }
 
@@ -77,14 +78,15 @@ void UIHandler::updateUniforms(RenderTarget& target)
 
 void UIHandler::update(float dt)
 {
-	static float time = 0;
-	time += dt;
-
+	for (auto& [handle, text] : m_Texts)
+	{
+		text->update(dt);
+	}
 }
 
 UIText::UIText(UITextHandle handle, const Renderer& renderer, 
 	DescriptorPool& descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout, 
-	const Font& font, const std::string text, glm::vec2 position, float scale) :
+	const Font& font, const std::string& text, glm::vec2 position, float scale) :
 	m_Hndle(handle), m_Device(&renderer.getDevice()), m_Font(&font), m_Text(text)
 {
 	m_Uniform = renderer.makeUniform<TextBufferObject>();
@@ -96,6 +98,14 @@ UIText::UIText(UITextHandle handle, const Renderer& renderer,
 	m_Uniform->scale = scale;
 
 	recreate();
+}
+
+void UIText::setText(const std::string& text)
+{
+	if (!m_Modified && m_Text == text) return;
+
+	m_Text = text;
+	m_Modified = true;
 }
 
 void UIText::recreate()
@@ -178,6 +188,15 @@ void UIText::recreate()
 	m_IndexCount = static_cast<uint32_t>(indecies.size());
 
 	emit(UITextRecreated());
+}
+
+void UIText::update(float dt)
+{
+	if (m_Modified)
+	{
+		m_Modified = false;
+		recreate();
+	}
 }
 
 } // namespace vulture

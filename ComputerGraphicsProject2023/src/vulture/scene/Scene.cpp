@@ -33,10 +33,7 @@ Scene::Scene(const Renderer& renderer) :
 
 	m_UIHandler.addCallback([this](const UIModified& event) {
 		setModified();
-		std::cout << "Text recreated" << std::endl;
 	});
-
-	m_UIHandler.makeText("Test Vulkan\n\tTab\nNo Tab!");
 }
 
 void Scene::render(RenderTarget target, float dt)
@@ -54,12 +51,6 @@ void Scene::render(RenderTarget target, float dt)
 		setModified();
 	}
 
-	if (m_FrameModified[index])
-	{
-		recordCommandBuffer(target);
-		m_FrameModified[index] = false;
-	}
-
 	auto& [width, height] = target.getExtent();
 	float aspectRatio = static_cast<float>(width) / height;
 	m_Camera.m_AspectRatio = aspectRatio;
@@ -68,6 +59,12 @@ void Scene::render(RenderTarget target, float dt)
 	m_UIHandler.m_ScreenUniform->width = static_cast<float>(width);
 	m_UIHandler.m_ScreenUniform->height = static_cast<float>(height);
 	m_UIHandler.update(dt);
+
+	if (m_FrameModified[index])
+	{
+		recordCommandBuffer(target);
+		m_FrameModified[index] = false;
+	}
 
 	updateUniforms(target);
 }

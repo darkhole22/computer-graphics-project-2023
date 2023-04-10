@@ -16,6 +16,8 @@ bool parseKerningLine(std::stringstream& stream, Font::Kerning* k);
 
 #define KERNING_MAP_KEY(v1, v2) (static_cast<uint64_t>(v1) << 32 | static_cast<uint64_t>(v2))
 
+constexpr int TAB_MULTIPLIER = 4;
+
 WRef<Font> Font::s_DefaultFont{};
 
 Font::Font(const Renderer& renderer, const std::string& name)
@@ -33,7 +35,7 @@ Font::Font(const Renderer& renderer, const std::string& name)
 	auto& space = getCharacterMapping(' ');
 	if (space.codepoint == ' ')
 	{
-		m_TabXAdvance = static_cast<float>(space.xAdvance * 4);
+		m_TabXAdvance = static_cast<float>(space.xAdvance * TAB_MULTIPLIER);
 	}
 	else
 	{
@@ -47,7 +49,7 @@ Font::Font(const Renderer& renderer, const std::string& name)
 		c.yOffset = 0;
 		c.xAdvance = m_CharacterSize;
 		m_CharacterSet.insert({ c.codepoint , c });
-		m_TabXAdvance = static_cast<float>(m_CharacterSize * 4);
+		m_TabXAdvance = static_cast<float>(m_CharacterSize * TAB_MULTIPLIER);
 	}
 	auto& tab = getCharacterMapping('\t');
 	if (tab.codepoint == '\t')
@@ -212,22 +214,22 @@ bool parseCharLine(std::stringstream& stream, Font::CharacterMapping* c)
 
 	if (!(stream >> token)) return false;
 	if (!getValue(&token, &value)) return false;
-	if (token != "x" || value <= 0) return false;
+	if (token != "x" || value < 0) return false;
 	c->x = value;
 
 	if (!(stream >> token)) return false;
 	if (!getValue(&token, &value)) return false;
-	if (token != "y" || value <= 0) return false;
+	if (token != "y" || value < 0) return false;
 	c->y = value;
 
 	if (!(stream >> token)) return false;
 	if (!getValue(&token, &value)) return false;
-	if (token != "width" || value <= 0) return false;
+	if (token != "width" || value < 0) return false;
 	c->width = value;
 
 	if (!(stream >> token)) return false;
 	if (!getValue(&token, &value)) return false;
-	if (token != "height" || value <= 0) return false;
+	if (token != "height" || value < 0) return false;
 	c->height = value;
 
 	if (!(stream >> token)) return false;
