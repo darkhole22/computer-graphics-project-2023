@@ -48,6 +48,7 @@ public:
 
 	inline void waitIdle() const { m_Device.waitIdle(); }
 
+	inline const Device& getDevice() const { return m_Device; }
 	inline const RenderPass& getRenderPass() const { return m_RenderPass; }
 	inline DescriptorPool makeDescriptorPool() const { return DescriptorPool(m_Device, m_SwapChain.getImageCount()); }
 	inline Ref<DescriptorSetLayout> makeDescriptorSetLayout() const { return Ref<DescriptorSetLayout>(new DescriptorSetLayout(m_Device)); }

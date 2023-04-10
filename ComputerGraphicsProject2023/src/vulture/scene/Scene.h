@@ -5,6 +5,7 @@
 
 #include "vulture/renderer/RenderTarget.h"
 #include "vulture/scene/Camera.h"
+#include "vulture/scene/UIHandler.h"
 
 namespace vulture {
 
@@ -59,6 +60,7 @@ private:
 	DescriptorPool m_DescriptorsPool;
 	
 	Camera m_Camera;
+	UIHandler m_UIHandler;
 
 	std::vector<bool> m_FrameModified;
 	PipelineHandle m_NextPipelineHandle = 0;

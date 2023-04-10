@@ -562,13 +562,21 @@ private:
 	void recreate();
 };
 
+struct PipelineAdvancedConfig
+{
+	VkCompareOp compareOprator = VK_COMPARE_OP_LESS;
+	bool useAlpha = false;
+
+	static const PipelineAdvancedConfig defaultConfig;
+};
+
 class Pipeline
 {
 public:
 	NO_COPY(Pipeline)
 
 	Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, 
-		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, const VertexLayout& vertexLayout);
+		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, const VertexLayout& vertexLayout, const PipelineAdvancedConfig& config = PipelineAdvancedConfig::defaultConfig);
 
 	inline VkPipeline getHandle() const { return m_Handle; }
 	inline VkPipelineLayout getLayout() const { return m_Layout; }

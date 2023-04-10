@@ -27,7 +27,7 @@ ObjectHandle SceneObjectList::addObject(RenderableObject obj)
 
 Scene::Scene(const Renderer& renderer) :
 	m_Renderer(&renderer), m_DescriptorsPool(renderer.makeDescriptorPool()), 
-	m_Camera(renderer, m_DescriptorsPool)
+	m_Camera(renderer, m_DescriptorsPool), m_UIHandler(renderer, m_DescriptorsPool)
 {
 	setModified();
 }
@@ -54,8 +54,13 @@ void Scene::render(RenderTarget target, float dt)
 	}
 
 	auto& [width, height] = target.getExtent();
-	m_Camera.m_AspectRatio = static_cast<float>(width) / height;
+	float aspectRatio = static_cast<float>(width) / height;
+	m_Camera.m_AspectRatio = aspectRatio;
 	m_Camera.update(dt);
+
+	m_UIHandler.m_ScreenUniform->width = width;
+	m_UIHandler.m_ScreenUniform->height = height;
+	m_UIHandler.update(dt);
 
 	updateUniforms(target);
 }
@@ -79,6 +84,7 @@ ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<Des
 
 	auto handle = p.addObject(RenderableObject(model, m_DescriptorsPool.getDescriptorSet(*layout.get(), descriptorWrites)));
 
+	setModified();
 	return handle;
 }
 
@@ -101,6 +107,8 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 		}
 	}
 
+	m_UIHandler.recordCommandBuffer(target);
+
 	target.endCommandRecording();
 }
 
@@ -117,6 +125,8 @@ void Scene::updateUniforms(RenderTarget& target)
 			object.getDescriptorSet().map(index);
 		}
 	}
+
+	m_UIHandler.updateUniforms(target);
 }
 
 void Scene::setModified()

@@ -53,8 +53,7 @@ public:
 	*/
 	inline void setProjectionMode(Projection mode)
 	{
-		m_Projection = mode; 
-		updateProjection();
+		m_Projection = mode;
 	}
 
 	/*

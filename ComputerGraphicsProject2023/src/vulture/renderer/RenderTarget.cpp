@@ -44,6 +44,21 @@ void RenderTarget::drawModel(const Model& model)
 	m_CommandBuffer->drawIndexed(model.getIndexCount());
 }
 
+void RenderTarget::bindVertexBuffer(const Buffer& buffer)
+{
+	m_CommandBuffer->bindVertexBuffer(buffer);
+}
+
+void RenderTarget::bindIndexBuffer(const Buffer& buffer)
+{
+	m_CommandBuffer->bindIndexBuffer(buffer);
+}
+
+void RenderTarget::drawIndexed(uint32_t count)
+{
+	m_CommandBuffer->drawIndexed(count);
+}
+
 RenderTarget::~RenderTarget()
 {
 	m_SwapChain->submit(m_CurrentFrame, m_ImageIndex);
