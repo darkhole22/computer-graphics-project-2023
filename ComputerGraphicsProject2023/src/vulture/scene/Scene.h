@@ -5,6 +5,7 @@
 
 #include "vulture/renderer/RenderTarget.h"
 #include "vulture/scene/Camera.h"
+#include "GameObject.h"
 
 namespace vulture {
 
@@ -51,6 +52,9 @@ public:
 	PipelineHandle makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
 	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
+	Ref<GameObject> makeObject(const std::string& modelPath, const std::string& texturePath);
+
+
 	~Scene() = default;
 private:
 	Renderer const* m_Renderer;
@@ -59,8 +63,12 @@ private:
 	Camera m_Camera;
 
 	std::vector<bool> m_FrameModified;
+
 	PipelineHandle m_NextPipelineHandle = 0;
 	std::unordered_map<PipelineHandle, SceneObjectList> m_ObjectLists;
+
+	Ref<DescriptorSetLayout> m_GameObjectDSL;
+	PipelineHandle m_GameObjectPipeline;
 
 	void recordCommandBuffer(RenderTarget& target);
 	void updateUniforms(RenderTarget& target);

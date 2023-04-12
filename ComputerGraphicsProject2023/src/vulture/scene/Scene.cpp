@@ -1,6 +1,7 @@
 #include "Scene.h"
 
 #include <iostream>
+#include <memory>
 
 namespace vulture {
 
@@ -29,6 +30,17 @@ Scene::Scene(const Renderer& renderer) :
 	m_Renderer(&renderer), m_DescriptorsPool(renderer.makeDescriptorPool()), 
 	m_Camera(renderer, m_DescriptorsPool)
 {
+	// Create the default Phong GameObject DSL.
+	m_GameObjectDSL = m_Renderer->makeDescriptorSetLayout();
+	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_GameObjectDSL->create();
+
+	// Create default Phong pipeline.
+	// TODO Consider removing hardcoded values
+	m_GameObjectPipeline = makePipeline("res/shaders/baseVert.spv", "res/shaders/baseFrag.spv", m_GameObjectDSL);
+
+
 	setModified();
 }
 
@@ -58,13 +70,17 @@ void Scene::render(RenderTarget target)
 
 PipelineHandle Scene::makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
 {
-	PipelineHandle handle = m_NextPipelineHandle++; // Consider using a pseudo number generator
+	PipelineHandle handle = (PipelineHandle)std::hash<std::string>{}(vertexShader + fragmentShader);
 
-	std::vector<DescriptorSetLayout*> layouts{};
-	layouts.push_back(m_Camera.getDescriptorSetLayout());
-	layouts.push_back(descriptorSetLayout.get());
+	auto it = m_ObjectLists.find(handle);
+	if (it == m_ObjectLists.end())
+	{
+		std::vector<DescriptorSetLayout*> layouts{};
+		layouts.push_back(m_Camera.getDescriptorSetLayout());
+		layouts.push_back(descriptorSetLayout.get());
 
-	m_ObjectLists.insert({ handle, SceneObjectList(*m_Renderer, vertexShader, fragmentShader, layouts) });
+		m_ObjectLists.insert({ handle, SceneObjectList(*m_Renderer, vertexShader, fragmentShader, layouts) });
+	}
 
 	return handle;
 }
@@ -76,6 +92,14 @@ ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<Des
 	auto handle = p.addObject(RenderableObject(model, m_DescriptorsPool.getDescriptorSet(*layout.get(), descriptorWrites)));
 
 	return handle;
+}
+
+Ref<GameObject> Scene::makeObject(const std::string& modelPath, const std::string& texturePath)
+{
+	Ref<GameObject> obj = std::make_shared<GameObject>(*m_Renderer, modelPath, texturePath);
+	addObject(m_GameObjectPipeline, obj->m_Model, m_GameObjectDSL, { obj->m_Uniform , *obj->m_Texture });
+
+	return obj;
 }
 
 void Scene::recordCommandBuffer(RenderTarget& target)

@@ -7,20 +7,11 @@
 
 using namespace vulture;
 
-struct ModelBufferObject
-{
-	glm::mat4 model = glm::mat4(1);
-};
-
 class TestGame : public Game
 {
 public:
 	Scene* scene = nullptr;
-	Ref<DescriptorSetLayout> descriptorSetLayout;
-	PipelineHandle pipeline = -1;
-	Ref<Model> model;
-	Uniform<ModelBufferObject> objUniform;
-	Ref<Texture> objTexture;
+	Ref<GameObject> obj;
 
 	void setup() override
 	{
@@ -52,38 +43,19 @@ public:
 
 		scene = Application::getScene();
 
-		descriptorSetLayout = Application::makeDescriptorSetLayout();
-		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-		descriptorSetLayout->create();
-
-		pipeline = scene->makePipeline("res/shaders/baseVert.spv", "res/shaders/baseFrag.spv", descriptorSetLayout);
-
-		model = Application::makeModel("res/models/vulture.obj");
-		objUniform = Application::makeUniform<ModelBufferObject>();
-		objTexture = Application::makeTexture("res/textures/vulture.png");
-
-		scene->addObject(pipeline, model, descriptorSetLayout, { objUniform , *objTexture });
-		// scene->addObject(pipeline, model, descriptorSetLayout, { objUniform });
-
-		// objUniform->model = glm::mat4(1.0f) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		obj = scene->makeObject("res/models/vulture.obj", "res/textures/vulture.png");
 	}
 
 	void update(float dt) override
 	{
 		static float time = 0;
 		time += dt;
-		// objUniform->model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-		// objUniform->model = {abs(cos(time * 0.5)), 0, 0, 1};
 
 		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
-
-		objUniform->model = glm::translate(objUniform->model, glm::vec3(x * SPEED * dt, 0.0f, 0.0f));
-
-		objUniform.map();
+		obj->translate(glm::vec3(x * SPEED * dt, 0.0f, 0.0f));
 	}
 private:
-	const float SPEED = 100;
+	const float SPEED = 10;
 };
 
 int main()
