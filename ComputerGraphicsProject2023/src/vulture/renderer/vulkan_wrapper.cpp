@@ -1676,6 +1676,14 @@ void DescriptorWrite::map(uint32_t index) const
 	}
 }
 
+void DescriptorWrite::map(uint32_t index) const
+{
+	if (m_UniformBuffers != nullptr)
+	{
+		(*m_UniformBuffers)[index].map();
+	}
+}
+
 DescriptorSet::DescriptorSet(DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites) :
 	m_Pool(&pool), m_Layout(&layout), m_DescriptorWrites(descriptorWrites)
 {

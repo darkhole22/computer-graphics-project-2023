@@ -72,6 +72,10 @@ void Scene::render(RenderTarget target, float dt)
 		m_FrameModified[index] = false;
 	}
 
+	auto& [width, height] = target.getExtent();
+	m_Camera.m_AspectRatio = static_cast<float>(width) / height;
+	m_Camera.update(dt);
+
 	updateUniforms(target);
 }
 
