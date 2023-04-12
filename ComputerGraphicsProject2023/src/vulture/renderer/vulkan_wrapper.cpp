@@ -1582,6 +1582,7 @@ void Buffer::cleanup() noexcept
 {
 	if (m_Handle != VK_NULL_HANDLE)
 	{
+		m_Device->waitIdle();
 		vkFreeMemory(m_Device->getHandle(), m_Memory, nullptr);
 		vkDestroyBuffer(m_Device->getHandle(), m_Handle, nullptr);
 	}

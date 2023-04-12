@@ -41,7 +41,6 @@ void Application::run()
 
 		update(deltaT);
 
-		m_Renderer.waitIdle(); // TODO Improve this synchronization
 		m_Scene.render(m_Renderer.getRenderTarget(), deltaT);
 	}
 
