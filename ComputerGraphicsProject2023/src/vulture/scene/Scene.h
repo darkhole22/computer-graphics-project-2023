@@ -5,19 +5,20 @@
 
 #include "vulture/renderer/RenderTarget.h"
 #include "vulture/scene/Camera.h"
+#include "vulture/scene/ui/UIHandler.h"
 
 namespace vulture {
 
 class RenderableObject
 {
 public:
-	RenderableObject(Ref<Model> model, WRef<DescriptorSet> descriptorSet);
+	RenderableObject(Ref<Model> model, Ref<DescriptorSet> descriptorSet);
 
-	inline const DescriptorSet& getDescriptorSet() { return *m_DescriptorSet.lock(); }
+	inline const DescriptorSet& getDescriptorSet() { return *m_DescriptorSet; }
 	inline const Model& getModel() { return *m_Model.get(); }
 private:
 	Ref<Model> m_Model;
-	WRef<DescriptorSet> m_DescriptorSet;
+	Ref<DescriptorSet> m_DescriptorSet;
 };
 
 using ObjectHandle = int64_t;
@@ -30,6 +31,7 @@ public:
 	
 	inline const Pipeline& getPipeline() const { return *m_Pipeline; }
 	ObjectHandle addObject(RenderableObject obj);
+	void removeObject(ObjectHandle handle);
 
 	auto begin() { return m_Objects.begin(); }
 	auto end() { return m_Objects.end(); }
@@ -52,6 +54,7 @@ public:
 	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
 	Camera* getCamera() { return &m_Camera; }
+	UIHandler* getUIHandle() { return &m_UIHandler; }
 
 	~Scene() = default;
 private:
@@ -59,6 +62,7 @@ private:
 	DescriptorPool m_DescriptorsPool;
 	
 	Camera m_Camera;
+	UIHandler m_UIHandler;
 
 	std::vector<bool> m_FrameModified;
 	PipelineHandle m_NextPipelineHandle = 0;

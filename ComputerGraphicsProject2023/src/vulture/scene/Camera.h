@@ -53,8 +53,7 @@ public:
 	*/
 	inline void setProjectionMode(Projection mode)
 	{
-		m_Projection = mode; 
-		updateProjection();
+		m_Projection = mode;
 	}
 
 	/*
@@ -125,7 +124,7 @@ public:
 private:
 	Uniform<CameraBufferObject> m_Uniform;
 	Ref<DescriptorSetLayout> m_DescriptorSetLayout;
-	std::weak_ptr<DescriptorSet> m_DescriptorSet;
+	Ref<DescriptorSet> m_DescriptorSet;
 
 	Camera(const Renderer& renderer, DescriptorPool& descriptorsPool);
 
@@ -140,9 +139,8 @@ private:
 	// Functions used by the scene
 	void update(float dt);
 	inline DescriptorSetLayout* getDescriptorSetLayout() { return m_DescriptorSetLayout.get(); }
-	inline const DescriptorSet& getDescriptorSet() { return *m_DescriptorSet.lock(); }
-
-	inline void map(uint32_t index) { m_DescriptorSet.lock()->map(index); }
+	inline const DescriptorSet& getDescriptorSet() { return *m_DescriptorSet; }
+	inline void map(uint32_t index) { m_DescriptorSet->map(index); }
 
 	// Functions for internal use
 	void updateProjection();

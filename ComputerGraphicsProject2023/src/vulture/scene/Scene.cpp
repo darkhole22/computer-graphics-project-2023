@@ -4,7 +4,7 @@
 
 namespace vulture {
 
-RenderableObject::RenderableObject(Ref<Model> model, WRef<DescriptorSet> descriptorSet) :
+RenderableObject::RenderableObject(Ref<Model> model, Ref<DescriptorSet> descriptorSet) :
 	m_Model(model), m_DescriptorSet(descriptorSet)
 {
 
@@ -25,11 +25,21 @@ ObjectHandle SceneObjectList::addObject(RenderableObject obj)
 	return handle;
 }
 
+void SceneObjectList::removeObject(ObjectHandle handle)
+{
+	auto it = m_Objects.find(handle);
+	m_Objects.erase(it);
+}
+
 Scene::Scene(const Renderer& renderer) :
 	m_Renderer(&renderer), m_DescriptorsPool(renderer.makeDescriptorPool()), 
-	m_Camera(renderer, m_DescriptorsPool)
+	m_Camera(renderer, m_DescriptorsPool), m_UIHandler(renderer, m_DescriptorsPool)
 {
 	setModified();
+
+	m_UIHandler.addCallback([this](const UIModified& event) {
+		setModified();
+	});
 }
 
 void Scene::render(RenderTarget target, float dt)
@@ -47,15 +57,20 @@ void Scene::render(RenderTarget target, float dt)
 		setModified();
 	}
 
+	auto [width, height] = target.getExtent();
+	float aspectRatio = static_cast<float>(width) / height;
+	m_Camera.m_AspectRatio = aspectRatio;
+	m_Camera.update(dt);
+
+	m_UIHandler.m_ScreenUniform->width = static_cast<float>(width);
+	m_UIHandler.m_ScreenUniform->height = static_cast<float>(height);
+	m_UIHandler.update(dt);
+
 	if (m_FrameModified[index])
 	{
 		recordCommandBuffer(target);
 		m_FrameModified[index] = false;
 	}
-
-	auto& [width, height] = target.getExtent();
-	m_Camera.m_AspectRatio = static_cast<float>(width) / height;
-	m_Camera.update(dt);
 
 	updateUniforms(target);
 }
@@ -79,6 +94,7 @@ ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<Des
 
 	auto handle = p.addObject(RenderableObject(model, m_DescriptorsPool.getDescriptorSet(*layout.get(), descriptorWrites)));
 
+	setModified();
 	return handle;
 }
 
@@ -101,6 +117,8 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 		}
 	}
 
+	m_UIHandler.recordCommandBuffer(target);
+
 	target.endCommandRecording();
 }
 
@@ -117,6 +135,8 @@ void Scene::updateUniforms(RenderTarget& target)
 			object.getDescriptorSet().map(index);
 		}
 	}
+
+	m_UIHandler.updateUniforms(target);
 }
 
 void Scene::setModified()
