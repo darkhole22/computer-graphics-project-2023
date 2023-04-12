@@ -28,7 +28,7 @@ class UIText
 
 public:
 	UIText(UITextHandle handle, const Renderer& renderer, DescriptorPool& descriptorPool,
-		Ref<DescriptorSetLayout> descriptorSetLayout, const Font& font, 
+		Ref<DescriptorSetLayout> descriptorSetLayout, Ref<Font> font, 
 		const std::string& text, glm::vec2 position, float scale);
 
 	void setText(const std::string& text);
@@ -43,7 +43,7 @@ public:
 private:
 	const UITextHandle m_Hndle;
 	Device const* m_Device;
-	Font const* m_Font;
+	Ref<Font> m_Font;
 
 	std::string m_Text;
 	bool m_Modified = false;
@@ -75,6 +75,7 @@ class UIHandler
 
 public:
 	Ref<UIText> makeText(std::string text, glm::vec2 position = {20, 0.5}, float scale = 22.0f);
+	void removeText(Ref<UIText> text);
 
 	friend class Scene;
 private:

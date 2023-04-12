@@ -37,7 +37,7 @@ Ref<UIText> UIHandler::makeText(std::string text, glm::vec2 position, float scal
 {
 	UITextHandle handle = m_NextTextHandle++;
 	auto uiText = Ref<UIText>(new UIText(handle, *m_Renderer, *m_DescriptorPool,
-		m_TextDSLayout, *m_Font, text, position, scale));
+		m_TextDSLayout, m_Font, text, position, scale));
 	m_Texts.insert({ handle, uiText });
 
 	uiText->addCallback([this](const UITextRecreated& event) {
@@ -46,6 +46,12 @@ Ref<UIText> UIHandler::makeText(std::string text, glm::vec2 position, float scal
 
 	emit(UIModified());
 	return uiText;
+}
+
+void UIHandler::removeText(Ref<UIText> text)
+{
+	auto& it = m_Texts.find(text->m_Hndle);
+	m_Texts.erase(it);
 }
 
 void UIHandler::recordCommandBuffer(RenderTarget& target)
@@ -86,13 +92,13 @@ void UIHandler::update(float dt)
 
 UIText::UIText(UITextHandle handle, const Renderer& renderer, 
 	DescriptorPool& descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout, 
-	const Font& font, const std::string& text, glm::vec2 position, float scale) :
-	m_Hndle(handle), m_Device(&renderer.getDevice()), m_Font(&font), m_Text(text)
+	Ref<Font> font, const std::string& text, glm::vec2 position, float scale) :
+	m_Hndle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
 {
 	m_Uniform = renderer.makeUniform<TextBufferObject>();
 
 	m_DescriptorSet = descriptorPool.getDescriptorSet(*descriptorSetLayout,
-		{ font.getTexture(), m_Uniform });
+		{ font->getTexture(), m_Uniform });
 
 	m_Uniform->position = position;
 	m_Uniform->scale = scale;

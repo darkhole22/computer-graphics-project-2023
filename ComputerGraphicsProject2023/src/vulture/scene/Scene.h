@@ -31,6 +31,7 @@ public:
 	
 	inline const Pipeline& getPipeline() const { return *m_Pipeline; }
 	ObjectHandle addObject(RenderableObject obj);
+	void removeObject(ObjectHandle handle);
 
 	auto begin() { return m_Objects.begin(); }
 	auto end() { return m_Objects.end(); }

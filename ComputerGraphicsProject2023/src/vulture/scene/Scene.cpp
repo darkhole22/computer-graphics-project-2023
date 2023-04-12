@@ -25,6 +25,12 @@ ObjectHandle SceneObjectList::addObject(RenderableObject obj)
 	return handle;
 }
 
+void SceneObjectList::removeObject(ObjectHandle handle)
+{
+	auto& it = m_Objects.find(handle);
+	m_Objects.erase(it);
+}
+
 Scene::Scene(const Renderer& renderer) :
 	m_Renderer(&renderer), m_DescriptorsPool(renderer.makeDescriptorPool()), 
 	m_Camera(renderer, m_DescriptorsPool), m_UIHandler(renderer, m_DescriptorsPool)
