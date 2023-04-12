@@ -141,6 +141,7 @@ private:
 	void update(float dt);
 	inline DescriptorSetLayout* getDescriptorSetLayout() { return m_DescriptorSetLayout.get(); }
 	inline const DescriptorSet& getDescriptorSet() { return *m_DescriptorSet.lock(); }
+
 	inline void map(uint32_t index) { m_DescriptorSet.lock()->map(index); }
 
 	// Functions for internal use
