@@ -12,32 +12,61 @@ Camera::Camera(const Renderer& renderer, DescriptorPool& descriptorsPool) :
 
 	m_DescriptorSet = descriptorsPool.getDescriptorSet(*m_DescriptorSetLayout.get(), {m_Uniform});
 	
-	glm::mat3 camDir = glm::mat3(1.0f);
-	glm::vec3 camPos = glm::vec3(0.0f, 0.0f, 1.0f);
-
-	m_Uniform->view = glm::lookAt(camPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	
-	m_Uniform->proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 50.0f);
-	m_Uniform->proj[1][1] *= -1;
+	updateView();
+	updateProjection();
 }
 
-void Camera::update()
+void Camera::setSize(float size)
 {
-	static auto startTime = std::chrono::high_resolution_clock::now();
-	static float lastTime = 0.0f;
+	if (size <= 0) return;
 
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration<float, std::chrono::seconds::period>
-		(currentTime - startTime).count();
-	float deltaT = time - lastTime;
-	lastTime = time;
+	m_Size = size;
+	updateProjection();
+}
 
-	glm::mat3 camDir = glm::mat3(1.0f);
-	glm::vec3 camPos = glm::vec3(5 * cos(time * 0.1f), 5.0f, 5 * sin(time * 0.1f));
+void Camera::setFov(float fov)
+{
+	if (fov < 1 || fov > 179) return;
 
-	m_Uniform->view = glm::lookAt(camPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	m_Uniform->proj = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 50.0f);
-	m_Uniform->proj[1][1] *= -1;
+	m_Fov = glm::radians(fov);
+	updateProjection();
+}
+
+void Camera::setNearPlane(float nearPlane)
+{
+	m_NearPlane = nearPlane;
+	updateProjection();
+}
+
+void Camera::setFarPlane(float farPlane)
+{
+	m_FarPlane = farPlane;
+	updateProjection();
+}
+
+void Camera::update(float dt)
+{	
+	updateView();
+}
+
+void Camera::updateProjection()
+{
+	if (m_Projection == Projection::PERSPECTIVE)
+	{
+		m_Uniform->proj = glm::perspective(m_Fov, m_AspectRatio, m_NearPlane, m_FarPlane);
+		m_Uniform->proj[1][1] *= -1;
+	}
+	else
+	{
+		float hHeight = m_Size / 2;
+		float hWidth = hHeight * m_AspectRatio;
+		m_Uniform->proj = glm::ortho(-hWidth, hWidth, hHeight, -hHeight, m_NearPlane, m_FarPlane);
+	}
+}
+
+void Camera::updateView()
+{
+	m_Uniform->view = glm::lookAt(this->position, this->position + this->direction, this->up);
 }
 
 } // namespace vulture
