@@ -16,7 +16,8 @@ class TestGame : public Game
 {
 public:
 	Scene* scene = nullptr;
-	Camera* camera;
+	Camera* camera = nullptr;
+
 	Ref<DescriptorSetLayout> descriptorSetLayout;
 	PipelineHandle pipeline = -1;
 	Ref<Model> model;
@@ -106,7 +107,6 @@ public:
 		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
 		float y = Input::getAxis("MOVE_DOWN", "MOVE_UP");
 
-
 		static glm::vec3 objPos{};
 
 		objPos += glm::vec3(x * SPEED * dt, y * SPEED * dt, 0.0f);
@@ -114,8 +114,6 @@ public:
 		objUniform->model = glm::translate(glm::mat4(1), objPos);
 		
 		camera->lookAt(objPos);
-
-		objUniform.map();
 	}
 private:
 	const float SPEED = 10;

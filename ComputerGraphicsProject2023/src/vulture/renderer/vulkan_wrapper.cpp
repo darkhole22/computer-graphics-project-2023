@@ -1478,7 +1478,7 @@ Shader::~Shader()
 }
 
 Buffer::Buffer() :
-	m_Handle(VK_NULL_HANDLE), m_Memory(VK_NULL_HANDLE), m_Device(nullptr)
+	m_Handle(VK_NULL_HANDLE), m_Memory(VK_NULL_HANDLE), m_Device(nullptr), m_Size(0), m_Data(nullptr)
 {
 }
 
@@ -1487,14 +1487,18 @@ Buffer::Buffer(Buffer&& other) noexcept
 	m_Handle = other.m_Handle;
 	m_Memory = other.m_Memory;
 	m_Device = other.m_Device;
+	m_Size = other.m_Size;
+	m_Data = other.m_Data;
 
 	other.m_Handle = VK_NULL_HANDLE;
 	other.m_Memory = VK_NULL_HANDLE;
 	other.m_Device = nullptr;
+	other.m_Size = 0;
+	other.m_Data = nullptr;
 }
 
-Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) :
-	m_Device(&device)
+Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, void* data) :
+	m_Device(&device), m_Size(size), m_Data(data)
 {
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -1519,13 +1523,23 @@ Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage
 	vkBindBufferMemory(m_Device->getHandle(), m_Handle, m_Memory, 0);
 }
 
-void Buffer::map(VkDeviceSize size, void* data)
+Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) :
+	Buffer(device, size, usage, properties, nullptr)
+{
+}
+
+void Buffer::map(void* data) const
 {
 	void* tmp;
 
-	vkMapMemory(m_Device->getHandle(), m_Memory, 0, size, 0, &tmp);
-	memcpy(tmp, data, size);
+	vkMapMemory(m_Device->getHandle(), m_Memory, 0, m_Size, 0, &tmp);
+	memcpy(tmp, data, m_Size);
 	vkUnmapMemory(m_Device->getHandle(), m_Memory);
+}
+
+void Buffer::map() const
+{
+	map(m_Data);
 }
 
 void Buffer::copyToBuffer(VkDeviceSize size, const Buffer& destination)
@@ -1546,10 +1560,14 @@ Buffer& Buffer::operator=(Buffer&& other) noexcept
 		m_Handle = other.m_Handle;
 		m_Memory = other.m_Memory;
 		m_Device = other.m_Device;
+		m_Size = other.m_Size;
+		m_Data = other.m_Data;
 
 		other.m_Handle = VK_NULL_HANDLE;
 		other.m_Memory = VK_NULL_HANDLE;
 		other.m_Device = nullptr;
+		other.m_Size = 0;
+		other.m_Data = nullptr;
 	}
 
 	return *this;
@@ -1583,7 +1601,7 @@ Texture::Texture(const Device& device, const std::string& path) :
 	m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
 	Buffer stagingBuffer(*m_Device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	stagingBuffer.map(imageSize, pixels);
+	stagingBuffer.map(pixels);
 
 	stbi_image_free(pixels);
 
@@ -1650,6 +1668,14 @@ VkWriteDescriptorSet DescriptorWrite::getWriteDescriptorSet(VkDescriptorSet desc
 	return write;
 }
 
+void DescriptorWrite::map(uint32_t index) const
+{
+	if (m_UniformBuffers != nullptr)
+	{
+		(*m_UniformBuffers)[index].map();
+	}
+}
+
 DescriptorSet::DescriptorSet(const DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites) :
 	m_Pool(&pool), m_Layout(&layout), m_DescriptorWrites(descriptorWrites)
 {
@@ -1696,6 +1722,14 @@ void DescriptorSet::recreate(bool clean)
 
 	m_Handles.resize(0);
 	create();
+}
+
+void DescriptorSet::map(uint32_t index) const
+{
+	for (auto& dw : m_DescriptorWrites)
+	{
+		dw.map(index);
+	}
 }
 
 DescriptorSet::~DescriptorSet()

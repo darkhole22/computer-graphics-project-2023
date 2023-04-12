@@ -117,13 +117,13 @@ public:
 
 		VkDeviceSize vertexBufferSize = sizeof(Vertex) * vertices.size();
 		Buffer vertexStagingBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		vertexStagingBuffer.map(vertexBufferSize, vertices.data());
+		vertexStagingBuffer.map(vertices.data());
 		m->m_VertexBuffer = Buffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		vertexStagingBuffer.copyToBuffer(vertexBufferSize, m->m_VertexBuffer);
 
 		VkDeviceSize indexBufferSize = sizeof(uint32_t) * indecies.size();
 		Buffer indexStagingBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		indexStagingBuffer.map(indexBufferSize, indecies.data());
+		indexStagingBuffer.map(indecies.data());
 		m->m_IndexBuffer = Buffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		indexStagingBuffer.copyToBuffer(indexBufferSize, m->m_IndexBuffer);
 
