@@ -117,9 +117,9 @@ void UIText::setText(const std::string& text)
 void UIText::recreate()
 {
 	std::vector<UIVertex> vertices{};
-	std::vector<uint32_t> indecies{};
+	std::vector<uint32_t> indices{};
 	vertices.reserve(m_Text.length() * 4);
-	indecies.reserve(m_Text.length() * 6);
+	indices.reserve(m_Text.length() * 6);
 
 	const float cSize = m_Font->getCharacterSize();
 
@@ -170,13 +170,13 @@ void UIText::recreate()
 		}
 		x += advance;
 
-		indecies.push_back(indexBase + 0);
-		indecies.push_back(indexBase + 2);
-		indecies.push_back(indexBase + 1);
+		indices.push_back(indexBase + 0);
+		indices.push_back(indexBase + 2);
+		indices.push_back(indexBase + 1);
 
-		indecies.push_back(indexBase + 1);
-		indecies.push_back(indexBase + 2);
-		indecies.push_back(indexBase + 3);
+		indices.push_back(indexBase + 1);
+		indices.push_back(indexBase + 2);
+		indices.push_back(indexBase + 3);
 	}
 
 	VkDeviceSize vertexBufferSize = sizeof(UIVertex) * vertices.size();
@@ -185,13 +185,13 @@ void UIText::recreate()
 	m_VertexBuffer = Buffer(*m_Device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	vertexStagingBuffer.copyToBuffer(vertexBufferSize, m_VertexBuffer);
 
-	VkDeviceSize indexBufferSize = sizeof(uint32_t) * indecies.size();
+	VkDeviceSize indexBufferSize = sizeof(uint32_t) * indices.size();
 	Buffer indexStagingBuffer(*m_Device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	indexStagingBuffer.map(indecies.data());
+	indexStagingBuffer.map(indices.data());
 	m_IndexBuffer = Buffer(*m_Device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	indexStagingBuffer.copyToBuffer(indexBufferSize, m_IndexBuffer);
 
-	m_IndexCount = static_cast<uint32_t>(indecies.size());
+	m_IndexCount = static_cast<uint32_t>(indices.size());
 
 	emit(UITextRecreated());
 }
