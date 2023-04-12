@@ -27,7 +27,7 @@ ObjectHandle SceneObjectList::addObject(RenderableObject obj)
 
 void SceneObjectList::removeObject(ObjectHandle handle)
 {
-	auto& it = m_Objects.find(handle);
+	auto it = m_Objects.find(handle);
 	m_Objects.erase(it);
 }
 
@@ -57,7 +57,7 @@ void Scene::render(RenderTarget target, float dt)
 		setModified();
 	}
 
-	auto& [width, height] = target.getExtent();
+	auto [width, height] = target.getExtent();
 	float aspectRatio = static_cast<float>(width) / height;
 	m_Camera.m_AspectRatio = aspectRatio;
 	m_Camera.update(dt);
@@ -71,10 +71,6 @@ void Scene::render(RenderTarget target, float dt)
 		recordCommandBuffer(target);
 		m_FrameModified[index] = false;
 	}
-
-	auto& [width, height] = target.getExtent();
-	m_Camera.m_AspectRatio = static_cast<float>(width) / height;
-	m_Camera.update(dt);
 
 	updateUniforms(target);
 }

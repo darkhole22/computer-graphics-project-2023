@@ -18,7 +18,7 @@ UIHandler::UIHandler(const Renderer& renderer, DescriptorPool& descriptorsPool) 
 	m_ScreenDescriptorSet = m_DescriptorPool->getDescriptorSet(*m_ScreenDSLayout, { m_ScreenUniform });
 
 	PipelineAdvancedConfig pipelineConfig{};
-	pipelineConfig.compareOprator = VK_COMPARE_OP_ALWAYS;
+	pipelineConfig.compareOperator = VK_COMPARE_OP_ALWAYS;
 	pipelineConfig.useAlpha = true;
 
 	m_Pipeline.reset(new Pipeline(
@@ -50,7 +50,7 @@ Ref<UIText> UIHandler::makeText(std::string text, glm::vec2 position, float scal
 
 void UIHandler::removeText(Ref<UIText> text)
 {
-	auto& it = m_Texts.find(text->m_Hndle);
+	auto it = m_Texts.find(text->m_Hndle);
 	m_Texts.erase(it);
 }
 

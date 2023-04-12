@@ -60,7 +60,7 @@ Font::Font(const Renderer& renderer, const std::string& name)
 
 const Font::CharacterMapping& Font::getCharacterMapping(int32_t code) const
 {
-	auto& it = m_CharacterSet.find(code);
+	auto it = m_CharacterSet.find(code);
 
 	if (it != m_CharacterSet.end())
 	{
@@ -73,7 +73,7 @@ const Font::CharacterMapping& Font::getCharacterMapping(int32_t code) const
 
 const Font::Kerning* Font::getKerning(int32_t code1, int32_t code2) const
 {
-	auto& it = m_KerningSet.find(KERNING_MAP_KEY(code1, code2));
+	auto it = m_KerningSet.find(KERNING_MAP_KEY(code1, code2));
 	if (it != m_KerningSet.end())
 	{
 		return &it->second;

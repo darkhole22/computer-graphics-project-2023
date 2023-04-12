@@ -1676,14 +1676,6 @@ void DescriptorWrite::map(uint32_t index) const
 	}
 }
 
-void DescriptorWrite::map(uint32_t index) const
-{
-	if (m_UniformBuffers != nullptr)
-	{
-		(*m_UniformBuffers)[index].map();
-	}
-}
-
 DescriptorSet::DescriptorSet(DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites) :
 	m_Pool(&pool), m_Layout(&layout), m_DescriptorWrites(descriptorWrites)
 {
@@ -2005,7 +1997,7 @@ Pipeline::Pipeline(
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = VK_TRUE;
 	depthStencil.depthWriteEnable = VK_TRUE;
-	depthStencil.depthCompareOp = config.compareOprator;
+	depthStencil.depthCompareOp = config.compareOperator;
 	depthStencil.depthBoundsTestEnable = VK_FALSE;
 	depthStencil.minDepthBounds = 0.0f; // Optional
 	depthStencil.maxDepthBounds = 1.0f; // Optional

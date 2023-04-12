@@ -567,7 +567,7 @@ private:
 
 struct PipelineAdvancedConfig
 {
-	VkCompareOp compareOprator = VK_COMPARE_OP_LESS;
+	VkCompareOp compareOperator = VK_COMPARE_OP_LESS;
 	bool useAlpha = false;
 
 	static const PipelineAdvancedConfig defaultConfig;
