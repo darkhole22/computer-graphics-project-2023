@@ -1676,7 +1676,7 @@ void DescriptorWrite::map(uint32_t index) const
 	}
 }
 
-DescriptorSet::DescriptorSet(const DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites) :
+DescriptorSet::DescriptorSet(DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites) :
 	m_Pool(&pool), m_Layout(&layout), m_DescriptorWrites(descriptorWrites)
 {
 	create();
@@ -1734,6 +1734,7 @@ void DescriptorSet::map(uint32_t index) const
 
 DescriptorSet::~DescriptorSet()
 {
+	m_Pool->cleanupDescriptorSet(m_Layout->getBindings());
 	cleanup();
 }
 
@@ -1772,9 +1773,19 @@ void DescriptorPool::reserveSpace(uint32_t count, const DescriptorSetLayout& lay
 	recreate();
 }
 
-std::weak_ptr<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites)
+Ref<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites)
 {
 	bool shouldRecreate = false;
+	for (auto it = m_Sets.begin(); it != m_Sets.end();)
+	{
+		if (it->use_count() <= 1)
+		{
+			it = m_Sets.erase(it);
+			m_Size--;
+		}
+		else
+			it++;
+	}
 	if (m_Size <= m_Sets.size()) 
 	{
 		shouldRecreate = true;
@@ -1800,27 +1811,11 @@ std::weak_ptr<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSe
 
 	if (shouldRecreate) recreate();
 
-	std::shared_ptr<DescriptorSet> descriprtorSet(new DescriptorSet(*this, layout, descriptorWrites));
+	Ref<DescriptorSet> descriprtorSet(new DescriptorSet(*this, layout, descriptorWrites));
 
 	m_Sets.insert(descriprtorSet);
 	
 	return descriprtorSet;
-}
-
-void DescriptorPool::freeDescriptorSet(std::weak_ptr<DescriptorSet> descriptorSet)
-{
-	auto ds = descriptorSet.lock();
-	auto& layoutBindings = ds->getLayout().getBindings();
-	for (auto& binding : layoutBindings)
-	{
-		auto it = m_TypeInfos.find(binding.descriptorType);
-		if (it != m_TypeInfos.end())
-		{
-			it->second.count--;
-		}
-	}
-
-	m_Sets.erase(ds);
 }
 
 void DescriptorPool::cleanup()
@@ -1855,7 +1850,10 @@ void DescriptorPool::recreate()
 
 	for (auto& set : m_Sets)
 	{
-		set->recreate(false);
+		if (set.use_count() > 1)
+		{
+			set->recreate(false);
+		}
 	}
 }
 
@@ -1863,6 +1861,18 @@ DescriptorPool::~DescriptorPool()
 {
 	m_Sets.clear();
 	cleanup();
+}
+
+void DescriptorPool::cleanupDescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings)
+{
+	for (auto& binding : bindings)
+	{
+		auto it = m_TypeInfos.find(binding.descriptorType);
+		if (it != m_TypeInfos.end())
+		{
+			it->second.count--;
+		}
+	}
 }
 
 const PipelineAdvancedConfig PipelineAdvancedConfig::defaultConfig = PipelineAdvancedConfig{};

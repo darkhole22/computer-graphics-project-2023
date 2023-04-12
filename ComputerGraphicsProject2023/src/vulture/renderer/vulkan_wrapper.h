@@ -505,14 +505,14 @@ public:
 	~DescriptorSet();
 	friend class DescriptorPool;
 private:
-	DescriptorSet(const DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
+	DescriptorSet(DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
 	
 	void create();
 	void cleanup();
 	void recreate(bool clean = true);
 
 	std::vector<VkDescriptorSet> m_Handles;
-	DescriptorPool const* m_Pool;
+	DescriptorPool* m_Pool;
 	DescriptorSetLayout const* m_Layout;
 	std::vector<DescriptorWrite> m_DescriptorWrites;
 };
@@ -541,8 +541,7 @@ public:
 
 	void reserveSpace(uint32_t count, const DescriptorSetLayout& layout);
 
-	std::weak_ptr<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
-	void freeDescriptorSet(std::weak_ptr<DescriptorSet> descriptorSet);
+	Ref<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
 	~DescriptorPool();
 
@@ -551,14 +550,17 @@ public:
 		uint32_t size;
 		uint32_t count;
 	};
+
+	friend class DescriptorSet;
 private:
 	VkDescriptorPool m_Handle = VK_NULL_HANDLE;
 	Device const* m_Device;
 	uint32_t m_FrameCount;
 	uint32_t m_Size = 0;
 	std::unordered_map<VkDescriptorType, DescriptorTypePoolInfo> m_TypeInfos;
-	std::unordered_set<std::shared_ptr<DescriptorSet>> m_Sets;
+	std::unordered_set<Ref<DescriptorSet>> m_Sets;
 
+	void cleanupDescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
 	void cleanup();
 	void recreate();
 };

@@ -4,7 +4,7 @@
 
 namespace vulture {
 
-RenderableObject::RenderableObject(Ref<Model> model, WRef<DescriptorSet> descriptorSet) :
+RenderableObject::RenderableObject(Ref<Model> model, Ref<DescriptorSet> descriptorSet) :
 	m_Model(model), m_DescriptorSet(descriptorSet)
 {
 

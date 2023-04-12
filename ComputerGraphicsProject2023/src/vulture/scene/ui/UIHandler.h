@@ -54,8 +54,8 @@ private:
 
 	Uniform<TextBufferObject> m_Uniform;
 
-	WRef<DescriptorSet> m_DescriptorSet;
-	inline const DescriptorSet& getDescriptorSet() const { return *m_DescriptorSet.lock(); }
+	Ref<DescriptorSet> m_DescriptorSet;
+	inline const DescriptorSet& getDescriptorSet() const { return *m_DescriptorSet; }
 
 	void recreate();
 	void update(float dt);
@@ -93,7 +93,7 @@ private:
 	Renderer const* m_Renderer;
 	DescriptorPool* m_DescriptorPool;
 	Uniform<ScreenBufferObject> m_ScreenUniform;
-	WRef<DescriptorSet> m_ScreenDescriptorSet;
+	Ref<DescriptorSet> m_ScreenDescriptorSet;
 
 	void update(float dt);
 	void recordCommandBuffer(RenderTarget& target);

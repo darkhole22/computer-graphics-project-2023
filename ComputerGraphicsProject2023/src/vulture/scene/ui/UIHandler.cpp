@@ -58,7 +58,7 @@ void UIHandler::recordCommandBuffer(RenderTarget& target)
 {
 	target.bindPipeline(*m_Pipeline);
 
-	target.bindDescriptorSet(*m_Pipeline, *m_ScreenDescriptorSet.lock(), 1);
+	target.bindDescriptorSet(*m_Pipeline, *m_ScreenDescriptorSet, 1);
 
 	for (auto& [handle, text] : m_Texts)
 	{
@@ -74,7 +74,7 @@ void UIHandler::updateUniforms(RenderTarget& target)
 {
 	auto [index, count] = target.getFrameInfo();
 
-	m_ScreenDescriptorSet.lock()->map(index);
+	m_ScreenDescriptorSet->map(index);
 
 	for (auto& [handle, text] : m_Texts)
 	{

@@ -12,13 +12,13 @@ namespace vulture {
 class RenderableObject
 {
 public:
-	RenderableObject(Ref<Model> model, WRef<DescriptorSet> descriptorSet);
+	RenderableObject(Ref<Model> model, Ref<DescriptorSet> descriptorSet);
 
-	inline const DescriptorSet& getDescriptorSet() { return *m_DescriptorSet.lock(); }
+	inline const DescriptorSet& getDescriptorSet() { return *m_DescriptorSet; }
 	inline const Model& getModel() { return *m_Model.get(); }
 private:
 	Ref<Model> m_Model;
-	WRef<DescriptorSet> m_DescriptorSet;
+	Ref<DescriptorSet> m_DescriptorSet;
 };
 
 using ObjectHandle = int64_t;
