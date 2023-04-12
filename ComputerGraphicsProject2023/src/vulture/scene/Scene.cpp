@@ -44,7 +44,7 @@ Scene::Scene(const Renderer& renderer) :
 	setModified();
 }
 
-void Scene::render(RenderTarget target)
+void Scene::render(RenderTarget target, float dt)
 {
 	if (target.updated())
 	{
@@ -64,6 +64,10 @@ void Scene::render(RenderTarget target)
 		recordCommandBuffer(target);
 		m_FrameModified[index] = false;
 	}
+
+	auto& [width, height] = target.getExtent();
+	m_Camera.m_AspectRatio = static_cast<float>(width) / height;
+	m_Camera.update(dt);
 
 	updateUniforms(target);
 }
@@ -127,8 +131,6 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 void Scene::updateUniforms(RenderTarget& target)
 {
 	auto [index, count] = target.getFrameInfo();
-
-	m_Camera.update();
 
 	m_Camera.map(index);
 }

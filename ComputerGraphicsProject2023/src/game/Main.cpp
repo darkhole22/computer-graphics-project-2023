@@ -11,7 +11,9 @@ class TestGame : public Game
 {
 public:
 	Scene* scene = nullptr;
+
 	Ref<GameObject> obj;
+	Camera* camera;
 
 	void setup() override
 	{
@@ -42,9 +44,12 @@ public:
 		Input::setAction("MOVE_RIGHT", rightAction);
 
 		scene = Application::getScene();
+		camera = scene->getCamera();
 
 		obj = scene->makeObject("res/models/vulture.obj", "res/textures/vulture.png");
-	}
+
+		camera->position = glm::vec3(10, 5, 10);
+}
 
 	void update(float dt) override
 	{
@@ -53,6 +58,8 @@ public:
 
 		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
 		obj->translate(glm::vec3(x * SPEED * dt, 0.0f, 0.0f));
+
+		camera->lookAt(glm::vec3(0.0f));
 	}
 private:
 	const float SPEED = 10;
