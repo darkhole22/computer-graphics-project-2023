@@ -29,12 +29,12 @@ void Logger::init(const std::string& outFilePath)
 {
 	if (loggingFile.is_open())
 	{
-		VUWARN("Trying to initialize the Logger twice. File [%s] not open. Skipping...", outFilePath);
+		VUWARN("Trying to initialize the Logger twice. File [%s] not open. Skipping...", outFilePath.c_str());
 		return;
 	}
 	loggingFile.open(outFilePath);
 	if (!loggingFile.is_open())
-		VUWARN("Unable to open [%s] during Logger initialization.", outFilePath);
+		VUWARN("Unable to open [%s] during Logger initialization.", outFilePath.c_str());
 }
 
 void Logger::cleanup()
