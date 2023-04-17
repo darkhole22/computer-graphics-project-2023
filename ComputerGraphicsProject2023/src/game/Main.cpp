@@ -1,6 +1,3 @@
-#include <iostream>
-#include <cstdlib>
-
 #define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
 #include "vulture/core/Game.h"
@@ -142,6 +139,8 @@ private:
 
 int main()
 {
+	int result = EXIT_SUCCESS;
+	Logger::init("output.log");
 	try
 	{
 		Ref<Application> app; // The game must be destroyed before the application
@@ -150,13 +149,13 @@ int main()
 
 			app = Application::launch(game, vulture::AppConfig{ "Vulture demo", 800, 600 });
 		}
-
-		return EXIT_SUCCESS;
 	}
 	catch (const std::exception &exception)
 	{
 		VUFATAL("An exeption was thrown.\nMessage: %s\n\nShutting down!", exception.what());
+		result = EXIT_FAILURE;
 	}
 
-	return EXIT_FAILURE;
+	Logger::cleanup();
+	return result;
 }
