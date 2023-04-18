@@ -139,8 +139,7 @@ private:
 
 int main()
 {
-	int result = EXIT_SUCCESS;
-	Logger::init("output.log");
+	Logger logger("output.log");
 	try
 	{
 		Ref<Application> app; // The game must be destroyed before the application
@@ -149,13 +148,13 @@ int main()
 
 			app = Application::launch(game, vulture::AppConfig{ "Vulture demo", 800, 600 });
 		}
+
+		return EXIT_SUCCESS;
 	}
 	catch (const std::exception &exception)
 	{
 		VUFATAL("An exeption was thrown.\nMessage: %s\n\nShutting down!", exception.what());
-		result = EXIT_FAILURE;
 	}
 
-	Logger::cleanup();
-	return result;
+	return EXIT_FAILURE;
 }

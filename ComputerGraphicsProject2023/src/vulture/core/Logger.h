@@ -31,6 +31,9 @@ namespace vulture {
 class Logger
 {
 public:
+	Logger(const std::string& outFilePath);
+	~Logger();
+
 	enum class LoggingLevel
 	{
 		TRACE,
@@ -44,46 +47,48 @@ public:
 	static void init(const std::string& outFilePath);
 	static void cleanup();
 
-	static void log(LoggingLevel level, const std::string_view& message);
+	static void log(LoggingLevel level, const char* filePath, int fileLine, const std::string_view& message);
 
 	template <class... Args>
-	static void log(LoggingLevel level, const std::string_view& message, Args&&... args)
+	static void log(LoggingLevel level, const char* filePath, int fileLine, const std::string_view& message, Args&&... args)
 	{
 		int size = std::snprintf(nullptr, 0, message.data(), args ...);
 		if (size < 0) return;
 		std::string out{};
 		out.resize(static_cast<size_t>(size));
 		std::snprintf(out.data(), out.size() + 1, message.data(), args ...);
-		log(level, out);
+		log(level, filePath, fileLine, out);
 	}
 };
 
 }
 
+#define VU_DEBUG_PREFIX_STR "[%s:%d]\n"
+
 #if defined(VU_LOGGER_TRACE_ENABLED) && defined(VU_DEBUG_BUILD)
-#define VUTRACE(msg, ...) vulture::Logger::log(Logger::LoggingLevel::TRACE, msg, ##__VA_ARGS__)
+#define VUTRACE(msg, ...) vulture::Logger::log(Logger::LoggingLevel::TRACE, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 #else
 #define VUTRACE(msg, ...)
 #endif // VU_LOGGER_TRACE_ENABLED
 
 #ifdef VU_LOGGER_INFO_ENABLED
-#define VUINFO(msg, ...) vulture::Logger::log(Logger::LoggingLevel::INFO, msg, ##__VA_ARGS__)
+#define VUINFO(msg, ...) vulture::Logger::log(Logger::LoggingLevel::INFO, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 #else
 #define VUINFO(msg, ...)
 #endif // VU_LOGGER_INFO_ENABLED
 
 #ifdef VU_LOGGER_DEBUG_ENABLED
-#define VUDEBUG(msg, ...) vulture::Logger::log(Logger::LoggingLevel::DEBUG, msg, ##__VA_ARGS__)
+#define VUDEBUG(msg, ...) vulture::Logger::log(Logger::LoggingLevel::DEBUG, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 #else
 #define VUDEBUG(msg, ...)
 #endif // VU_LOGGER_WARNING_ENABLED
 
 #ifdef VU_LOGGER_WARNING_ENABLED
-#define VUWARN(msg, ...) vulture::Logger::log(Logger::LoggingLevel::WARNING, msg, ##__VA_ARGS__)
+#define VUWARN(msg, ...) vulture::Logger::log(Logger::LoggingLevel::WARNING, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 #else
 #define VUWARN(msg, ...)
 #endif // VU_LOGGER_WARNING_ENABLED
 
-#define VUERROR(msg, ...) vulture::Logger::log(Logger::LoggingLevel::ERROR, msg, ##__VA_ARGS__)
+#define VUERROR(msg, ...) vulture::Logger::log(Logger::LoggingLevel::ERROR, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 
-#define VUFATAL(msg, ...) vulture::Logger::log(Logger::LoggingLevel::FATAL, msg, ##__VA_ARGS__)
+#define VUFATAL(msg, ...) vulture::Logger::log(Logger::LoggingLevel::FATAL, __FILE__, __LINE__, msg, ##__VA_ARGS__)
