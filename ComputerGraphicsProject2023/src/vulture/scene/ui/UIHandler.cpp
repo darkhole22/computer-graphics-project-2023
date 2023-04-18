@@ -7,7 +7,8 @@ UIHandler::UIHandler(const Renderer& renderer, DescriptorPool& descriptorsPool) 
 {
 	m_TextDSLayout = renderer.makeDescriptorSetLayout();
 	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
 	m_TextDSLayout->create();
 
 	m_ScreenDSLayout = renderer.makeDescriptorSetLayout();
@@ -62,6 +63,7 @@ void UIHandler::recordCommandBuffer(RenderTarget& target)
 
 	for (auto& [handle, text] : m_Texts)
 	{
+		if (!text->m_Visible) continue;
 		target.bindDescriptorSet(*m_Pipeline, text->getDescriptorSet(), 0);
 
 		target.bindVertexBuffer(text->m_VertexBuffer);
@@ -95,13 +97,14 @@ UIText::UIText(UITextHandle handle, const Renderer& renderer,
 	Ref<Font> font, const std::string& text, glm::vec2 position, float scale) :
 	m_Hndle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
 {
-	m_Uniform = renderer.makeUniform<TextBufferObject>();
+	m_VertexUniform = renderer.makeUniform<TextVertexBufferObject>();
+	m_FragmentUniform = renderer.makeUniform<TextFragmentBufferObject>();
 
 	m_DescriptorSet = descriptorPool.getDescriptorSet(*descriptorSetLayout,
-		{ font->getTexture(), m_Uniform });
+		{ font->getTexture(), m_VertexUniform, m_FragmentUniform });
 
-	m_Uniform->position = position;
-	m_Uniform->scale = scale;
+	m_VertexUniform->position = position;
+	m_VertexUniform->scale = scale;
 
 	recreate();
 }
@@ -112,6 +115,17 @@ void UIText::setText(const std::string& text)
 
 	m_Text = text;
 	m_Modified = true;
+}
+
+void UIText::setVisible(bool visible)
+{
+	bool wasVisible = m_Visible;
+	m_Visible = visible;
+	m_FragmentUniform->visibility = visible;
+	if (visible && !wasVisible)
+	{
+		emit(UITextRecreated());
+	}
 }
 
 void UIText::recreate()

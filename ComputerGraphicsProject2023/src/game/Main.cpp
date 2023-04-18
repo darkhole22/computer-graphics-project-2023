@@ -24,6 +24,7 @@ public:
 	Uniform<ModelBufferObject> objUniform;
 	Ref<Texture> objTexture;
 	Ref<UIText> text;
+	Ref<UIText> text2;
 
 	void setup() override
 	{
@@ -98,8 +99,12 @@ public:
 
 		camera->position = glm::vec3(10, 5, 10);
 
-		text = handlerUI->makeText("0123546879");
-		text->setSize(30);
+		text = handlerUI->makeText("FPS");
+		text2 = handlerUI->makeText("Frame Time");
+		text2->setPosition({ 20, 50 });
+
+		text->setVisible(false);
+		text2->setVisible(false);
 	}
 
 	void update(float dt) override
@@ -118,7 +123,17 @@ public:
 		}
 
 		{
-			static float fps = 60.0f;
+			// Press F3 to toggle info
+			static bool wasF3Pressed = false;
+			bool isF3Pressed = Input::isKeyPressed(GLFW_KEY_F3);
+			if (isF3Pressed && !wasF3Pressed)
+			{
+				text->setVisible(!text->isVisible());
+				text2->setVisible(!text2->isVisible());
+			}
+			wasF3Pressed = isF3Pressed;
+
+			static float fps = 0.0f;
 			static float delta = 0;
 			
 			static const float WRITE_FPS_TIMEOUT = 0.5; // seconds
@@ -130,7 +145,9 @@ public:
 			if (delta > WRITE_FPS_TIMEOUT)
 			{
 				text->setText("FPS: " + std::to_string(fps));
-				delta -= 1.0f;
+				text2->setText("Frame time: " + std::to_string(dt * 1000) + "ms");
+
+				delta -= WRITE_FPS_TIMEOUT;
 			}
 		}
 	}

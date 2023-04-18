@@ -5,7 +5,7 @@ layout(set = 1, binding = 0) uniform ScreenBufferObject {
     float height;
 } sbo;
 
-layout(set = 0, binding = 1) uniform TextBufferObject {
+layout(set = 0, binding = 1) uniform TextVertexBufferObject {
     vec2 position;
     float scale;
 } tbo;
