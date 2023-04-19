@@ -69,9 +69,13 @@ private:
 	bool m_Modified = false;
 	bool m_Visible = true;
 
+	std::vector<UIVertex> m_Vertices;
+	std::vector<uint32_t> m_Indices;
+	Buffer m_VertexStagingBuffer; // TODO consider implementing a staging buffer pool
+	Buffer m_IndexStagingBuffer;
 	Buffer m_VertexBuffer;
 	Buffer m_IndexBuffer;
-	uint32_t m_IndexCount = 0;
+	size_t m_IndexCount = 0;
 
 	Uniform<TextVertexBufferObject> m_VertexUniform;
 	Uniform<TextFragmentBufferObject> m_FragmentUniform;
