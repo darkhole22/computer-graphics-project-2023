@@ -130,6 +130,13 @@ void UIText::setVisible(bool visible)
 
 void UIText::recreate()
 {
+	if (m_Text.length() == 0)
+	{
+		m_IndexCount = 0;
+		setVisible(false);
+		return;
+	}
+
 	std::vector<UIVertex> vertices{};
 	std::vector<uint32_t> indices{};
 	vertices.reserve(m_Text.length() * 4);
