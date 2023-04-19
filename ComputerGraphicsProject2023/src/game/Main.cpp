@@ -129,7 +129,7 @@ public:
 
 			if (delta > WRITE_FPS_TIMEOUT)
 			{
-				text->setText("FPS: " + std::to_string(fps));
+				text->setText(stringFormat("FPS: %.0f", fps));
 				delta -= 1.0f;
 			}
 		}
