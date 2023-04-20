@@ -24,7 +24,7 @@ project "ComputerGraphicsProject2023"
     location "ComputerGraphicsProject2023"
     kind "ConsoleApp"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     staticruntime "On"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
