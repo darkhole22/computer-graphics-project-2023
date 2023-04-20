@@ -1,8 +1,6 @@
 #pragma once
 #include "vulture/util/Types.h"
 
-#include <cstdlib> // std::malloc, std::free
-
 #include <string>
 
 namespace vulture {
@@ -48,6 +46,113 @@ constexpr bool strcmp(const char* s1, const char* s2)
 class String
 {
 public:
+	template <class T>
+	struct Iterator_T
+	{
+		using iterator_category = std::bidirectional_iterator_tag;
+		using difference_type = i64;
+		using value_type = typename T;
+		using pointer = typename T*;
+		using reference = typename T&;
+
+		constexpr Iterator_T() : m_Ptr(nullptr) {}
+		constexpr Iterator_T(pointer ptr) : m_Ptr(ptr) {}
+		constexpr Iterator_T(const Iterator_T& ptr) = default;
+		constexpr Iterator_T& operator=(const Iterator_T& ptr) = default;
+
+		constexpr Iterator_T& operator++() { ++m_Ptr; return *this; }
+		constexpr Iterator_T& operator++(int) { Iterator_T tmp = *this; ++(*this); return tmp; }
+		
+		constexpr Iterator_T& operator--() { --m_Ptr; return *this; }
+		constexpr Iterator_T& operator--(int) { Iterator_T tmp = *this; --(*this); return tmp; }
+
+		constexpr auto operator<=>(const Iterator_T& other) const { return m_Ptr <=> other.m_Ptr; }
+		constexpr bool operator==(const Iterator_T& other) const { return std::is_eq(*this <=> other); }
+
+		constexpr reference operator*() { return *m_Ptr; }
+		constexpr const reference operator*() const { return *m_Ptr; }
+
+		constexpr ~Iterator_T() = default;
+	private:
+		pointer m_Ptr;
+	};
+
+	template <class T>
+	struct UTF8Iterator_T
+	{
+		using iterator_category = std::forward_iterator_tag;
+		using difference_type = i64;
+		using value_type = i32;
+		// using pointer = i32*;
+		// using reference = i32&;
+
+		constexpr UTF8Iterator_T() : UTF8Iterator_T(nullptr) {}
+		constexpr UTF8Iterator_T(T* ptr) : m_Ptr(ptr), m_Codepoint(0) { computeCodepoint(); }
+		constexpr UTF8Iterator_T(const UTF8Iterator_T& ptr) = default;
+		constexpr UTF8Iterator_T& operator=(const UTF8Iterator_T& ptr) = default;
+
+		constexpr UTF8Iterator_T& operator++()
+		{ 
+			++m_Ptr;
+			computeCodepoint();
+			return *this; 
+		}
+
+		constexpr UTF8Iterator_T& operator++(int) { UTF8Iterator_T tmp = *this; ++(*this); return tmp; }
+
+		constexpr auto operator<=>(const UTF8Iterator_T& other) const { return m_Ptr <=> other.m_Ptr; }
+		constexpr bool operator==(const UTF8Iterator_T& other) const { return std::is_eq(*this <=> other); }
+
+		// constexpr reference operator*() { return *m_Ptr; }
+		constexpr value_type operator*() const { return m_Codepoint; }
+		// constexpr pointer operator->() { return m_Ptr; }
+		// constexpr const pointer operator->() const { return m_Ptr; }
+
+		constexpr ~UTF8Iterator_T() = default;
+	private:
+		T* m_Ptr;
+		value_type m_Codepoint;
+
+		constexpr void computeCodepoint()
+		{
+			m_Codepoint = *m_Ptr;
+			if (m_Codepoint >= 0x7F && (m_Codepoint & 0xE0) == 0xC0)
+			{
+				m_Codepoint =
+					((m_Ptr[0] & 0b00011111) << 6) +
+					((m_Ptr[1] & 0b00111111));
+				++m_Ptr;
+			}
+			else if ((m_Codepoint & 0xF0) == 0xE0)
+			{
+				m_Codepoint =
+					((m_Ptr[0] & 0b00001111) << 12) +
+					((m_Ptr[1] & 0b00011111) << 6) +
+					((m_Ptr[2] & 0b00111111));
+				m_Ptr += 2;
+			}
+			else if ((m_Codepoint & 0xF8) == 0xF0)
+			{
+				m_Codepoint =
+					((m_Ptr[0] & 0b00000111) << 18) +
+					((m_Ptr[0] & 0b00001111) << 12) +
+					((m_Ptr[1] & 0b00011111) << 6) +
+					((m_Ptr[2] & 0b00111111));
+				m_Ptr += 3;
+			}
+			else
+			{
+				// TODO log error
+			}
+		}
+	};
+	
+	using Iterator = Iterator_T<char>;
+	using ConstIterator = Iterator_T<const char>;
+
+	using UTF8Iterator = UTF8Iterator_T<char>;
+	using ConstUTF8Iterator = UTF8Iterator_T<const char>;
+
 	constexpr String() noexcept : m_Data() {}
 
 	constexpr String(const String& other) noexcept : m_Data()
@@ -201,15 +306,61 @@ public:
 		return const_cast<String*>(this)->data();
 	}
 	
-	// TODO iterators
-	/*
-	begin()
-	end()
-	rbegin()
-	rend()
-	utf8begin()
-	utf8end()
-	*/
+	constexpr Iterator begin()
+	{
+		if (!(m_Data.head & DYNAMIC_STRING_MASK))
+			return Iterator(m_Data.str);
+		else return Iterator(getDynamicString());
+	}
+
+	constexpr ConstIterator begin() const
+	{
+		if (!(m_Data.head & DYNAMIC_STRING_MASK))
+			return ConstIterator(m_Data.str);
+		else return ConstIterator(getDynamicString());
+	}
+
+	constexpr Iterator end()
+	{
+		if (!(m_Data.head & DYNAMIC_STRING_MASK))
+			return Iterator(m_Data.str + m_Data.head);
+		else return Iterator(getDynamicString() + getDynamicData()->size);
+	}
+
+	constexpr ConstIterator end() const
+	{
+		if (!(m_Data.head & DYNAMIC_STRING_MASK))
+			return ConstIterator(m_Data.str + m_Data.head);
+		else return ConstIterator(getDynamicString() + getDynamicData()->size);
+	}
+
+	constexpr UTF8Iterator utf8begin()
+	{
+		if (!(m_Data.head & DYNAMIC_STRING_MASK))
+			return UTF8Iterator(m_Data.str);
+		else return UTF8Iterator(getDynamicString());
+	}
+
+	constexpr UTF8Iterator utf8end()
+	{
+		if (!(m_Data.head & DYNAMIC_STRING_MASK))
+			return UTF8Iterator(m_Data.str + m_Data.head);
+		else return UTF8Iterator(getDynamicString() + getDynamicData()->size);
+	}
+
+	constexpr ConstUTF8Iterator utf8begin() const
+	{
+		if (!(m_Data.head & DYNAMIC_STRING_MASK))
+			return ConstUTF8Iterator(m_Data.str);
+		else return ConstUTF8Iterator(getDynamicString());
+	}
+
+	constexpr ConstUTF8Iterator utf8end() const
+	{
+		if (!(m_Data.head & DYNAMIC_STRING_MASK))
+			return ConstUTF8Iterator(m_Data.str + m_Data.head);
+		else return ConstUTF8Iterator(getDynamicString() + getDynamicData()->size);
+	}
 
 	constexpr bool isEmpty() const noexcept
 	{
@@ -235,7 +386,16 @@ public:
 		}
 	}
 
-	// TODO u64 utf8length() const noexcept;
+	u64 utf8length() const noexcept
+	{
+		u64 length = 0;
+		auto it = utf8begin();
+		while (it++ != utf8end())
+		{
+			++length;
+		}
+		return length;
+	}
 
 	constexpr u64 capacity() const noexcept
 	{
@@ -286,10 +446,11 @@ public:
 		else
 		{
 			grow(size + 1);
-			
-			getDynamicData()->size = size;
 
-			// TODO use iterator to update resized string
+			auto it = end();
+			getDynamicData()->size = size;
+			while (it++ != end())
+				*it = ch;
 		}
 	}
 
