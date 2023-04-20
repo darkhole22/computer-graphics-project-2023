@@ -29,13 +29,13 @@ class UIText
 public:
 	UIText(UITextHandle handle, const Renderer& renderer, DescriptorPool& descriptorPool,
 		Ref<DescriptorSetLayout> descriptorSetLayout, Ref<Font> font, 
-		const std::string& text, glm::vec2 position, float scale);
+		const String& text, glm::vec2 position, float scale);
 
-	void setText(const std::string& text);
+	void setText(const String& text);
 	void setPosition(glm::vec2 position) { m_Uniform->position = position; } // TODO boundary check
 	void setSize(float size) { m_Uniform->scale = size; } // TODO boundary check
 
-	inline const std::string& getText() const { return m_Text; }
+	inline const String& getText() const { return m_Text; }
 	inline glm::vec2 getPosition() const { return m_Uniform->position; }
 	inline float getSize() const { return m_Uniform->scale; }
 
@@ -45,7 +45,7 @@ private:
 	Device const* m_Device;
 	Ref<Font> m_Font;
 
-	std::string m_Text;
+	String m_Text;
 	bool m_Modified = false;
 
 	Buffer m_VertexBuffer;
@@ -74,7 +74,7 @@ class UIHandler
 	EVENT(UIModified)
 
 public:
-	Ref<UIText> makeText(std::string text, glm::vec2 position = {20, 0.5}, float scale = 22.0f);
+	Ref<UIText> makeText(String text, glm::vec2 position = {20, 0.5}, float scale = 22.0f);
 	void removeText(Ref<UIText> text);
 
 	friend class Scene;

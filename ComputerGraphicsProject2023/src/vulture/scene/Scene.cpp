@@ -10,8 +10,8 @@ RenderableObject::RenderableObject(Ref<Model> model, Ref<DescriptorSet> descript
 
 }
 
-SceneObjectList::SceneObjectList(const Renderer& renderer, const std::string& vertexShader, 
-	const std::string& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
+SceneObjectList::SceneObjectList(const Renderer& renderer, const String& vertexShader, 
+	const String& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
 	m_Pipeline(new Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
 {
 }
@@ -75,7 +75,7 @@ void Scene::render(RenderTarget target, float dt)
 	updateUniforms(target);
 }
 
-PipelineHandle Scene::makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
+PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
 {
 	PipelineHandle handle = m_NextPipelineHandle++; // Consider using a pseudo number generator
 

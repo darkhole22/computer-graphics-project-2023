@@ -5,8 +5,6 @@
 #include "vulture/core/Application.h"
 #include "vulture/core/Input.h"
 
-#include "vulture/util/String.h"
-
 using namespace vulture;
 
 struct ModelBufferObject
@@ -140,21 +138,15 @@ private:
 	const float SPEED = 10;
 };
 
-
-
 int main()
 {
-	String s;
-	std::string str = "Test strying long to avoid SSO and some moremmmmmmmmmmmmmmmmmmmmmmm";
-	str += str.c_str();
-	std::cout << "Test " << str << std::endl;
 	try
 	{
 		Ref<Application> app; // The game must be destroyed before the application
 		{
 			TestGame game;
 
-			// app = Application::launch(game, vulture::AppConfig{ "Vulture demo", 800, 600 });
+			app = Application::launch(game, vulture::AppConfig{ "Vulture demo", 800, 600 });
 		}
 
 		return EXIT_SUCCESS;

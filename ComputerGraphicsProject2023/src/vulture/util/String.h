@@ -43,6 +43,37 @@ constexpr bool strcmp(const char* s1, const char* s2)
 	return false;
 }
 
+// Implementation from https://mgronhol.github.io/fast-strcmp/
+constexpr i32 strncmp(const char* ptr0, const char* ptr1, u64 len)
+{
+	u64 fast = len / sizeof(size_t) + 1;
+	u64 offset = (fast - 1) * sizeof(size_t);
+	u32 current_block = 0;
+
+	if (len <= sizeof(size_t)) { fast = 0; }
+
+	u64* lptr0 = (u64*)ptr0;
+	u64* lptr1 = (u64*)ptr1;
+
+	while (current_block < fast) 
+	{
+		if ((lptr0[current_block] ^ lptr1[current_block])) 
+			for (u32 pos = current_block * sizeof(u64); pos < len; ++pos)
+				if ((ptr0[pos] ^ ptr1[pos]) || (ptr0[pos] == 0) || (ptr1[pos] == 0))
+					return  (i32)((u8)ptr0[pos] - (u8)ptr1[pos]);
+		++current_block;
+	}
+
+	while (len > offset) 
+	{
+		if ((ptr0[offset] ^ ptr1[offset])) 
+			return (i32)((u8)ptr0[offset] - (u8)ptr1[offset]);
+		++offset;
+	}
+
+	return 0;
+}
+
 class String
 {
 public:
@@ -61,10 +92,10 @@ public:
 		constexpr Iterator_T& operator=(const Iterator_T& ptr) = default;
 
 		constexpr Iterator_T& operator++() { ++m_Ptr; return *this; }
-		constexpr Iterator_T& operator++(int) { Iterator_T tmp = *this; ++(*this); return tmp; }
+		constexpr Iterator_T operator++(int) { Iterator_T tmp = *this; ++(*this); return tmp; }
 		
 		constexpr Iterator_T& operator--() { --m_Ptr; return *this; }
-		constexpr Iterator_T& operator--(int) { Iterator_T tmp = *this; --(*this); return tmp; }
+		constexpr Iterator_T operator--(int) { Iterator_T tmp = *this; --(*this); return tmp; }
 
 		constexpr auto operator<=>(const Iterator_T& other) const { return m_Ptr <=> other.m_Ptr; }
 		constexpr bool operator==(const Iterator_T& other) const { return std::is_eq(*this <=> other); }
@@ -98,7 +129,7 @@ public:
 			return *this; 
 		}
 
-		constexpr UTF8Iterator_T& operator++(int) { UTF8Iterator_T tmp = *this; ++(*this); return tmp; }
+		constexpr UTF8Iterator_T operator++(int) { UTF8Iterator_T tmp = *this; ++(*this); return tmp; }
 
 		constexpr auto operator<=>(const UTF8Iterator_T& other) const { return m_Ptr <=> other.m_Ptr; }
 		constexpr bool operator==(const UTF8Iterator_T& other) const { return std::is_eq(*this <=> other); }
@@ -283,9 +314,9 @@ public:
 		return m_Data.str[m_Data.head - 1];
 	}
 
-	constexpr char operator[](u64 position) const noexcept
+	constexpr const char& operator[](u64 position) const noexcept
 	{
-		return (*this)[position];
+		return (*const_cast<String*>(this))[position];
 	}
 
 	constexpr char* data() noexcept
@@ -429,7 +460,7 @@ public:
 
 	constexpr void resize(u64 size, char ch = '\0')
 	{
-		if (capacity() < size)
+		if (capacity() > size)
 		{
 			// shrink??
 			if (!(m_Data.head & DYNAMIC_STRING_MASK))
@@ -462,7 +493,9 @@ public:
 			{
 				if (m_Data.data == other.m_Data.data) return true;
 
-				return strcmp(getDynamicString(), other.getDynamicString());
+				u64 len = length();
+				u64 oLen = other.length();
+				return strncmp(getDynamicString(), other.getDynamicString(), len > oLen ? oLen : len) == 0;
 			}
 			else
 			{
@@ -474,10 +507,48 @@ public:
 		return false;
 	}
 
+	constexpr auto operator<=>(const String& other) const noexcept
+	{
+		u64 len = length();
+		u64 oLen = other.length();
+		return strncmp(cString(), other.cString(), len > oLen ? oLen : len);
+	}
+
 	constexpr ~String()
 	{
 		cleanup();
 	}
+
+	friend constexpr String operator+(const String& left, const String& right) noexcept
+	{
+		String result{};
+		result.resize(left.length() + right.length() + 1);
+		strcpy(&result[0], &left[0]);
+		strcpy(&result[left.length()], &right[0]);
+		return result;
+	}
+
+	friend constexpr String operator+(const String& left, const char* right) noexcept
+	{
+		u64 rLength = strlen(right);
+		String result{};
+		result.resize(left.length() + rLength + 1);
+		strcpy(&result[0], &left[0]);
+		strcpy(&result[left.length()], right);
+		return result;
+	}
+
+	friend constexpr String operator+(const char* left, const String& right) noexcept 
+	{
+		u64 lLength = strlen(left);
+		String result{};
+		result.resize(right.length() + lLength + 1);
+		strcpy(&result[0], left);
+		strcpy(&result[lLength], &right[0]);
+		return result;
+	}
+
+	// TODO other + operator
 private:
 	constexpr static u8 DYNAMIC_STRING_MASK = 0b10000000;
 	constexpr static u8 MAX_SMALL_STRING_LEN = 22;
@@ -612,19 +683,42 @@ private:
 	}
 };
 
-using VString = std::string;
-
 template<typename ... Args>
-VString stringFormat(const VString& format, Args ...args)
+String stringFormat(const char* format, Args ...args)
 {
-	VString s;
-	int size = std::snprintf(nullptr, 0, format.c_str(), args ...);
+	String s;
+	int size = std::snprintf(nullptr, 0, format, args ...);
 	if (size > 0) 
 	{
 		s.resize(size);
-		std::snprintf(s.data(), static_cast<size_t>(size) + 1, format.c_str(), args ...);
+		std::snprintf(s.data(), static_cast<size_t>(size) + 1, format, args ...);
 	}
 	return s;
 }
 
 } // namespace vulture
+
+namespace std {
+
+/*
+ * @brief A simple implementation of the Fowler–Noll–Vo hash function.
+ * See https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function for reference.
+ */ 
+template<> struct hash<vulture::String>
+{
+	size_t operator()(const vulture::String& str) const
+	{
+		const char* s = str.cString();
+		auto* buffer = reinterpret_cast<const unsigned char*>(s);
+		size_t h = 0;
+		while (*buffer)
+		{
+			h ^= (size_t)buffer++;
+			h += (h << 1) + (h << 4) + (h << 5) +
+				(h << 7) + (h << 8) + (h << 40);
+		}
+		return h;
+	}
+};
+
+};

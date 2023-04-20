@@ -33,7 +33,7 @@ UIHandler::UIHandler(const Renderer& renderer, DescriptorPool& descriptorsPool) 
 	m_Font = Font::getDefault(renderer);
 }
 
-Ref<UIText> UIHandler::makeText(std::string text, glm::vec2 position, float scale)
+Ref<UIText> UIHandler::makeText(String text, glm::vec2 position, float scale)
 {
 	UITextHandle handle = m_NextTextHandle++;
 	auto uiText = Ref<UIText>(new UIText(handle, *m_Renderer, *m_DescriptorPool,
@@ -92,7 +92,7 @@ void UIHandler::update(float dt)
 
 UIText::UIText(UITextHandle handle, const Renderer& renderer, 
 	DescriptorPool& descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout, 
-	Ref<Font> font, const std::string& text, glm::vec2 position, float scale) :
+	Ref<Font> font, const String& text, glm::vec2 position, float scale) :
 	m_Hndle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
 {
 	m_Uniform = renderer.makeUniform<TextBufferObject>();
@@ -106,7 +106,7 @@ UIText::UIText(UITextHandle handle, const Renderer& renderer,
 	recreate();
 }
 
-void UIText::setText(const std::string& text)
+void UIText::setText(const String& text)
 {
 	if (!m_Modified && m_Text == text) return;
 

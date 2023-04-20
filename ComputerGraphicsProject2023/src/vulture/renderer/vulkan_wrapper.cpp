@@ -119,7 +119,7 @@ void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create
 	createInfo.pUserData = nullptr;
 }
 
-Instance::Instance(const std::string& applicationName)
+Instance::Instance(const String& applicationName)
 {
 	VALIDATION_LAYER_IF(
 		if (!checkValidationLayerSupport()) {
@@ -129,7 +129,7 @@ Instance::Instance(const std::string& applicationName)
 	
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = applicationName.c_str();
+	appInfo.pApplicationName = applicationName.cString();
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.pEngineName = "No Engine";
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -280,7 +280,7 @@ bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
 	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-	std::set<std::string> requiredExtensions(deviceRequiredExtensions.begin(), deviceRequiredExtensions.end());
+	std::set<String> requiredExtensions(deviceRequiredExtensions.begin(), deviceRequiredExtensions.end());
 
 	for (const auto& extension : availableExtensions) {
 		requiredExtensions.erase(extension.extensionName);
@@ -1436,10 +1436,10 @@ DescriptorSetLayout::~DescriptorSetLayout()
 	}
 }
 
-Shader::Shader(const Device& device, const std::string& name) :
+Shader::Shader(const Device& device, const String& name) :
 	m_Device(&device)
 {
-	std::ifstream file(name, std::ios::ate | std::ios::binary);
+	std::ifstream file(name.cString(), std::ios::ate | std::ios::binary);
 	if (!file.is_open()) {
 		throw std::runtime_error("Failed to open file!");
 	}
@@ -1588,15 +1588,15 @@ void Buffer::cleanup() noexcept
 	}
 }
 
-Texture::Texture(const Device& device, const std::string& path) :
+Texture::Texture(const Device& device, const String& path) :
 	m_Device(&device)
 {
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load(path.cString(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * 4LL * texHeight;
 
 	if (!pixels) {
-		throw std::runtime_error("Failed to load texture at " + path + "!");
+		throw std::runtime_error(("Failed to load texture at " + path + "!").cString());
 	}
 
 	m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
@@ -1880,8 +1880,8 @@ const PipelineAdvancedConfig PipelineAdvancedConfig::defaultConfig = PipelineAdv
 
 Pipeline::Pipeline(
 	const RenderPass& renderPass, 
-	const std::string& vertexShader, 
-	const std::string& fragmentShader, 
+	const String& vertexShader, 
+	const String& fragmentShader, 
 	const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, 
 	const VertexLayout& vertexLayout, 
 	const PipelineAdvancedConfig& config)

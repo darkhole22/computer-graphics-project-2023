@@ -26,7 +26,7 @@ using ObjectHandle = int64_t;
 class SceneObjectList
 {
 public:
-	SceneObjectList(const Renderer& renderer, const std::string& vertexShader, const std::string& fragmentShader,
+	SceneObjectList(const Renderer& renderer, const String& vertexShader, const String& fragmentShader,
 		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts);
 	
 	inline const Pipeline& getPipeline() const { return *m_Pipeline; }
@@ -50,7 +50,7 @@ public:
 
 	void render(RenderTarget target, float dt);
 
-	PipelineHandle makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
+	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
 	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
 	Camera* getCamera() { return &m_Camera; }
