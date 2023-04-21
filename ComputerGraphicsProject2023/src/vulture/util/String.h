@@ -2,6 +2,7 @@
 #include "vulture/util/Types.h"
 
 #include <string>
+#include <iostream>
 
 namespace vulture {
 
@@ -720,5 +721,18 @@ template<> struct hash<vulture::String>
 		return h;
 	}
 };
+
+inline ostream& operator<<(ostream& os, const vulture::String& str)
+{
+	return os << str.cString();
+}
+
+inline istream& operator>>(istream& is, vulture::String& str)
+{
+	std::string s;
+	is >> s;
+	str = s.c_str();
+	return is;
+}
 
 };
