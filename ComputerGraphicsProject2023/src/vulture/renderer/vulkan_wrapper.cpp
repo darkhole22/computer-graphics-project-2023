@@ -251,10 +251,12 @@ namespace vulture
 			})
 	}
 
-	Surface::Surface(const Instance &instance, const Window &window) : m_Handle(VK_NULL_HANDLE), m_Instance(&instance), m_Window(&window){
-																															ASSERT_VK_SUCCESS(glfwCreateWindowSurface(instance.getHandle(), m_Window->getHandle(), nullptr, &m_Handle), "Failed to create window surface!")}
+	Surface::Surface(const Instance &instance, const Window &window) : m_Handle(VK_NULL_HANDLE), m_Instance(&instance), m_Window(&window)
+	{
+		ASSERT_VK_SUCCESS(glfwCreateWindowSurface(instance.getHandle(), m_Window->getHandle(), nullptr, &m_Handle), "Failed to create window surface!");
+	}
 
-																	   Surface::~Surface()
+	Surface::~Surface()
 	{
 		if (m_Instance && m_Handle != VK_NULL_HANDLE)
 			vkDestroySurfaceKHR(m_Instance->getHandle(), m_Handle, nullptr);

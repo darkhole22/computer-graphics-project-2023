@@ -1,6 +1,8 @@
 #include "Renderer.h"
 #include "RenderTarget.h"
 
+#include "VulkanContext.h"
+
 namespace vulture {
 
 Renderer::Renderer(const Window& window) :
