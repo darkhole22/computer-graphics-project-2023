@@ -1,4 +1,5 @@
 #include "UIHandler.h"
+#include "vulture/core/Logger.h"
 
 namespace vulture {
 	
@@ -51,7 +52,7 @@ Ref<UIText> UIHandler::makeText(std::string text, glm::vec2 position, float scal
 
 void UIHandler::removeText(Ref<UIText> text)
 {
-	auto it = m_Texts.find(text->m_Hndle);
+	auto it = m_Texts.find(text->m_Handle);
 	m_Texts.erase(it);
 }
 
@@ -95,7 +96,7 @@ void UIHandler::update(float dt)
 UIText::UIText(UITextHandle handle, const Renderer& renderer, 
 	DescriptorPool& descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout, 
 	Ref<Font> font, const std::string& text, glm::vec2 position, float scale) :
-	m_Hndle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
+		m_Handle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
 {
 	m_VertexUniform = renderer.makeUniform<TextVertexBufferObject>();
 	m_FragmentUniform = renderer.makeUniform<TextFragmentBufferObject>();
@@ -121,7 +122,7 @@ void UIText::setVisible(bool visible)
 {
 	bool wasVisible = m_Visible;
 	m_Visible = visible;
-	m_FragmentUniform->visibility = visible;
+	m_FragmentUniform->visibility = static_cast<float>(visible);
 	if (visible && !wasVisible)
 	{
 		emit(UITextRecreated());
@@ -130,6 +131,7 @@ void UIText::setVisible(bool visible)
 
 void UIText::recreate()
 {
+	VUINFO("Recreating text");
 	size_t textLength = m_Text.length();
 	if (textLength == 0)
 	{

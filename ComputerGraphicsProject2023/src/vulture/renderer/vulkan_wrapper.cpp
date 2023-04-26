@@ -1,5 +1,6 @@
 #include "vulkan_wrapper.h"
 
+#define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
 
 #include <iostream>
@@ -109,7 +110,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 	{
 		if (std::strcmp(pCallbackData->pMessageIdName, "Loader Message") == 0) // Skip message caused by other application
 		{
-			return VK_FALSE;
+			// return VK_FALSE;
 		}
 		VUERROR("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
 	}

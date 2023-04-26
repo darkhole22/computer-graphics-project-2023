@@ -101,6 +101,7 @@ public:
 		text = handlerUI->makeText("FPS");
 		text2 = handlerUI->makeText("Frame Time");
 		text2->setPosition({ 20, 50 });
+		text->setBorder(true);
 
 		text->setVisible(false);
 		text2->setVisible(false);
@@ -127,6 +128,7 @@ public:
 			bool isF3Pressed = Input::isKeyPressed(GLFW_KEY_F3);
 			if (isF3Pressed && !wasF3Pressed)
 			{
+				VUINFO("AA");
 				text->setVisible(!text->isVisible());
 				text2->setVisible(!text2->isVisible());
 			}
@@ -170,7 +172,7 @@ int main()
 	}
 	catch (const std::exception &exception)
 	{
-		VUFATAL("An exeption was thrown.\nMessage: %s\n\nShutting down!", exception.what());
+		VUFATAL("An exception was thrown.\nMessage: %s\n\nShutting down!", exception.what());
 	}
 
 	return EXIT_FAILURE;

@@ -31,7 +31,7 @@ namespace vulture {
 class Logger
 {
 public:
-	Logger(const std::string& outFilePath);
+	explicit Logger(const std::string& outFilePath);
 	~Logger();
 
 	enum class LoggingLevel
@@ -81,7 +81,7 @@ public:
 #define VUDEBUG(msg, ...) vulture::Logger::log(Logger::LoggingLevel::DEBUG, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 #else
 #define VUDEBUG(msg, ...)
-#endif // VU_LOGGER_WARNING_ENABLED
+#endif // VU_LOGGER_DEBUG_ENABLED
 
 #ifdef VU_LOGGER_WARNING_ENABLED
 #define VUWARN(msg, ...) vulture::Logger::log(Logger::LoggingLevel::WARNING, __FILE__, __LINE__, msg, ##__VA_ARGS__)

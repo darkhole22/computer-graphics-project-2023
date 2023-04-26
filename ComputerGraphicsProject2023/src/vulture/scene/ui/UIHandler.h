@@ -15,14 +15,14 @@ struct UIVertex
 struct TextVertexBufferObject
 {
 	alignas(8) glm::vec2 position = { 0 , 0 };
-	alignas(4) float scale = 1.0f;
+	alignas(8) float scale = 1.0f;
 };
 
 struct TextFragmentBufferObject
 {
 	alignas(16) glm::vec3 color = { 1 , 1 , 1 };
-	alignas(16) glm::vec3 borderColor = { 1 , 0 , 0 };
-	alignas(4) float width = 0.4f;
+	alignas(16) glm::vec3 borderColor = { 1 , 0 , 0};
+	alignas(16) float width = 0.4f;
 	alignas(4) float edge = 0.1f;
 	alignas(4) float borderWidth = 0.4f;
 	alignas(4) float visibility = 1.0f;
@@ -61,7 +61,7 @@ public:
 
 	friend class UIHandler;
 private:
-	const UITextHandle m_Hndle;
+	const UITextHandle m_Handle;
 	Device const* m_Device;
 	Ref<Font> m_Font;
 
