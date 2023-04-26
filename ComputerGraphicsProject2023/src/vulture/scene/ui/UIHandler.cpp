@@ -94,8 +94,9 @@ namespace vulture
 	}
 
 	UIText::UIText(UITextHandle handle, const Renderer &renderer,
-				   DescriptorPool &descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout,
-				   Ref<Font> font, const String &text, glm::vec2 position, float scale) : m_Hndle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
+		DescriptorPool &descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout,
+		Ref<Font> font, const String &text, glm::vec2 position, float scale) :
+		m_Handle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
 	{
 		m_VertexUniform = renderer.makeUniform<TextVertexBufferObject>();
 		m_FragmentUniform = renderer.makeUniform<TextFragmentBufferObject>();
@@ -131,7 +132,8 @@ namespace vulture
 
 	void UIText::recreate()
 	{
-		VUINFO("Recreating text");
+		VUTRACE("Recreating text [%s].", m_Text.cString());
+
 		size_t textLength = m_Text.length();
 		if (textLength == 0)
 		{

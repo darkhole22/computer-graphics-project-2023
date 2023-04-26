@@ -89,7 +89,6 @@ public:
 		text = handlerUI->makeText("FPS");
 		text2 = handlerUI->makeText("Frame Time");
 		text2->setPosition({20, 50});
-		text->setBorder(true);
 
 		text->setVisible(false);
 		text2->setVisible(false);

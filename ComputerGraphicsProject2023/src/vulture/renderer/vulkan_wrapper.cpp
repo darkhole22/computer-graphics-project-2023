@@ -1,6 +1,6 @@
 #include "vulkan_wrapper.h"
 
-#define VU_LOGGER_TRACE_ENABLED
+// #define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
 
 #include <iostream>
@@ -128,7 +128,7 @@ namespace vulture
 		{
 			if (std::strcmp(pCallbackData->pMessageIdName, "Loader Message") == 0) // Skip message caused by other application
 			{
-				// return VK_FALSE;
+				return VK_FALSE;
 			}
 			VUERROR("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
 		}
@@ -1551,7 +1551,7 @@ namespace vulture
 		std::ifstream file(name.cString(), std::ios::ate | std::ios::binary);
 		if (!file.is_open())
 		{
-			VUERROR("Failed to open file [%s]!", name.c_str());
+			VUERROR("Failed to open file [%s]!", name.cString());
 			throw std::runtime_error("Failed to open file!");
 		}
 
