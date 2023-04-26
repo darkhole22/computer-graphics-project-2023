@@ -338,11 +338,14 @@ public:
 	Buffer(Buffer&& other) noexcept;
 
 	Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+	Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, void* data);
 
 	inline VkBuffer getHandle() const { return m_Handle; }
 	inline VkDeviceMemory getMemory() const { return m_Memory; }
+	inline VkDeviceSize getSize() const { return m_Size; }
 
-	void map(VkDeviceSize size, void* data);
+	void map(void* data) const;
+	void map() const;
 	void copyToBuffer(VkDeviceSize size, const Buffer& destination);
 
 	Buffer& operator=(const Buffer& other) = delete;
@@ -358,6 +361,8 @@ private:
 	VkBuffer m_Handle;
 	VkDeviceMemory m_Memory;
 	Device const* m_Device;
+	VkDeviceSize m_Size;
+	void* m_Data;
 
 	void cleanup() noexcept;
 };
@@ -375,55 +380,55 @@ public:
 		m_LocalData = other.m_LocalData;
 
 		other.m_Device = nullptr;
+		other.m_LocalData = nullptr;
 	}
 
 	Uniform(const Device& device, uint32_t count) :
 		m_Device(&device)
 	{
+		m_LocalData = new _Type();
 		m_Buffers.reserve(count);
 
 		for (size_t i = 0; i < count; i++)
 		{
-			m_Buffers.emplace_back(*m_Device, sizeof(_Type), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			m_Buffers.emplace_back(*m_Device,
+				sizeof(_Type),
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+				m_LocalData);
 		}
 	}
 
-	inline const std::vector<Buffer>& getBuffers() const { return m_Buffers; }
+	inline const std::vector<Buffer>* getBuffers() const { return &m_Buffers; }
 
-	inline void map(uint32_t index)
-	{
-		m_Buffers[index].map(sizeof(_Type), &m_LocalData);
-	}
-
-	inline void map()
-	{
-		for (auto& b : m_Buffers)
-		{
-			b.map(sizeof(_Type), &m_LocalData);
-		}
-	}
-
-	inline _Type* operator->() noexcept { return &m_LocalData; }
+	inline _Type* operator->() noexcept { return m_LocalData; }
+	inline const _Type* operator->() const noexcept { return m_LocalData; }
 
 	Uniform& operator=(const Uniform& other) = delete;
 	Uniform& operator=(Uniform&& other) noexcept {
 		if (m_Buffers.size() != other.m_Buffers.size())
 		{
+			delete m_LocalData;
+
 			m_Buffers = std::move(other.m_Buffers);
 			m_Device = other.m_Device;
 			m_LocalData = other.m_LocalData;
 
 			other.m_Device = nullptr;
+			other.m_LocalData = nullptr;
 		}
 		return *this;
 	}
 
-	~Uniform() = default;
+	~Uniform()
+	{
+		delete m_LocalData;
+	}
 private:
 	std::vector<Buffer> m_Buffers;
 	Device const* m_Device = nullptr;
 
-	_Type m_LocalData = _Type();
+	_Type * m_LocalData = nullptr;
 };
 
 class Texture
@@ -451,20 +456,21 @@ public:
 	template <class T>
 	inline DescriptorWrite(const Uniform<T>& uniform)
 	{
-		auto& uniforms = uniform.getBuffers();
-		m_UniformInfos.reserve(uniforms.size());
-		for (auto& uniform : uniforms)
+		m_UniformBuffers = uniform.getBuffers();
+		
+		m_UniformInfos.reserve(m_UniformBuffers->size());
+		for (auto& uniform : (*m_UniformBuffers))
 		{
 			VkDescriptorBufferInfo bufferInfo{};
 			bufferInfo.buffer = uniform.getHandle();
 			bufferInfo.offset = 0;
-			bufferInfo.range = sizeof(T);
-
+			bufferInfo.range = uniform.getSize();
 			m_UniformInfos.push_back(bufferInfo);
 		}
 	}
 
-	inline DescriptorWrite(const Texture& texture)
+	inline DescriptorWrite(const Texture& texture) :
+		m_UniformBuffers(nullptr)
 	{
 		VkDescriptorImageInfo imageInfo{};
 		imageInfo.imageLayout = texture.getLayout();
@@ -476,8 +482,11 @@ public:
 
 	VkWriteDescriptorSet getWriteDescriptorSet(VkDescriptorSet descriptorSet, uint32_t index, uint32_t binding) const;
 
+	void map(uint32_t index) const;
+
 	~DescriptorWrite() = default;
 private:
+	std::vector<Buffer> const* m_UniformBuffers;
 	std::vector<VkDescriptorBufferInfo> m_UniformInfos;
 	std::optional<VkDescriptorImageInfo> m_TextureInfo;
 };
@@ -491,17 +500,19 @@ public:
 
 	inline VkDescriptorSet getHandle(uint32_t index) const { return m_Handles[index]; }
 
+	void map(uint32_t index) const;
+
 	~DescriptorSet();
 	friend class DescriptorPool;
 private:
-	DescriptorSet(const DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
+	DescriptorSet(DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
 	
 	void create();
 	void cleanup();
 	void recreate(bool clean = true);
 
 	std::vector<VkDescriptorSet> m_Handles;
-	DescriptorPool const* m_Pool;
+	DescriptorPool* m_Pool;
 	DescriptorSetLayout const* m_Layout;
 	std::vector<DescriptorWrite> m_DescriptorWrites;
 };
@@ -514,7 +525,7 @@ public:
 	NO_COPY(DescriptorPool)
 
 	/*
-	* Constructor of a DescriptorPool
+	* @brief Constructor of a DescriptorPool
 	* 
 	* @param device - The logical device on witch the pool will be allocated.
 	* @param frameCount - The number of framebuffers.
@@ -530,8 +541,7 @@ public:
 
 	void reserveSpace(uint32_t count, const DescriptorSetLayout& layout);
 
-	std::weak_ptr<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
-	void freeDescriptorSet(std::weak_ptr<DescriptorSet> descriptorSet);
+	Ref<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
 	~DescriptorPool();
 
@@ -540,16 +550,27 @@ public:
 		uint32_t size;
 		uint32_t count;
 	};
+
+	friend class DescriptorSet;
 private:
 	VkDescriptorPool m_Handle = VK_NULL_HANDLE;
 	Device const* m_Device;
 	uint32_t m_FrameCount;
 	uint32_t m_Size = 0;
 	std::unordered_map<VkDescriptorType, DescriptorTypePoolInfo> m_TypeInfos;
-	std::unordered_set<std::shared_ptr<DescriptorSet>> m_Sets;
+	std::unordered_set<Ref<DescriptorSet>> m_Sets;
 
+	void cleanupDescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
 	void cleanup();
 	void recreate();
+};
+
+struct PipelineAdvancedConfig
+{
+	VkCompareOp compareOperator = VK_COMPARE_OP_LESS;
+	bool useAlpha = false;
+
+	static const PipelineAdvancedConfig defaultConfig;
 };
 
 class Pipeline
@@ -558,7 +579,7 @@ public:
 	NO_COPY(Pipeline)
 
 	Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, 
-		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, const VertexLayout& vertexLayout);
+		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, const VertexLayout& vertexLayout, const PipelineAdvancedConfig& config = PipelineAdvancedConfig::defaultConfig);
 
 	inline VkPipeline getHandle() const { return m_Handle; }
 	inline VkPipelineLayout getLayout() const { return m_Layout; }

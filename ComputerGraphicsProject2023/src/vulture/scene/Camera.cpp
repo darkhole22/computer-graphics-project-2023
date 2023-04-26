@@ -21,7 +21,6 @@ void Camera::setSize(float size)
 	if (size <= 0) return;
 
 	m_Size = size;
-	updateProjection();
 }
 
 void Camera::setFov(float fov)
@@ -29,24 +28,22 @@ void Camera::setFov(float fov)
 	if (fov < 1 || fov > 179) return;
 
 	m_Fov = glm::radians(fov);
-	updateProjection();
 }
 
 void Camera::setNearPlane(float nearPlane)
 {
 	m_NearPlane = nearPlane;
-	updateProjection();
 }
 
 void Camera::setFarPlane(float farPlane)
 {
 	m_FarPlane = farPlane;
-	updateProjection();
 }
 
 void Camera::update(float dt)
 {	
 	updateView();
+	updateProjection();
 }
 
 void Camera::updateProjection()

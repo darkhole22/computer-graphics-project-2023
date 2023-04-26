@@ -4,16 +4,24 @@
 #include "vulture/core/Game.h"
 #include "vulture/core/Application.h"
 #include "vulture/core/Input.h"
+#include "Player.h"
 
 using namespace vulture;
 
 class TestGame : public Game
 {
 public:
-	Scene* scene = nullptr;
+	Player* player;
 
-	Ref<GameObject> obj;
-	Camera* camera;
+	Scene* scene = nullptr;
+	Camera* camera = nullptr;
+	UIHandler* handlerUI = nullptr;
+	Ref<DescriptorSetLayout> descriptorSetLayout;
+	PipelineHandle pipeline = -1;
+	Ref<Model> model;
+	Uniform<ModelBufferObject> objUniform;
+	Ref<Texture> objTexture;
+	Ref<UIText> text;
 
 	void setup() override
 	{
@@ -21,9 +29,6 @@ public:
 		leftAction.keyboardBindings = { 
 			KeyboardBinding{{GLFW_KEY_A}}, 
 			KeyboardBinding{{GLFW_KEY_LEFT}} 
-		};
-		leftAction.gamepadButtonBindings = { 
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_LEFT}}
 		};
 		leftAction.gamepadAxisBindings = { 
 			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}}
@@ -35,34 +40,69 @@ public:
 			KeyboardBinding{{GLFW_KEY_D}},
 			KeyboardBinding{{GLFW_KEY_RIGHT}}
 		};
-		rightAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_RIGHT}}
-		};
 		rightAction.gamepadAxisBindings = {
 			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}}
 		};
 		Input::setAction("MOVE_RIGHT", rightAction);
 
+		InputAction upAction{};
+		upAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_W}},
+				KeyboardBinding{{GLFW_KEY_UP}}
+		};
+		upAction.gamepadAxisBindings = {
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_POS}}}
+		};
+		Input::setAction("MOVE_UP", upAction);
+
+		InputAction downAction{};
+		downAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_S}},
+				KeyboardBinding{{GLFW_KEY_DOWN}}
+		};
+		downAction.gamepadAxisBindings = {
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_NEG}}}
+		};
+		Input::setAction("MOVE_DOWN", downAction);
+
 		scene = Application::getScene();
 		camera = scene->getCamera();
+		handlerUI = scene->getUIHandle();
 
-		obj = scene->makeObject("res/models/vulture.obj", "res/textures/vulture.png");
+		player = new Player(scene->makeObject("res/models/vulture.obj", "res/textures/vulture.png"));
 
 		camera->position = glm::vec3(10, 5, 10);
-}
+
+		text = handlerUI->makeText("0123546879");
+		text->setSize(30);
+	}
 
 	void update(float dt) override
 	{
 		static float time = 0;
 		time += dt;
 
-		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
-		obj->translate(glm::vec3(x * SPEED * dt, 0.0f, 0.0f));
+		player->update(dt);
 
 		camera->lookAt(glm::vec3(0.0f));
+
+		{
+			static float fps = 60.0f;
+			static float delta = 0;
+			
+			static const float WRITE_FPS_TIMEOUT = 0.5; // seconds
+			static const float FPS_AVG_WEIGHT = 0.1f; // 0 <= x <= 1
+			
+			delta += dt;
+			fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0f / dt) * FPS_AVG_WEIGHT;
+
+			if (delta > WRITE_FPS_TIMEOUT)
+			{
+				text->setText("FPS: " + std::to_string(fps));
+				delta -= 1.0f;
+			}
+		}
 	}
-private:
-	const float SPEED = 10;
 };
 
 int main()

@@ -1478,7 +1478,7 @@ Shader::~Shader()
 }
 
 Buffer::Buffer() :
-	m_Handle(VK_NULL_HANDLE), m_Memory(VK_NULL_HANDLE), m_Device(nullptr)
+	m_Handle(VK_NULL_HANDLE), m_Memory(VK_NULL_HANDLE), m_Device(nullptr), m_Size(0), m_Data(nullptr)
 {
 }
 
@@ -1487,14 +1487,18 @@ Buffer::Buffer(Buffer&& other) noexcept
 	m_Handle = other.m_Handle;
 	m_Memory = other.m_Memory;
 	m_Device = other.m_Device;
+	m_Size = other.m_Size;
+	m_Data = other.m_Data;
 
 	other.m_Handle = VK_NULL_HANDLE;
 	other.m_Memory = VK_NULL_HANDLE;
 	other.m_Device = nullptr;
+	other.m_Size = 0;
+	other.m_Data = nullptr;
 }
 
-Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) :
-	m_Device(&device)
+Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, void* data) :
+	m_Device(&device), m_Size(size), m_Data(data)
 {
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -1519,13 +1523,23 @@ Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage
 	vkBindBufferMemory(m_Device->getHandle(), m_Handle, m_Memory, 0);
 }
 
-void Buffer::map(VkDeviceSize size, void* data)
+Buffer::Buffer(const Device& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) :
+	Buffer(device, size, usage, properties, nullptr)
+{
+}
+
+void Buffer::map(void* data) const
 {
 	void* tmp;
 
-	vkMapMemory(m_Device->getHandle(), m_Memory, 0, size, 0, &tmp);
-	memcpy(tmp, data, size);
+	vkMapMemory(m_Device->getHandle(), m_Memory, 0, m_Size, 0, &tmp);
+	memcpy(tmp, data, m_Size);
 	vkUnmapMemory(m_Device->getHandle(), m_Memory);
+}
+
+void Buffer::map() const
+{
+	map(m_Data);
 }
 
 void Buffer::copyToBuffer(VkDeviceSize size, const Buffer& destination)
@@ -1546,10 +1560,14 @@ Buffer& Buffer::operator=(Buffer&& other) noexcept
 		m_Handle = other.m_Handle;
 		m_Memory = other.m_Memory;
 		m_Device = other.m_Device;
+		m_Size = other.m_Size;
+		m_Data = other.m_Data;
 
 		other.m_Handle = VK_NULL_HANDLE;
 		other.m_Memory = VK_NULL_HANDLE;
 		other.m_Device = nullptr;
+		other.m_Size = 0;
+		other.m_Data = nullptr;
 	}
 
 	return *this;
@@ -1564,6 +1582,7 @@ void Buffer::cleanup() noexcept
 {
 	if (m_Handle != VK_NULL_HANDLE)
 	{
+		m_Device->waitIdle();
 		vkFreeMemory(m_Device->getHandle(), m_Memory, nullptr);
 		vkDestroyBuffer(m_Device->getHandle(), m_Handle, nullptr);
 	}
@@ -1583,7 +1602,7 @@ Texture::Texture(const Device& device, const std::string& path) :
 	m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
 	Buffer stagingBuffer(*m_Device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	stagingBuffer.map(imageSize, pixels);
+	stagingBuffer.map(pixels);
 
 	stbi_image_free(pixels);
 
@@ -1650,7 +1669,15 @@ VkWriteDescriptorSet DescriptorWrite::getWriteDescriptorSet(VkDescriptorSet desc
 	return write;
 }
 
-DescriptorSet::DescriptorSet(const DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites) :
+void DescriptorWrite::map(uint32_t index) const
+{
+	if (m_UniformBuffers != nullptr)
+	{
+		(*m_UniformBuffers)[index].map();
+	}
+}
+
+DescriptorSet::DescriptorSet(DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites) :
 	m_Pool(&pool), m_Layout(&layout), m_DescriptorWrites(descriptorWrites)
 {
 	create();
@@ -1698,8 +1725,17 @@ void DescriptorSet::recreate(bool clean)
 	create();
 }
 
+void DescriptorSet::map(uint32_t index) const
+{
+	for (auto& dw : m_DescriptorWrites)
+	{
+		dw.map(index);
+	}
+}
+
 DescriptorSet::~DescriptorSet()
 {
+	m_Pool->cleanupDescriptorSet(m_Layout->getBindings());
 	cleanup();
 }
 
@@ -1738,9 +1774,19 @@ void DescriptorPool::reserveSpace(uint32_t count, const DescriptorSetLayout& lay
 	recreate();
 }
 
-std::weak_ptr<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites)
+Ref<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites)
 {
 	bool shouldRecreate = false;
+	for (auto it = m_Sets.begin(); it != m_Sets.end();)
+	{
+		if (it->use_count() <= 1)
+		{
+			it = m_Sets.erase(it);
+			m_Size--;
+		}
+		else
+			it++;
+	}
 	if (m_Size <= m_Sets.size()) 
 	{
 		shouldRecreate = true;
@@ -1766,27 +1812,11 @@ std::weak_ptr<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSe
 
 	if (shouldRecreate) recreate();
 
-	std::shared_ptr<DescriptorSet> descriprtorSet(new DescriptorSet(*this, layout, descriptorWrites));
+	Ref<DescriptorSet> descriprtorSet(new DescriptorSet(*this, layout, descriptorWrites));
 
 	m_Sets.insert(descriprtorSet);
 	
 	return descriprtorSet;
-}
-
-void DescriptorPool::freeDescriptorSet(std::weak_ptr<DescriptorSet> descriptorSet)
-{
-	auto ds = descriptorSet.lock();
-	auto& layoutBindings = ds->getLayout().getBindings();
-	for (auto& binding : layoutBindings)
-	{
-		auto it = m_TypeInfos.find(binding.descriptorType);
-		if (it != m_TypeInfos.end())
-		{
-			it->second.count--;
-		}
-	}
-
-	m_Sets.erase(ds);
 }
 
 void DescriptorPool::cleanup()
@@ -1821,7 +1851,10 @@ void DescriptorPool::recreate()
 
 	for (auto& set : m_Sets)
 	{
-		set->recreate(false);
+		if (set.use_count() > 1)
+		{
+			set->recreate(false);
+		}
 	}
 }
 
@@ -1831,7 +1864,27 @@ DescriptorPool::~DescriptorPool()
 	cleanup();
 }
 
-Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, const VertexLayout& vertexLayout)
+void DescriptorPool::cleanupDescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings)
+{
+	for (auto& binding : bindings)
+	{
+		auto it = m_TypeInfos.find(binding.descriptorType);
+		if (it != m_TypeInfos.end())
+		{
+			it->second.count--;
+		}
+	}
+}
+
+const PipelineAdvancedConfig PipelineAdvancedConfig::defaultConfig = PipelineAdvancedConfig{};
+
+Pipeline::Pipeline(
+	const RenderPass& renderPass, 
+	const std::string& vertexShader, 
+	const std::string& fragmentShader, 
+	const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, 
+	const VertexLayout& vertexLayout, 
+	const PipelineAdvancedConfig& config)
 {
 	m_Device = &renderPass.getDevice();
 
@@ -1896,9 +1949,19 @@ Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachment.blendEnable = VK_FALSE;
-	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+	if (config.useAlpha)
+	{
+		colorBlendAttachment.blendEnable = VK_TRUE;
+		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	}
+	else 
+	{
+		colorBlendAttachment.blendEnable = VK_FALSE;
+		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+	}
+	
 	colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
 	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
 	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
@@ -1935,7 +1998,7 @@ Pipeline::Pipeline(const RenderPass& renderPass, const std::string& vertexShader
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = VK_TRUE;
 	depthStencil.depthWriteEnable = VK_TRUE;
-	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+	depthStencil.depthCompareOp = config.compareOperator;
 	depthStencil.depthBoundsTestEnable = VK_FALSE;
 	depthStencil.minDepthBounds = 0.0f; // Optional
 	depthStencil.maxDepthBounds = 1.0f; // Optional

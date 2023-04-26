@@ -27,6 +27,9 @@ public:
 	void bindPipeline(const Pipeline& pipeline);
 	void bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet, uint32_t set);
 	void drawModel(const Model& model);
+	void bindVertexBuffer(const Buffer& buffer);
+	void bindIndexBuffer(const Buffer& buffer);
+	void drawIndexed(uint32_t count);
 
 	~RenderTarget();
 
