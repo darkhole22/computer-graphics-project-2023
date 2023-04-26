@@ -89,7 +89,7 @@ void Logger::log(Logger::LoggingLevel level, const char* filePath, int fileLine,
 
 	const char* fileName = getFileName(filePath);
 
-	constexpr char* fileInfoFormat = "[%s:%d]\n";
+	constexpr const char* fileInfoFormat = "[%s:%d]\n";
 	int fileInfo = std::snprintf(nullptr, 0, fileInfoFormat, fileName, fileLine);
 	std::string fileInfoStr{};
 	if (fileInfo > 0)
