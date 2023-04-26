@@ -1,4 +1,5 @@
 #include "UIHandler.h"
+#include "vulture/core/Logger.h"
 
 namespace vulture {
 	
@@ -7,7 +8,8 @@ UIHandler::UIHandler(const Renderer& renderer, DescriptorPool& descriptorsPool) 
 {
 	m_TextDSLayout = renderer.makeDescriptorSetLayout();
 	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
 	m_TextDSLayout->create();
 
 	m_ScreenDSLayout = renderer.makeDescriptorSetLayout();
@@ -50,7 +52,7 @@ Ref<UIText> UIHandler::makeText(std::string text, glm::vec2 position, float scal
 
 void UIHandler::removeText(Ref<UIText> text)
 {
-	auto it = m_Texts.find(text->m_Hndle);
+	auto it = m_Texts.find(text->m_Handle);
 	m_Texts.erase(it);
 }
 
@@ -62,11 +64,12 @@ void UIHandler::recordCommandBuffer(RenderTarget& target)
 
 	for (auto& [handle, text] : m_Texts)
 	{
+		if (!text->m_Visible) continue;
 		target.bindDescriptorSet(*m_Pipeline, text->getDescriptorSet(), 0);
 
 		target.bindVertexBuffer(text->m_VertexBuffer);
 		target.bindIndexBuffer(text->m_IndexBuffer);
-		target.drawIndexed(text->m_IndexCount);
+		target.drawIndexed(static_cast<uint32_t>(text->m_IndexCount));
 	}
 }
 
@@ -93,15 +96,16 @@ void UIHandler::update(float dt)
 UIText::UIText(UITextHandle handle, const Renderer& renderer, 
 	DescriptorPool& descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout, 
 	Ref<Font> font, const std::string& text, glm::vec2 position, float scale) :
-	m_Hndle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
+		m_Handle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
 {
-	m_Uniform = renderer.makeUniform<TextBufferObject>();
+	m_VertexUniform = renderer.makeUniform<TextVertexBufferObject>();
+	m_FragmentUniform = renderer.makeUniform<TextFragmentBufferObject>();
 
 	m_DescriptorSet = descriptorPool.getDescriptorSet(*descriptorSetLayout,
-		{ font->getTexture(), m_Uniform });
+		{ font->getTexture(), m_VertexUniform, m_FragmentUniform });
 
-	m_Uniform->position = position;
-	m_Uniform->scale = scale;
+	m_VertexUniform->position = position;
+	m_VertexUniform->scale = scale;
 
 	recreate();
 }
@@ -114,19 +118,43 @@ void UIText::setText(const std::string& text)
 	m_Modified = true;
 }
 
+void UIText::setVisible(bool visible)
+{
+	bool wasVisible = m_Visible;
+	m_Visible = visible;
+	m_FragmentUniform->visibility = static_cast<float>(visible);
+	if (visible && !wasVisible)
+	{
+		emit(UITextRecreated());
+	}
+}
+
 void UIText::recreate()
 {
-	std::vector<UIVertex> vertices{};
-	std::vector<uint32_t> indices{};
-	vertices.reserve(m_Text.length() * 4);
-	indices.reserve(m_Text.length() * 6);
+	VUINFO("Recreating text");
+	size_t textLength = m_Text.length();
+	if (textLength == 0)
+	{
+		m_IndexCount = 0;
+		setVisible(false);
+		return;
+	}
+
+	if (textLength * 4 > m_Vertices.size())
+	{
+		m_Vertices.resize(textLength * 4);
+		m_Indices.resize(textLength * 6);
+	}
 
 	const float cSize = m_Font->getCharacterSize();
 
 	float x = 0;
 	float y = 0;
 
-	for (int i = 0; i < m_Text.length(); i++)
+	size_t vertexCount = 0;
+	m_IndexCount = 0;
+
+	for (size_t i = 0; i < textLength; i++)
 	{
 		int32_t codepoint = m_Text[i]; // TODO handle unicode
 
@@ -155,14 +183,13 @@ void UIText::recreate()
 		float tminy = static_cast<float>(c.y) / m_Font->getAtlasHeight();
 		float tmaxy = static_cast<float>(c.y + c.height) / m_Font->getAtlasHeight();
 
-		uint32_t indexBase = static_cast<uint32_t>(vertices.size());
-		vertices.push_back({ { minx / cSize, miny / cSize }, { tminx, tminy } });
-		vertices.push_back({ { maxx / cSize, miny / cSize }, { tmaxx, tminy } });
-		vertices.push_back({ { minx / cSize, maxy / cSize }, { tminx, tmaxy } });
-		vertices.push_back({ { maxx / cSize, maxy / cSize }, { tmaxx, tmaxy } });
+		m_Vertices[vertexCount + 0] = UIVertex{ { minx / cSize, miny / cSize }, { tminx, tminy } };
+		m_Vertices[vertexCount + 1] = UIVertex{ { maxx / cSize, miny / cSize }, { tmaxx, tminy } };
+		m_Vertices[vertexCount + 2] = UIVertex{ { minx / cSize, maxy / cSize }, { tminx, tmaxy } };
+		m_Vertices[vertexCount + 3] = UIVertex{ { maxx / cSize, maxy / cSize }, { tmaxx, tmaxy } };
 
 		float advance = c.xAdvance;
-		if (i < m_Text.length() - 1)
+		if (i < textLength - 1)
 		{
 			int32_t nextCodepoint = m_Text[i + 1LL];
 			auto* k = m_Font->getKerning(codepoint, nextCodepoint);
@@ -170,28 +197,41 @@ void UIText::recreate()
 		}
 		x += advance;
 
-		indices.push_back(indexBase + 0);
-		indices.push_back(indexBase + 2);
-		indices.push_back(indexBase + 1);
+		m_Indices[m_IndexCount + 0] = static_cast<uint32_t>(vertexCount + 0);
+		m_Indices[m_IndexCount + 1] = static_cast<uint32_t>(vertexCount + 2);
+		m_Indices[m_IndexCount + 2] = static_cast<uint32_t>(vertexCount + 1);
 
-		indices.push_back(indexBase + 1);
-		indices.push_back(indexBase + 2);
-		indices.push_back(indexBase + 3);
+		m_Indices[m_IndexCount + 3] = static_cast<uint32_t>(vertexCount + 1);
+		m_Indices[m_IndexCount + 4] = static_cast<uint32_t>(vertexCount + 2);
+		m_Indices[m_IndexCount + 5] = static_cast<uint32_t>(vertexCount + 3);
+
+		vertexCount += 4;
+		m_IndexCount += 6;
 	}
 
-	VkDeviceSize vertexBufferSize = sizeof(UIVertex) * vertices.size();
-	Buffer vertexStagingBuffer(*m_Device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	vertexStagingBuffer.map(vertices.data());
-	m_VertexBuffer = Buffer(*m_Device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	vertexStagingBuffer.copyToBuffer(vertexBufferSize, m_VertexBuffer);
+	VkDeviceSize vertexBufferSize = sizeof(UIVertex) * vertexCount;
+	if (vertexBufferSize > m_VertexStagingBuffer.getSize())
+	{
+		m_VertexStagingBuffer = Buffer(*m_Device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	}
+	m_VertexStagingBuffer.map(m_Vertices.data());
+	if (vertexBufferSize > m_VertexBuffer.getSize())
+	{
+		m_VertexBuffer = Buffer(*m_Device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	}
+	m_VertexStagingBuffer.copyToBuffer(vertexBufferSize, m_VertexBuffer);
 
-	VkDeviceSize indexBufferSize = sizeof(uint32_t) * indices.size();
-	Buffer indexStagingBuffer(*m_Device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	indexStagingBuffer.map(indices.data());
-	m_IndexBuffer = Buffer(*m_Device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	indexStagingBuffer.copyToBuffer(indexBufferSize, m_IndexBuffer);
-
-	m_IndexCount = static_cast<uint32_t>(indices.size());
+	VkDeviceSize indexBufferSize = sizeof(uint32_t) * m_IndexCount;
+	if (indexBufferSize > m_IndexStagingBuffer.getSize())
+	{
+		m_IndexStagingBuffer = Buffer(*m_Device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	}
+	m_IndexStagingBuffer.map(m_Indices.data());
+	if (indexBufferSize > m_IndexBuffer.getSize())
+	{
+		m_IndexBuffer = Buffer(*m_Device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	}
+	m_IndexStagingBuffer.copyToBuffer(indexBufferSize, m_IndexBuffer);
 
 	emit(UITextRecreated());
 }

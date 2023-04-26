@@ -46,6 +46,10 @@ project "ComputerGraphicsProject2023"
     }
     
     postbuildcommands {
+        "glslc %{prj.location}/res/shaders/base.vert -o %{prj.location}/res/shaders/baseVert.spv",
+        "glslc %{prj.location}/res/shaders/base.frag -o %{prj.location}/res/shaders/baseFrag.spv",
+        "glslc %{prj.location}/res/shaders/UItextSDF.vert -o %{prj.location}/res/shaders/UItextSDF_vert.spv",
+        "glslc %{prj.location}/res/shaders/UItextSDF.frag -o %{prj.location}/res/shaders/UItextSDF_frag.spv",
         "{COPYDIR} %{prj.location}/res %{cfg.targetdir}/res"
     }
 
