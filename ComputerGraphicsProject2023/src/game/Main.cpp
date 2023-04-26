@@ -128,7 +128,6 @@ public:
 			bool isF3Pressed = Input::isKeyPressed(GLFW_KEY_F3);
 			if (isF3Pressed && !wasF3Pressed)
 			{
-				VUINFO("AA");
 				text->setVisible(!text->isVisible());
 				text2->setVisible(!text2->isVisible());
 			}

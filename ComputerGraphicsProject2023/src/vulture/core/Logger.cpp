@@ -15,7 +15,7 @@ namespace vulture {
 static const char* levelMessages[] = {
 	"[TRACE]: ",
 	"[INFO]: ",
-	"[DUBUG]: ",
+	"[DEBUG]: ",
 	"[WARNING]: ",
 	"[ERROR]: ",
 	"[FATAL]: "

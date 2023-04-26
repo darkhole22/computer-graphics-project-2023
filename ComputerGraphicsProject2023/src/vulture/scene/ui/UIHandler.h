@@ -45,7 +45,9 @@ public:
 	void setPosition(glm::vec2 position) { m_VertexUniform->position = position; } // TODO boundary check
 	void setSize(float size) { m_VertexUniform->scale = size; } // TODO boundary check
 	void setColor(glm::vec3 color) { m_FragmentUniform->color = color; }
+	void setColor(float r, float g, float b) { m_FragmentUniform->color = glm::vec3(r, g, b); }
 	void setBorderColor(glm::vec3 color) { m_FragmentUniform->borderColor = color; }
+	void setBorderColor(float r, float g, float b) { m_FragmentUniform->borderColor = glm::vec3(r, g, b); }
 	void setStroke(float stroke) { m_FragmentUniform->width = stroke; }
 	void setBorder(bool border) { m_FragmentUniform->borderWidth = border ? m_FragmentUniform->width * 1.5f : m_FragmentUniform->width; }
 	void setVisible(bool visible);
