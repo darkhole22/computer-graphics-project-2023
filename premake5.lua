@@ -78,9 +78,16 @@ project "ComputerGraphicsProject2023"
         }
     
     filter "configurations:Debug"
-        defines "DEBUG"
+        defines
+        {
+            "VU_DEBUG_BUILD"
+        }
         symbols "On"
 
     filter "configurations:Release"
-        defines "NDEBUG"
+        defines 
+        {
+            "VU_NDEBUG_BUILD",
+            "VU_RELEASE_BUILD"
+        }
         optimize "On"

@@ -1,5 +1,7 @@
 #include "vulkan_wrapper.h"
 
+#include "vulture/core/Logger.h"
+
 #include <iostream>
 #include <stdexcept>
 #include <unordered_set>
@@ -10,7 +12,7 @@
 
 #include <stb_image.h>
 
-#ifndef NDEBUG
+#ifdef VUDEBUG
 // DEBUG
 #define VALIDATION_LAYER true
 #define VALIDATION_LAYER_IF(x) x
@@ -20,7 +22,7 @@
 #define VALIDATION_LAYER_IF(x)
 #endif // !NDEBUG
 
-#define ASSERT_VK_SUCCESS(func, message) if (func != VK_SUCCESS) { throw std::runtime_error(message); }
+#define ASSERT_VK_SUCCESS(func, message) if (func != VK_SUCCESS) { VUERROR(message); throw std::runtime_error(message); }
 
 namespace vulture {
 
@@ -89,17 +91,31 @@ std::vector<const char*> getRequiredExtensions() {
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
-	if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-		// VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
-		// VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
-		// VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-		// VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
+	switch (messageSeverity)
+	{
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+	{
+		VUTRACE("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+	} break;
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+	{
+		VUINFO("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+	} break;
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+	{
+		VUWARN("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+	} break;
+	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+	{
 		if (std::strcmp(pCallbackData->pMessageIdName, "Loader Message") == 0) // Skip message caused by other application
 		{
 			return VK_FALSE;
 		}
-		std::cerr << "[Validation layer]: [ID]: " << pCallbackData->pMessageIdName << "\n\t[message]: " <<
-			pCallbackData->pMessage << std::endl;
+		VUERROR("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+	}
+	break;
+	default:
+		break;
 	}
 	return VK_FALSE;
 }
@@ -123,6 +139,7 @@ Instance::Instance(const std::string& applicationName)
 {
 	VALIDATION_LAYER_IF(
 		if (!checkValidationLayerSupport()) {
+			VUERROR("Validation layers requested, but not available!");
 			throw std::runtime_error("Validation layers requested, but not available!");
 		}
 	)
@@ -355,6 +372,7 @@ PhysicalDevice PhysicalDevice::pickDevice(const Instance& instance, const Surfac
 	vkEnumeratePhysicalDevices(instance.getHandle(), &deviceCount, nullptr);
 
 	if (deviceCount == 0) {
+		VUERROR("Failed to find GPUs with Vulkan support!");
 		throw std::runtime_error("Failed to find GPUs with Vulkan support!");
 	}
 
@@ -377,12 +395,13 @@ PhysicalDevice PhysicalDevice::pickDevice(const Instance& instance, const Surfac
 	}
 
 	if (physicalDevice.m_Handle == VK_NULL_HANDLE) {
+		VUERROR("Failed to find a suitable GPU!");
 		throw std::runtime_error("Failed to find a suitable GPU!");
 	}
 
 	VkPhysicalDeviceProperties deviceProperties;
 	vkGetPhysicalDeviceProperties(physicalDevice.m_Handle, &deviceProperties);
-	std::cout << "[Device name]: " << deviceProperties.deviceName << std::endl;
+	VUINFO("Using \"%s\" as device.", deviceProperties.deviceName);
 
 	return physicalDevice;
 }
@@ -722,6 +741,7 @@ uint32_t findMemoryType(const PhysicalDevice& physicalDevice, uint32_t typeFilte
 		}
 	}
 
+	VUERROR("Failed to find suitable memory type!");
 	throw std::runtime_error("Failed to find suitable memory type!");
 }
 
@@ -819,7 +839,8 @@ void Image::transitionLayout(VkImageLayout newLayout, uint32_t mipLevels)
 		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	}
 	else {
-		throw std::invalid_argument("Unsupported layout transition!");
+		VUERROR("Trying to transition the layout of an image from %i to %i!", m_Layout, newLayout);
+		return;
 	}
 
 	vkCmdPipelineBarrier(
@@ -870,6 +891,7 @@ void Image::generateMipmaps(uint32_t mipLevels)
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(m_Device->getPhysicalDevice().getHandle(), m_Format, &formatProperties);
 	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+		VUERROR("Texture image format (%i) does not support linear blitting!", m_Format);
 		throw std::runtime_error("Texture image format does not support linear blitting!");
 	}
 
@@ -1003,6 +1025,7 @@ VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<
 		}
 	}
 
+	VUERROR("Failed to find supported format!");
 	throw std::runtime_error("Failed to find supported format!");
 }
 
@@ -1206,7 +1229,7 @@ void SwapChain::create()
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	ASSERT_VK_SUCCESS(vkCreateSwapchainKHR(m_Device->getHandle(), &createInfo, nullptr, &m_Handle), "Failed to create swap chain!")
+	ASSERT_VK_SUCCESS(vkCreateSwapchainKHR(m_Device->getHandle(), &createInfo, nullptr, &m_Handle), "Failed to create swap chain!");
 
 	std::vector<VkImage> vkImages;
 
@@ -1285,6 +1308,7 @@ uint32_t SwapChain::getImageIndex(uint32_t currentFrame)
 			recreate();
 		}
 		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			VUERROR("Failed to acquire swap chain image!");
 			throw std::runtime_error("Failed to acquire swap chain image!");
 		}
 
@@ -1319,6 +1343,7 @@ void SwapChain::submit(uint32_t currentFrame, uint32_t imageIndex)
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
 	if (vkQueueSubmit(m_Device->getGraphicsQueue(), 1, &submitInfo, m_InFlightFences[currentFrame]) != VK_SUCCESS) {
+		VUERROR("Failed to submit draw command buffer!");
 		throw std::runtime_error("Failed to submit draw command buffer!");
 	}
 
@@ -1342,6 +1367,7 @@ void SwapChain::submit(uint32_t currentFrame, uint32_t imageIndex)
 		recreate();
 	}
 	else if (result != VK_SUCCESS) {
+		VUERROR("Failed to present swap chain image!");
 		throw std::runtime_error("Failed to present swap chain image!");
 	}
 }
@@ -1441,6 +1467,7 @@ Shader::Shader(const Device& device, const std::string& name) :
 {
 	std::ifstream file(name, std::ios::ate | std::ios::binary);
 	if (!file.is_open()) {
+		VUERROR("Failed to open file [%s]!", name.c_str());
 		throw std::runtime_error("Failed to open file!");
 	}
 
@@ -1596,6 +1623,7 @@ Texture::Texture(const Device& device, const std::string& path) :
 	VkDeviceSize imageSize = texWidth * 4LL * texHeight;
 
 	if (!pixels) {
+		VUERROR("Failed to load texture at %s!", path.c_str());
 		throw std::runtime_error("Failed to load texture at " + path + "!");
 	}
 
