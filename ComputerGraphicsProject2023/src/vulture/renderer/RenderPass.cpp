@@ -1,5 +1,6 @@
 #include "RenderPass.h"
 
+#include "VulkanContext.h"
 #include "vulture/core/Logger.h"
 
 #include "array"
@@ -77,7 +78,7 @@ RenderPass::RenderPass(VkFormat attachmentFormat)
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
 
-	VkResult result = vkCreateRenderPass(vulkanData.device, &renderPassInfo, nullptr, &m_Handle);
+	VkResult result = vkCreateRenderPass(vulkanData.device, &renderPassInfo, vulkanData.allocator, &m_Handle);
 	
 	if (result != VK_SUCCESS)
 	{
@@ -96,5 +97,14 @@ RenderPass::RenderPass(VkFormat attachmentFormat)
 	m_ClearValues.push_back(cd);
 }
 
+vulture::RenderPass::~RenderPass()
+{
+	if (m_Handle != VK_NULL_HANDLE)
+	{
+		vkDestroyRenderPass(vulkanData.device, m_Handle, vulkanData.allocator);
+		m_Handle = VK_NULL_HANDLE;
+		m_ClearValues.clear();
+	}
+}
 
 } // namespace vulture

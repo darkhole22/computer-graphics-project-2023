@@ -4,7 +4,6 @@
 #include "vulkan_wrapper.h"
 #include "Model.h"
 
-
 namespace vulture {
 
 class FrameContext;

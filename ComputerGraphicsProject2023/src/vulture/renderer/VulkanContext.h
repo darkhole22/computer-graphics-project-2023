@@ -29,7 +29,9 @@ struct VulkanContextData
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 	VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 	VkDevice device = VK_NULL_HANDLE;
+	u32 graphicsQueueFamily = 0;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
+	u32 presentQueueFamily = 0;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkCommandPool commandPool;
 

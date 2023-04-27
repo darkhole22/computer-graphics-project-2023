@@ -532,7 +532,9 @@ bool createDevice()
 	ASSERT_VK_SUCCESS(vkCreateDevice(vulkanData.physicalDevice, &createInfo, vulkanData.allocator, &vulkanData.device),
 		"Failed to create logical device!");
 	
+	vulkanData.graphicsQueueFamily = queueGraphicsFamily;
 	vkGetDeviceQueue(vulkanData.device, queueGraphicsFamily, 0, &vulkanData.graphicsQueue);
+	vulkanData.presentQueueFamily = queuePresentFamily;
 	vkGetDeviceQueue(vulkanData.device, queuePresentFamily, 0, &vulkanData.presentQueue);
 
 	VkCommandPoolCreateInfo poolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
