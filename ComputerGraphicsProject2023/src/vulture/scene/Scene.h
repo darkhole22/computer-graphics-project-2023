@@ -3,7 +3,7 @@
 #include <vector>
 #include <filesystem>
 
-#include "vulture/renderer/RenderTarget.h"
+#include "vulture/renderer/FrameContext.h"
 #include "vulture/scene/Camera.h"
 #include "vulture/scene/ui/UIHandler.h"
 
@@ -26,7 +26,7 @@ using ObjectHandle = int64_t;
 class SceneObjectList
 {
 public:
-	SceneObjectList(const Renderer& renderer, const String& vertexShader, const String& fragmentShader,
+	SceneObjectList(const String& vertexShader, const String& fragmentShader,
 		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts);
 	
 	inline const Pipeline& getPipeline() const { return *m_Pipeline; }
@@ -41,14 +41,14 @@ private:
 	std::unordered_map<ObjectHandle, RenderableObject> m_Objects;
 };
 
-using PipelineHandle = int64_t;
+using PipelineHandle = i64;
 
 class Scene
 {
 public:
-	explicit Scene(const Renderer& renderer);
+	Scene();
 
-	void render(RenderTarget target, float dt);
+	void render(FrameContext target, float dt);
 
 	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
 	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
@@ -58,7 +58,6 @@ public:
 
 	~Scene() = default;
 private:
-	Renderer const* m_Renderer;
 	DescriptorPool m_DescriptorsPool;
 	
 	Camera m_Camera;
@@ -68,8 +67,8 @@ private:
 	PipelineHandle m_NextPipelineHandle = 0;
 	std::unordered_map<PipelineHandle, SceneObjectList> m_ObjectLists;
 
-	void recordCommandBuffer(RenderTarget& target);
-	void updateUniforms(RenderTarget& target);
+	void recordCommandBuffer(FrameContext& target);
+	void updateUniforms(FrameContext& target);
 
 	void setModified();
 };

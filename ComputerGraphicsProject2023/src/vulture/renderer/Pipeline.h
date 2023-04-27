@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vulture/core/Core.h"
+#include "RenderPass.h"
 #include "DescriptorSet.h"
 
 namespace vulture {

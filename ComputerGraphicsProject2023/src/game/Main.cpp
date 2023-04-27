@@ -71,16 +71,16 @@ public:
 		camera = scene->getCamera();
 		handlerUI = scene->getUIHandle();
 
-		descriptorSetLayout = Application::makeDescriptorSetLayout();
+		descriptorSetLayout = Ref<DescriptorSetLayout>(new DescriptorSetLayout());
 		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 		descriptorSetLayout->create();
 
 		pipeline = scene->makePipeline("res/shaders/baseVert.spv", "res/shaders/baseFrag.spv", descriptorSetLayout);
 
-		model = Application::makeModel("res/models/vulture.obj");
-		objUniform = Application::makeUniform<ModelBufferObject>();
-		objTexture = Application::makeTexture("res/textures/vulture.png");
+		model = Ref<Model>(Model::make("res/models/vulture.obj"));
+		objUniform = Renderer::makeUniform<ModelBufferObject>();
+		objTexture = Ref<Texture>(new Texture("res/textures/vulture.png"));
 
 		scene->addObject(pipeline, model, descriptorSetLayout, {objUniform, *objTexture});
 

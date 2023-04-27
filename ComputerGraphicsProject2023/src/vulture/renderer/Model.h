@@ -4,7 +4,7 @@
 
 #include <tiny_obj_loader.h>
 
-#include "vulkan_wrapper.h"
+#include "Buffers.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
@@ -76,7 +76,7 @@ public:
 	};
 
 	// template<class _Vertex, class _VertexBuilder>
-	static Model* make(const Device& device, const String& modelPath)
+	static Model* make(const String& modelPath)
 	{
 		Model* m = new Model();
 
@@ -90,7 +90,7 @@ public:
 		}
 
 		std::vector<Vertex> vertices{};
-		std::vector<uint32_t> indecies{};
+		std::vector<u32> indecies{};
 		// std::unordered_map<_BaseVertex, uint32_t, _BaseVertexHash> uniqueVertices{};
 
 		for (const auto& shape : shapes) {
@@ -111,34 +111,34 @@ public:
 				vertices.push_back(VertexBuilder()(vertex));
 
 				// indecies.push_back(uniqueVertices[vertex]);
-				indecies.push_back(static_cast<uint32_t>(vertices.size()-1));
+				indecies.push_back(static_cast<u32>(vertices.size()-1));
 			}
 		}
 
 		VkDeviceSize vertexBufferSize = sizeof(Vertex) * vertices.size();
-		Buffer vertexStagingBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		Buffer vertexStagingBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		vertexStagingBuffer.map(vertices.data());
-		m->m_VertexBuffer = Buffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m->m_VertexBuffer = Buffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		vertexStagingBuffer.copyToBuffer(vertexBufferSize, m->m_VertexBuffer);
 
-		VkDeviceSize indexBufferSize = sizeof(uint32_t) * indecies.size();
-		Buffer indexStagingBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		VkDeviceSize indexBufferSize = sizeof(u32) * indecies.size();
+		Buffer indexStagingBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		indexStagingBuffer.map(indecies.data());
-		m->m_IndexBuffer = Buffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m->m_IndexBuffer = Buffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		indexStagingBuffer.copyToBuffer(indexBufferSize, m->m_IndexBuffer);
 
-		m->m_IndexCount = static_cast<uint32_t>(indecies.size());
+		m->m_IndexCount = static_cast<u32>(indecies.size());
 
 		return m;
 	}
 
 	inline const Buffer& getVertexBuffer() const { return m_VertexBuffer; }
 	inline const Buffer& getIndexBuffer() const { return m_IndexBuffer; }
-	inline uint32_t getIndexCount() const { return m_IndexCount; }
+	inline u32 getIndexCount() const { return m_IndexCount; }
 private:
 	Buffer m_VertexBuffer;
 	Buffer m_IndexBuffer;
-	uint32_t m_IndexCount = 0;
+	u32 m_IndexCount = 0;
 };
 
 } // namespace vulture

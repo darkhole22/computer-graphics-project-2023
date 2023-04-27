@@ -6,15 +6,14 @@ namespace vulture {
 
 struct FrameInfo
 {
-	uint32_t index;
-	uint32_t count;
+	u32 index;
+	u32 count;
 };
 
 class FrameContext
 {
 public:
-	FrameContext(const FrameContext& other) = delete;
-	FrameContext(FrameContext&& other) = delete;
+	NO_COPY(FrameContext)
 
 	inline FrameInfo getFrameInfo() const { return {m_ImageIndex, m_ImageCount}; }
 
@@ -25,23 +24,23 @@ public:
 	void endCommandRecording();
 
 	void bindPipeline(const Pipeline& pipeline);
-	void bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet, uint32_t set);
+	void bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet, u32 set);
 	void drawModel(const Model& model);
 	void bindVertexBuffer(const Buffer& buffer);
 	void bindIndexBuffer(const Buffer& buffer);
-	void drawIndexed(uint32_t count);
+	void drawIndexed(u32 count);
 
 	~FrameContext();
 
 	friend class Renderer;
 private:
-	FrameContext(SwapChain& swapChain, const Device& device, uint32_t currentFrame, bool swapChainRecreated);
+	FrameContext(SwapChain& swapChain, u32 currentFrame, bool swapChainRecreated);
 
 	SwapChain* const m_SwapChain;
-	uint32_t m_CurrentFrame;
-	uint32_t m_ImageIndex;
+	u32 m_CurrentFrame;
+	u32 m_ImageIndex;
 	CommandBuffer* const m_CommandBuffer;
-	uint32_t m_ImageCount;
+	u32 m_ImageCount;
 
 	bool m_SwapChainRecreated;
 };

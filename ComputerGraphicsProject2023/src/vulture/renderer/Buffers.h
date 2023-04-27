@@ -1,26 +1,12 @@
 #pragma once
 
+#include "vulture/core/Core.h"
+#include "vulture/event/Event.h"
 #include "Window.h"
 #include "RenderPass.h"
 
-#include "vulture/core/Core.h"
-#include "vulture/event/Event.h"
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-#include <cmath>
-#include <string>
+#include <vulkan/vulkan.h>
 #include <vector>
-#include <array>
-#include <unordered_map>
-#include <unordered_set>
-#include <limits>
-#include <cstring>
-#include <memory>
-#include <filesystem>
-#include <optional>
-
 
 namespace vulture {
 
@@ -37,7 +23,7 @@ public:
 	CommandBuffer() = default;
 	CommandBuffer(const CommandBuffer& other) = delete;
 	CommandBuffer(CommandBuffer&& other) noexcept;
-	explicit CommandBuffer(bool singleTime = false);
+	explicit CommandBuffer(bool singleTime);
 	
 	CommandBuffer operator=(const CommandBuffer& other) = delete;
 	CommandBuffer& operator=(CommandBuffer&& other) noexcept;

@@ -1,6 +1,7 @@
 #include "VulkanContext.h"
 
-#define VU_LOGGER_TRACE_ENABLED
+// #define VU_LOGGER_TRACE_ENABLED
+// #define VU_LOGGER_DISABLE_INFO
 #include "vulture/core/Logger.h"
 
 #include <array>
@@ -106,17 +107,17 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	{
 	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
 	{
-		VUTRACE("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+		VUTRACE("[Validation layer|VERBOSE]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
 	}
 	break;
 	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
 	{
-		VUINFO("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+		VUTRACE("[Validation layer|INFO]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
 	}
 	break;
 	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
 	{
-		VUWARN("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+		VUWARN("[Validation layer|WARNING]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
 	}
 	break;
 	case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
@@ -125,7 +126,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		{
 			return VK_FALSE;
 		}
-		VUERROR("[Validation layer]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
+		VUERROR("[Validation layer|ERROR]: [ID]: %s\n\t[message]: %s", pCallbackData->pMessageIdName, pCallbackData->pMessage);
 	}
 	break;
 	default:
@@ -142,10 +143,14 @@ inline bool areValidationLayersSupported()
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
+#ifndef VU_LOGGER_DISABLE_INFO
+	String instaceLayerMessage = "";
 	for (const auto& layerProperties : availableLayers)
 	{
-		VUINFO("Instance Layer %s: %s.", layerProperties.layerName, layerProperties.description);
+		instaceLayerMessage = instaceLayerMessage + "\n\t" + layerProperties.layerName + ": " + layerProperties.description;
 	}
+	VUINFO("Instance Layers: %s.", instaceLayerMessage.cString());
+#endif
 
 	for (const char* layerName : validationLayers)
 	{

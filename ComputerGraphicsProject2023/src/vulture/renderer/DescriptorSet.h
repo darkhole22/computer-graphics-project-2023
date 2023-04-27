@@ -1,9 +1,11 @@
 #pragma once
 
-#include "vulkan_wrapper.h"
+#include "Buffers.h"
 #include "Texture.h"
 
 #include <vector>
+#include <unordered_set>
+#include <optional>
 
 namespace vulture {
 
@@ -185,8 +187,8 @@ public:
 	friend class DescriptorSet;
 private:
 	VkDescriptorPool m_Handle = VK_NULL_HANDLE;
-	uint32_t m_FrameCount = 0;
-	uint32_t m_Size = 0;
+	u32 m_FrameCount = 0;
+	u32 m_Size = 0;
 	std::unordered_map<VkDescriptorType, DescriptorTypePoolInfo> m_TypeInfos;
 	std::unordered_set<Ref<DescriptorSet>> m_Sets;
 

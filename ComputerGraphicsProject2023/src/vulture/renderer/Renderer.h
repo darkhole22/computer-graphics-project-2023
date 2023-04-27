@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Window.h"
-#include "vulkan_wrapper.h"
+#include "RenderPass.h"
+#include "SwapChain.h"
+#include "DescriptorSet.h"
+#include "Pipeline.h"
 #include "Model.h"
 
 namespace vulture {
@@ -15,9 +18,7 @@ public:
 
 	static void cleanup();
 
-	Renderer(const Window& window);
-
-	FrameContext getRenderTarget();
+	static FrameContext getFrameContext();
 
 	// bind pipeline / shaders
 	// render skybox
@@ -25,21 +26,21 @@ public:
 
 	// update descriptor sets
 
-	inline void waitIdle() const { m_Device.waitIdle(); }
+	static void waitIdle(); // { m_Device.waitIdle(); }
 
-	inline const Device& getDevice() const { return m_Device; }
-	inline const RenderPass& getRenderPass() const { return m_RenderPass; }
-	inline DescriptorPool makeDescriptorPool() const { return DescriptorPool(m_Device, m_SwapChain.getImageCount()); }
-	inline Ref<DescriptorSetLayout> makeDescriptorSetLayout() const { return Ref<DescriptorSetLayout>(new DescriptorSetLayout(m_Device)); }
-	template <class T> inline Uniform<T> makeUniform() const { return Uniform<T>(m_Device, m_SwapChain.getImageCount()); }
-	inline Ref<Texture> makeTexture(const String& path) const { return Ref<Texture>(new Texture(m_Device, path)); }
-	inline Ref<Model> makeBaseModel(const String& modelPath) const 
-	{
-		// return Ref<Model>(Model::make<Vertex, VertexBuilder>(m_Device, modelPath));
-		return Ref<Model>(Model::make(m_Device, modelPath));
-	}
+	static const RenderPass& getRenderPass();// { return m_RenderPass; }
+	static inline DescriptorPool makeDescriptorPool() { return DescriptorPool(getImageCount()); }
+	// inline Ref<DescriptorSetLayout> makeDescriptorSetLayout() const { return Ref<DescriptorSetLayout>(new DescriptorSetLayout(m_Device)); }
+	template <class T> static inline Uniform<T> makeUniform() { return Uniform<T>(getImageCount()); }
+	// inline Ref<Texture> makeTexture(const String& path) const { return Ref<Texture>(new Texture(m_Device, path)); }
+	
+	// static inline Ref<Model> makeBaseModel(const String& modelPath) 
+	// {
+	// 	// return Ref<Model>(Model::make<Vertex, VertexBuilder>(m_Device, modelPath));
+	// 	return Ref<Model>(Model::make(modelPath));
+	// }
 
-	inline static const VertexLayout getVertexLayout()
+	static inline const VertexLayout getVertexLayout()
 	{
 		return VertexLayout(sizeof(Vertex), {
 			{VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, pos))},
@@ -47,17 +48,8 @@ public:
 			{VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, texCoord))}
 		});
 	}
-
-	~Renderer();
 private:
-	Instance m_Instance;
-	Surface m_Surface;
-	Device m_Device;
-	RenderPass m_RenderPass;
-	SwapChain m_SwapChain;
-
-	uint32_t m_CurrentFrame = 0;
-	bool m_SwapChainRecreated = false;
+	static u32 getImageCount();
 };
 
 } // namespace vulture

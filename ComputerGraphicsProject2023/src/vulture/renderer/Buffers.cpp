@@ -1,4 +1,4 @@
-#include "vulkan_wrapper.h"
+#include "Buffers.h"
 
 #include "VulkanContext.h"
 #include "SwapChain.h"
@@ -603,6 +603,7 @@ void Buffer::map(void *data) const
 	if (!data)
 	{
 		VUWARN("Trying to map a null pointer.");
+		return;
 	}
 
 	void *tmp;

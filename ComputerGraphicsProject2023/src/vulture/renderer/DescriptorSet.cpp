@@ -266,6 +266,8 @@ bool DescriptorPool::recreate()
 			set->recreate(false);
 		}
 	}
+
+	return true;
 }
 
 DescriptorPool::~DescriptorPool()

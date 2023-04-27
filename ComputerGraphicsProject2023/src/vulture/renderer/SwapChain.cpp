@@ -3,6 +3,8 @@
 #include "VulkanContext.h"
 #include "vulture/core/Logger.h"
 
+#include <algorithm>
+
 namespace vulture {
 	
 extern VulkanContextData vulkanData;
@@ -45,6 +47,7 @@ u32 SwapChain::getImageIndex(u32 currentFrame)
 		VUERROR("Trying to get an image index without an attached RenderPass!");
 		throw std::runtime_error("Trying to get an image index without an attached RenderPass!");
 	}
+	m_Recreated = false;
 
 	u32 imageIndex;
 	VkResult result;
@@ -201,6 +204,7 @@ void SwapChain::create()
 
 		m_Extent = actualExtent;
 	}
+	m_ImageFormat = surfaceFormat.format;
 
 	u32 imageCount = capabilities.minImageCount + 1;
 	if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount)
@@ -320,7 +324,7 @@ void SwapChain::recreate()
 	create();
 	createFrameBuffers(); // TODO handle error
 
-	// emit(SwapChainRecreatedEvent{});
+	m_Recreated = true;
 }
 
 void SwapChain::cleanup()

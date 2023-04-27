@@ -126,7 +126,7 @@ private:
 	Ref<DescriptorSetLayout> m_DescriptorSetLayout;
 	Ref<DescriptorSet> m_DescriptorSet;
 
-	Camera(const Renderer& renderer, DescriptorPool& descriptorsPool);
+	Camera(DescriptorPool& descriptorsPool);
 
 	// Projection member variables
 	Projection m_Projection = Projection::PERSPECTIVE;

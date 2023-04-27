@@ -1,13 +1,30 @@
 #include "Renderer.h"
-#include "RenderTarget.h"
+#include "FrameContext.h"
 
 #include "VulkanContext.h"
 
 namespace vulture {
 
+extern VulkanContextData vulkanData;
+
+struct RendererData
+{
+	SwapChain* swapChain = nullptr;
+	RenderPass* renderPass = nullptr;
+
+	uint32_t currentFrame = 0;
+};
+
+static RendererData rendererData = {};
+
 bool Renderer::init(const String& applicationName, const Window& window)
 {
 	if (!VulkanContext::init(applicationName, window))
+		return false;
+
+	rendererData.swapChain = new SwapChain(window);
+	rendererData.renderPass = new RenderPass(rendererData.swapChain->getImageFormat());
+	if (!rendererData.swapChain->attachRenderPass(*rendererData.renderPass))
 		return false;
 
 	return true;
@@ -15,30 +32,35 @@ bool Renderer::init(const String& applicationName, const Window& window)
 
 void Renderer::cleanup()
 {
+	vkDeviceWaitIdle(vulkanData.device);
+
+	delete rendererData.swapChain;
+	delete rendererData.renderPass;
+
 	VulkanContext::cleanup();
 }
 
-Renderer::Renderer(const Window& window) :
-m_Instance(window.getName()), m_Surface(m_Instance, window), m_Device(m_Instance, m_Surface),
-m_RenderPass(m_Device, m_Surface), m_SwapChain(m_Device, m_Surface, m_RenderPass)
+FrameContext Renderer::getFrameContext()
 {
-	m_SwapChain.addCallback([this](const SwapChainRecreatedEvent& e) {
-		m_SwapChainRecreated = true;
-	});
-}
-
-FrameContext Renderer::getRenderTarget()
-{
-	uint32_t frame = m_CurrentFrame;
-	m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	uint32_t frame = rendererData.currentFrame;
+	rendererData.currentFrame = (rendererData.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	
-	return FrameContext(m_SwapChain, m_Device, frame, m_SwapChainRecreated);
-	m_SwapChainRecreated = false;
+	return FrameContext(*rendererData.swapChain, frame, rendererData.swapChain->wasRecreated());
 }
 
-Renderer::~Renderer()
+void Renderer::waitIdle()
 {
-	m_Device.waitIdle();
+	vkDeviceWaitIdle(vulkanData.device);
+}
+
+const RenderPass& Renderer::getRenderPass()
+{
+	return *rendererData.renderPass;
+}
+
+u32 Renderer::getImageCount()
+{
+	return rendererData.swapChain->getImageCount();
 }
 
 } // namespace vulture

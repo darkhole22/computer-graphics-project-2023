@@ -1,10 +1,10 @@
-#include "RenderTarget.h"
+#include "FrameContext.h"
 
 #include <iostream>
 
 namespace vulture {
 
-FrameContext::FrameContext(SwapChain& swapChain, const Device& device, uint32_t currentFrame, bool swapChainRecreated) :
+FrameContext::FrameContext(SwapChain& swapChain, uint32_t currentFrame, bool swapChainRecreated) :
 	m_SwapChain(&swapChain), m_CurrentFrame(currentFrame), m_ImageIndex(m_SwapChain->getImageIndex(currentFrame)),
 	m_CommandBuffer(&swapChain.getCommandBuffer(m_ImageIndex)), m_ImageCount(m_SwapChain->getImageCount()),
 	m_SwapChainRecreated(swapChainRecreated)
@@ -30,7 +30,7 @@ void FrameContext::bindPipeline(const Pipeline& pipeline)
 	m_CommandBuffer->bindPipeline(pipeline, *m_SwapChain);
 }
 
-void FrameContext::bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet, uint32_t set)
+void FrameContext::bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet, u32 set)
 {
 	m_CommandBuffer->bindDescriptorSet(pipeline, descriptorSet.getHandle(m_ImageIndex), set);
 }
@@ -54,7 +54,7 @@ void FrameContext::bindIndexBuffer(const Buffer& buffer)
 	m_CommandBuffer->bindIndexBuffer(buffer);
 }
 
-void FrameContext::drawIndexed(uint32_t count)
+void FrameContext::drawIndexed(u32 count)
 {
 	m_CommandBuffer->drawIndexed(count);
 }

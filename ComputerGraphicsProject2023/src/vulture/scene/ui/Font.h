@@ -26,18 +26,18 @@ public:
 		int16_t amount;
 	};
 
-	static Ref<Font> getDefault(const Renderer& renderer)
+	static Ref<Font> getDefault()
 	{
 		if (s_DefaultFont.expired())
 		{
-			auto font = Ref<Font>(new Font(renderer, "FiraCode"));
+			auto font = Ref<Font>(new Font("FiraCode"));
 			s_DefaultFont = font;
 			return font;
 		}
 		return s_DefaultFont.lock();
 	}
 	
-	Font(const Renderer& renderer, const std::string& name);
+	Font(const std::string& name);
 
 	inline const Texture& getTexture() const { return *m_Texture; }
 

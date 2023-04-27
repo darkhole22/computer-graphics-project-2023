@@ -1,5 +1,6 @@
 #pragma once
 #include "vulture/util/Types.h"
+#include "vulture/core/Logger.h"
 
 #include <string>
 #include <iostream>
@@ -47,32 +48,6 @@ constexpr void strcpy(char* dest, const char* src)
 }
 
 /*
-* @brief Compares two null terminated string.
-*
-* @param s1 the first string.
-* @param s2 the second string.
-*
-* @return true - if the provided string are equals.
-* @return false - if the provided string are not equals.
-*/
-constexpr bool strcmp(const char* s1, const char* s2)
-{
-	// This needs to be reinplemented because the standard library
-	// doesn't have a constexpr implementation.
-	u64 i = 0;
-	if (s1 == s2) return true;
-	if (s1 && s2)
-	{
-		while (s1[i] && s2[i])
-		{
-			if (s1[i] != s2[i]) return false;
-		}
-		return s1[i] == s2[i];
-	}
-	return false;
-}
-
-/*
 * @brief Compares the first len character of two string.
 * Implementation from https://mgronhol.github.io/fast-strcmp/
 * 
@@ -112,6 +87,32 @@ constexpr i32 strncmp(const char* s1, const char* s2, u64 len)
 	}
 
 	return 0;
+}
+
+/*
+* @brief Compares two null terminated string.
+*
+* @param s1 the first string.
+* @param s2 the second string.
+*
+* @return 0 if the two string are equals.
+*/
+constexpr i32 strcmp(const char* s1, const char* s2)
+{
+	// This needs to be reinplemented because the standard library
+	// doesn't have a constexpr implementation.
+	u64 i = 0;
+	if (s1 == s2) return 0;
+	if (s1 && s2)
+	{
+		while (s1[i] && s2[i])
+		{
+			if (s1[i] != s2[i]) return s1[i] - s2[i];
+			++i;
+		}
+		return s1[i] - s2[i];
+	}
+	return static_cast<i32>(s1 - s2);
 }
 
 /*
@@ -221,7 +222,8 @@ public:
 			}
 			else
 			{
-				// TODO log error
+				m_Ptr += 3;
+				VUWARN("Trying to compute a codepoint longer than 4 byte! Skipping...");
 			}
 		}
 	};
@@ -267,7 +269,11 @@ public:
 			if (m_Data.data)
 			{
 				strcpy(getDynamicString(), other.cString());
-			} // TODO else log error on failed allocation
+			}
+			else
+			{
+				VUERROR("Failed allocation.");
+			}
 		}
 	}
 
@@ -302,7 +308,11 @@ public:
 			if (m_Data.data)
 			{
 				strcpy(getDynamicString(), str);
-			} // TODO else log error on failed allocation
+			}
+			else
+			{
+				VUERROR("Failed allocation.");
+			}
 		}
 	}
 
@@ -337,7 +347,11 @@ public:
 				if (m_Data.data)
 				{
 					strcpy(getDynamicString(), other.cString());
-				} // TODO else log error on failed allocation
+				}
+				else
+				{
+					VUERROR("Failed allocation.");
+				}
 			}
 		}
 		return *this;
@@ -384,7 +398,11 @@ public:
 			if (m_Data.data)
 			{
 				strcpy(getDynamicString(), str);
-			} // TODO else log error on failed allocation
+			}
+			else
+			{
+				VUERROR("Failed allocation.");
+			}
 		}
 		return *this;
 	}
@@ -436,14 +454,15 @@ public:
 			{
 				return dynamicStr[position];
 			}
-			// TODO log error, returning last valid character
+	
+			VUWARN("Trying to index (%i) out of bound [len : %i].", position, dynamicData->size);
 			return dynamicStr[dynamicData->size - 1];
 		}
 		if (m_Data.head > position)
 		{
 			return m_Data.str[position];
 		}
-		// TODO log error, returning last valid character
+		VUWARN("Trying to index (%i) out of bound [len : %hhi].", position, m_Data.head);
 		return m_Data.str[m_Data.head - 1];
 	}
 
@@ -781,9 +800,11 @@ public:
 	friend constexpr String operator+(const String& left, const String& right) noexcept
 	{
 		String result{};
-		result.resize(left.length() + right.length() + 1);
-		strcpy(&result[0], &left[0]);
-		strcpy(&result[left.length()], &right[0]);
+		result.resize(left.length() + right.length());
+		if (left.length() > 0)
+			strcpy(&result[0], &left[0]);
+		if (right.length() > 0)
+			strcpy(&result[left.length()], &right[0]);
 		return result;
 	}
 
@@ -799,8 +820,9 @@ public:
 	{
 		u64 rLength = strlen(right);
 		String result{};
-		result.resize(left.length() + rLength + 1);
-		strcpy(&result[0], &left[0]);
+		result.resize(left.length() + rLength);
+		if (left.length() > 0)
+			strcpy(&result[0], &left[0]);
 		strcpy(&result[left.length()], right);
 		return result;
 	}
@@ -817,9 +839,10 @@ public:
 	{
 		u64 lLength = strlen(left);
 		String result{};
-		result.resize(right.length() + lLength + 1);
+		result.resize(right.length() + lLength);
 		strcpy(&result[0], left);
-		strcpy(&result[lLength], &right[0]);
+		if (right.length() > 0)
+			strcpy(&result[lLength], &right[0]);
 		return result;
 	}
 
@@ -914,7 +937,11 @@ private:
 			DynamicData* dynamicData = static_cast<DynamicData*>(m_Data.data);
 			dynamicData->size = 0;
 			dynamicData->capacity = size;
-		} // TODO else log error on failed allocation
+		}
+		else
+		{
+			VUERROR("Failed allocation.");
+		}
 	}
 
 	constexpr void cleanup()
