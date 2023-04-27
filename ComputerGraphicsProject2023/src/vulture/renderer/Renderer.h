@@ -7,38 +7,18 @@
 
 namespace vulture {
 
-class RenderTarget;
-/*
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-struct Vertex
-{
-	glm::vec3 pos = { 0, 0, 0 };
-	glm::vec3 norm = { 0, 0 , 0 };
-	glm::vec2 texCoord = { 0, 0 };
-};
-
-struct VertexBuilder
-{
-	Vertex operator()(const Model::_BaseVertex& vertex)
-	{
-		Vertex v;
-
-		return v;
-	}
-};
-*/
+class FrameContext;
 
 class Renderer
 {
 public:
+	static bool init(const String& applicationName, const Window& window);
+
+	static void cleanup();
+
 	Renderer(const Window& window);
 
-	RenderTarget getRenderTarget();
+	FrameContext getRenderTarget();
 
 	// bind pipeline / shaders
 	// render skybox

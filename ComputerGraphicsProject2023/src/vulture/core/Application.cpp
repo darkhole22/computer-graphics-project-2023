@@ -20,6 +20,10 @@ Application::Application(Game& game, AppConfig config) :
 	m_Scene(m_Renderer),
 	m_Game(&game)
 {
+	if (!Renderer::init(config.name, m_Window))
+	{
+		throw std::runtime_error("Unable to initialize the Renderer.");
+	}
 }
 
 void Application::run()
@@ -62,6 +66,8 @@ Application::~Application()
 {
 	Input::cleanup();
 	m_Renderer.waitIdle();
+
+	Renderer::cleanup();
 }
 
 } // namespace vulture

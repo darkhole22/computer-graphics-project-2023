@@ -251,7 +251,7 @@ public:
 
 	~SwapChain();
 
-	friend class RenderTarget;
+	friend class FrameContext;
 private:
 	VkSwapchainKHR m_Handle;
 	std::vector<Image> m_Images;

@@ -13,13 +13,6 @@
 #define VALIDATION_LAYER_IF(x)
 #endif // !NDEBUG
 
-#define ASSERT_VK_SUCCESS(func, message)   \
-	if (func != VK_SUCCESS)                \
-	{                                      \
-		VUERROR(message);                  \
-		return false;                      \
-	}
-
 namespace vulture {
 
 struct VulkanContextData
@@ -34,6 +27,7 @@ struct VulkanContextData
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties physicalDeviceProperties = {};
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+	VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 	VkDevice device = VK_NULL_HANDLE;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;

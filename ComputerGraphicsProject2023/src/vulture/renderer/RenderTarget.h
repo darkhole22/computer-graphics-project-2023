@@ -10,11 +10,11 @@ struct FrameInfo
 	uint32_t count;
 };
 
-class RenderTarget
+class FrameContext
 {
 public:
-	RenderTarget(const RenderTarget& other) = delete;
-	RenderTarget(RenderTarget&& other) = delete;
+	FrameContext(const FrameContext& other) = delete;
+	FrameContext(FrameContext&& other) = delete;
 
 	inline FrameInfo getFrameInfo() const { return {m_ImageIndex, m_ImageCount}; }
 
@@ -31,11 +31,11 @@ public:
 	void bindIndexBuffer(const Buffer& buffer);
 	void drawIndexed(uint32_t count);
 
-	~RenderTarget();
+	~FrameContext();
 
 	friend class Renderer;
 private:
-	RenderTarget(SwapChain& swapChain, const Device& device, uint32_t currentFrame, bool swapChainRecreated);
+	FrameContext(SwapChain& swapChain, const Device& device, uint32_t currentFrame, bool swapChainRecreated);
 
 	SwapChain* const m_SwapChain;
 	uint32_t m_CurrentFrame;

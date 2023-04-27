@@ -313,7 +313,7 @@ namespace vulture
 	static const std::vector<const char *> deviceRequiredIfPresentExtensions = {
 		"VK_KHR_portability_subset"};
 
-	bool checkDeviceExtensionSupport(VkPhysicalDevice device)
+	static bool checkDeviceExtensionSupport(VkPhysicalDevice device)
 	{
 		uint32_t extensionCount;
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -379,7 +379,7 @@ namespace vulture
 		return indices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.samplerAnisotropy;
 	}
 
-	VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice)
+	static VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice)
 	{
 		VkPhysicalDeviceProperties physicalDeviceProperties;
 		vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
@@ -1097,7 +1097,7 @@ namespace vulture
 		throw std::runtime_error("Failed to find supported format!");
 	}
 
-	VkFormat findDepthFormat(VkPhysicalDevice physicalDevice)
+	static VkFormat findDepthFormat(VkPhysicalDevice physicalDevice)
 	{
 		return findSupportedFormat(physicalDevice,
 								   {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},

@@ -5,21 +5,34 @@
 
 namespace vulture {
 
+bool Renderer::init(const String& applicationName, const Window& window)
+{
+	if (!VulkanContext::init(applicationName, window))
+		return false;
+
+	return true;
+}
+
+void Renderer::cleanup()
+{
+	VulkanContext::cleanup();
+}
+
 Renderer::Renderer(const Window& window) :
-	m_Instance(window.getName()), m_Surface(m_Instance, window), m_Device(m_Instance, m_Surface),
-	m_RenderPass(m_Device, m_Surface), m_SwapChain(m_Device, m_Surface, m_RenderPass)
+m_Instance(window.getName()), m_Surface(m_Instance, window), m_Device(m_Instance, m_Surface),
+m_RenderPass(m_Device, m_Surface), m_SwapChain(m_Device, m_Surface, m_RenderPass)
 {
 	m_SwapChain.addCallback([this](const SwapChainRecreatedEvent& e) {
 		m_SwapChainRecreated = true;
 	});
 }
 
-RenderTarget Renderer::getRenderTarget()
+FrameContext Renderer::getRenderTarget()
 {
 	uint32_t frame = m_CurrentFrame;
 	m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	
-	return RenderTarget(m_SwapChain, m_Device, frame, m_SwapChainRecreated);
+	return FrameContext(m_SwapChain, m_Device, frame, m_SwapChainRecreated);
 	m_SwapChainRecreated = false;
 }
 
