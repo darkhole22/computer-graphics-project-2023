@@ -1,4 +1,6 @@
 #include "UIHandler.h"
+
+// #define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
 
 namespace vulture
@@ -133,7 +135,9 @@ void UIText::setVisible(bool visible)
 
 void UIText::recreate()
 {
-	VUTRACE("Recreating text [%s].", m_Text.cString());
+#if defined(VU_LOGGER_TRACE_ENABLED) && defined(VU_DEBUG_BUILD)
+	VUTRACE("Recreating text: [%s]| Visible: [%s].", m_Text.cString(), m_Visible ? "true" : "false");
+#endif
 
 	size_t textLength = m_Text.length();
 	if (textLength == 0)

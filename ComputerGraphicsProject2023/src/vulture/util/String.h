@@ -1,9 +1,11 @@
 #pragma once
 #include "vulture/util/Types.h"
-#include "vulture/core/Logger.h"
 
 #include <string>
 #include <iostream>
+
+// No header file should include Logger.h
+#define VU_STRING_LOG(msg) std::cout << "[STRING ERROR][" << __LINE__ << "]\n\t" << msg << std::endl
 
 namespace vulture {
 
@@ -223,7 +225,7 @@ public:
 			else
 			{
 				m_Ptr += 3;
-				VUWARN("Trying to compute a codepoint longer than 4 byte! Skipping...");
+				VU_STRING_LOG("Trying to compute a codepoint longer than 4 byte! Skipping...");
 			}
 		}
 	};
@@ -272,7 +274,7 @@ public:
 			}
 			else
 			{
-				VUERROR("Failed allocation.");
+				VU_STRING_LOG("Failed allocation.");
 			}
 		}
 	}
@@ -308,10 +310,11 @@ public:
 			if (m_Data.data)
 			{
 				strcpy(getDynamicString(), str);
+				getDynamicData()->size = inLen;
 			}
 			else
 			{
-				VUERROR("Failed allocation.");
+				VU_STRING_LOG("Failed allocation.");
 			}
 		}
 	}
@@ -347,10 +350,11 @@ public:
 				if (m_Data.data)
 				{
 					strcpy(getDynamicString(), other.cString());
+					getDynamicData()->size = other.length();
 				}
 				else
 				{
-					VUERROR("Failed allocation.");
+					VU_STRING_LOG("Failed allocation.");
 				}
 			}
 		}
@@ -398,10 +402,11 @@ public:
 			if (m_Data.data)
 			{
 				strcpy(getDynamicString(), str);
+				getDynamicData()->size = inLen;
 			}
 			else
 			{
-				VUERROR("Failed allocation.");
+				VU_STRING_LOG("Failed allocation.");
 			}
 		}
 		return *this;
@@ -455,14 +460,14 @@ public:
 				return dynamicStr[position];
 			}
 	
-			VUWARN("Trying to index (%i) out of bound [len : %i].", position, dynamicData->size);
+			VU_STRING_LOG("Trying to index (" << position << ") out of bound[len:" << dynamicData->size << "].");
 			return dynamicStr[dynamicData->size - 1];
 		}
 		if (m_Data.head > position)
 		{
 			return m_Data.str[position];
 		}
-		VUWARN("Trying to index (%i) out of bound [len : %hhi].", position, m_Data.head);
+		VU_STRING_LOG("Trying to index (" << position << ") out of bound[len:" << m_Data.head << "].");
 		return m_Data.str[m_Data.head - 1];
 	}
 
@@ -940,7 +945,7 @@ private:
 		}
 		else
 		{
-			VUERROR("Failed allocation.");
+			VU_STRING_LOG("Failed allocation.");
 		}
 	}
 
@@ -1073,3 +1078,5 @@ inline istream& operator>>(istream& is, vulture::String& str)
 }
 
 };
+
+#undef VU_STRING_LOG
