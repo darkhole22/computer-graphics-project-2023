@@ -63,15 +63,17 @@ RenderPass::RenderPass(VkFormat attachmentFormat)
 	VkSubpassDependency dependency{};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependency.dstSubpass = 0;
-	dependency.srcAccessMask = 0;
 	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
 	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 	std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
-	VkRenderPassCreateInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	
+	VkRenderPassCreateInfo renderPassInfo = { VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
+	renderPassInfo.pNext = nullptr;
+	renderPassInfo.flags = 0;
+	renderPassInfo.attachmentCount = static_cast<u32>(attachments.size());
 	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;

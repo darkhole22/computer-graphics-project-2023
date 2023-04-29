@@ -26,6 +26,7 @@ struct VulkanContextData
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties physicalDeviceProperties = {};
+	VkPhysicalDeviceFeatures physicalDeviceFeatures = {};
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 	VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 	VkDevice device = VK_NULL_HANDLE;

@@ -69,6 +69,7 @@ void VulkanContext::cleanup()
 		vulkanData.device = VK_NULL_HANDLE;
 		vulkanData.physicalDevice = VK_NULL_HANDLE;
 		vulkanData.physicalDeviceProperties = {};
+		vulkanData.physicalDeviceFeatures = {};
 		vulkanData.msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 		vulkanData.graphicsQueue = VK_NULL_HANDLE;
 		vulkanData.presentQueue = VK_NULL_HANDLE;
@@ -360,8 +361,8 @@ bool isDeviceSuitable(VkPhysicalDevice device)
 {
 	// VkPhysicalDeviceProperties deviceProperties;
 	// vkGetPhysicalDeviceProperties(device, &deviceProperties);
-	VkPhysicalDeviceFeatures deviceFeatures;
-	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+	// VkPhysicalDeviceFeatures deviceFeatures;
+	// vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
 	QueueFamilyIndices indices = findQueueFamilies(device);
 
@@ -374,7 +375,7 @@ bool isDeviceSuitable(VkPhysicalDevice device)
 		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 	}
 
-	return indices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.samplerAnisotropy;
+	return indices.isComplete() && extensionsSupported && swapChainAdequate; // && deviceFeatures.samplerAnisotropy;
 }
 
 static VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice)
@@ -466,6 +467,8 @@ bool pickPhysicalDevice()
 	}
 
 	vkGetPhysicalDeviceProperties(vulkanData.physicalDevice, &vulkanData.physicalDeviceProperties);
+	vkGetPhysicalDeviceFeatures(vulkanData.physicalDevice, &vulkanData.physicalDeviceFeatures);
+
 	VUINFO("Using \"%s\" as device.", vulkanData.physicalDeviceProperties.deviceName);
 
 	return true;
@@ -496,7 +499,7 @@ bool createDevice()
 	}
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
-	deviceFeatures.samplerAnisotropy = VK_TRUE; // TODO check if aviable
+	deviceFeatures.samplerAnisotropy = vulkanData.physicalDeviceFeatures.samplerAnisotropy ? VK_TRUE : VK_FALSE;
 	deviceFeatures.sampleRateShading = VK_TRUE;
 
 	std::vector<const char*> deviceExtensions(deviceRequiredExtensions.begin(), deviceRequiredExtensions.end());

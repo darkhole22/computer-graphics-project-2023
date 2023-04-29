@@ -39,7 +39,7 @@ public:
 	
 	Font(const std::string& name);
 
-	inline const Texture& getTexture() const { return *m_Texture; }
+	inline const TextureSampler& getTextureSampler() const { return *m_TextureSampler; }
 
 	const CharacterMapping& getCharacterMapping(int32_t code) const;
 	const Kerning* getKerning(int32_t code1, int32_t code2) const;
@@ -54,6 +54,7 @@ private:
 	static WRef<Font> s_DefaultFont;
 
 	Ref<Texture> m_Texture;
+	Ref<TextureSampler> m_TextureSampler;
 
 	uint32_t m_CharacterSize;
 	int32_t m_LineHeight;

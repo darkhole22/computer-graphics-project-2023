@@ -103,7 +103,7 @@ UIText::UIText(UITextHandle handle, DescriptorPool &descriptorPool,
 	m_FragmentUniform = Renderer::makeUniform<TextFragmentBufferObject>();
 
 	m_DescriptorSet = descriptorPool.getDescriptorSet(*descriptorSetLayout,
-		{ font->getTexture(), m_VertexUniform, m_FragmentUniform });
+		{ font->getTextureSampler(), m_VertexUniform, m_FragmentUniform });
 
 	m_VertexUniform->position = position;
 	m_VertexUniform->scale = scale;

@@ -104,13 +104,13 @@ public:
 		}
 	}
 
-	inline DescriptorWrite(const Texture& texture) :
+	inline DescriptorWrite(const TextureSampler& sampler) :
 		m_UniformBuffers(nullptr)
 	{
 		VkDescriptorImageInfo imageInfo{};
-		imageInfo.imageLayout = texture.getLayout();
-		imageInfo.imageView = texture.getView();
-		imageInfo.sampler = texture.getSampler();
+		imageInfo.imageLayout = sampler.getLayout();
+		imageInfo.imageView = sampler.getView();
+		imageInfo.sampler = sampler.getHandle();
 
 		m_TextureInfo = imageInfo;
 	}

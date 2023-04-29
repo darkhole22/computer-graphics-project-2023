@@ -22,6 +22,7 @@ public:
 	Ref<Model> model;
 	Uniform<ModelBufferObject> objUniform;
 	Ref<Texture> objTexture;
+	Ref<TextureSampler> objTextureSampler;
 	Ref<UIText> text;
 	Ref<UIText> text2;
 
@@ -81,8 +82,9 @@ public:
 		model = Ref<Model>(Model::make("res/models/vulture.obj"));
 		objUniform = Renderer::makeUniform<ModelBufferObject>();
 		objTexture = Ref<Texture>(new Texture("res/textures/vulture.png"));
+		objTextureSampler = makeRef<TextureSampler>(*objTexture);
 
-		scene->addObject(pipeline, model, descriptorSetLayout, {objUniform, *objTexture});
+		scene->addObject(pipeline, model, descriptorSetLayout, { objUniform, *objTextureSampler });
 
 		camera->position = glm::vec3(10, 5, 10);
 

@@ -9,6 +9,8 @@ namespace vulture {
 
 extern VulkanContextData vulkanData;
 
+const TextureSamplerConfig TextureSamplerConfig::defaultConfig = TextureSamplerConfig{};
+
 Texture::Texture(const String& path)
 {
 	i32 texWidth, texHeight, texChannels;
@@ -36,26 +38,37 @@ Texture::Texture(const String& path)
 
 	m_Image.copyFromBuffer(stagingBuffer);
 	m_Image.generateMipmaps(m_MipLevels);
+}
+
+Texture::~Texture()
+{
+	
+}
+
+TextureSampler::TextureSampler(const Texture& texture, const TextureSamplerConfig& config)
+{
+	m_View = texture.getView();
+	m_Layout = texture.getLayout();
 
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerInfo.magFilter = VK_FILTER_LINEAR;
-	samplerInfo.minFilter = VK_FILTER_LINEAR;
-	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.anisotropyEnable = VK_TRUE; // TODO Dissable if not aviable
+	samplerInfo.magFilter = config.magFilter;
+	samplerInfo.minFilter = config.minFilter;
+	samplerInfo.addressModeU = config.addressModeU;
+	samplerInfo.addressModeV = config.addressModeV;
+	samplerInfo.addressModeW = config.addressModeW;
+	samplerInfo.anisotropyEnable = (vulkanData.physicalDeviceFeatures.samplerAnisotropy && config.useAnisotropy) ? VK_TRUE : VK_FALSE;
 	samplerInfo.maxAnisotropy = vulkanData.physicalDeviceProperties.limits.maxSamplerAnisotropy;
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerInfo.unnormalizedCoordinates = VK_FALSE;
 	samplerInfo.compareEnable = VK_FALSE;
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-	samplerInfo.minLod = 0.0f; // Optional
-	samplerInfo.maxLod = static_cast<float>(m_MipLevels);
-	samplerInfo.mipLodBias = 0.0f; // Optional
+	samplerInfo.mipmapMode = config.mipmapMode;
+	samplerInfo.minLod = 0.0f;
+	samplerInfo.maxLod = static_cast<float>(texture.getMipLevels());
+	samplerInfo.mipLodBias = 0.0f;
 
-	VkResult result = vkCreateSampler(vulkanData.device, &samplerInfo, vulkanData.allocator, &m_Sampler);
+	VkResult result = vkCreateSampler(vulkanData.device, &samplerInfo, vulkanData.allocator, &m_Handle);
 
 	if (result != VK_SUCCESS)
 	{
@@ -63,9 +76,12 @@ Texture::Texture(const String& path)
 	}
 }
 
-Texture::~Texture()
+TextureSampler::~TextureSampler()
 {
-	vkDestroySampler(vulkanData.device, m_Sampler, vulkanData.allocator);
+	if (m_Handle != VK_NULL_HANDLE)
+	{
+		vkDestroySampler(vulkanData.device, m_Handle, vulkanData.allocator);
+	}
 }
 
 } // namespace vulture
