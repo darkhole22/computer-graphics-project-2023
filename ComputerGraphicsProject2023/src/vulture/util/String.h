@@ -807,9 +807,9 @@ public:
 		String result{};
 		result.resize(left.length() + right.length());
 		if (left.length() > 0)
-			strcpy(&result[0], &left[0]);
+		strcpy(&result[0], &left[0]);
 		if (right.length() > 0)
-			strcpy(&result[left.length()], &right[0]);
+		strcpy(&result[left.length()], &right[0]);
 		return result;
 	}
 
@@ -827,7 +827,7 @@ public:
 		String result{};
 		result.resize(left.length() + rLength);
 		if (left.length() > 0)
-			strcpy(&result[0], &left[0]);
+		strcpy(&result[0], &left[0]);
 		strcpy(&result[left.length()], right);
 		return result;
 	}
@@ -847,7 +847,7 @@ public:
 		result.resize(right.length() + lLength);
 		strcpy(&result[0], left);
 		if (right.length() > 0)
-			strcpy(&result[lLength], &right[0]);
+		strcpy(&result[lLength], &right[0]);
 		return result;
 	}
 

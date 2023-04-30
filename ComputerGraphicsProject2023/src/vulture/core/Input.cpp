@@ -42,6 +42,7 @@ void Input::setAction(const String& actionName, InputAction action)
 	}
 
 	s_Actions[actionName] = std::move(action);
+	std::cout << "added" << actionName << std::endl;
 }
 
 
@@ -85,7 +86,10 @@ bool Input::isActionReleased(const String& actionName)
 float Input::getActionStrength(const String& actionName)
 {
 	auto it = s_Actions.find(actionName);
-	if(it == s_Actions.end()) return false;
+	if(it == s_Actions.end()) {
+		//std::cout << actionName << " not found" << std::endl;
+		return false;
+	}
 
 	auto& action = it->second;
 

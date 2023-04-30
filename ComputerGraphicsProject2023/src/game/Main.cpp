@@ -102,6 +102,7 @@ public:
 		time += dt;
 
 		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
+		//std::cout << Input::isActionPressed("MOVE_LEFT") << std::endl;
 		float y = Input::getAxis("MOVE_DOWN", "MOVE_UP");
 
 		{
