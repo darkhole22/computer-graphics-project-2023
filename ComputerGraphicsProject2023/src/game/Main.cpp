@@ -2,7 +2,10 @@
 #include "vulture/core/Logger.h"
 #include "vulture/core/Game.h"
 #include "vulture/core/Application.h"
+#include "vulture/core/Core.h"
 #include "vulture/core/Input.h"
+
+#include <unordered_map>
 
 using namespace vulture;
 
@@ -22,67 +25,31 @@ public:
 	Ref<Model> model;
 	Uniform<ModelBufferObject> objUniform;
 	Ref<Texture> objTexture;
+	Ref<TextureSampler> objTextureSampler;
 	Ref<UIText> text;
 	Ref<UIText> text2;
 
 	void setup() override
 	{
-		InputAction leftAction{};
-		leftAction.keyboardBindings = {
-			KeyboardBinding{{GLFW_KEY_A}},
-			KeyboardBinding{{GLFW_KEY_LEFT}}};
-		leftAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_LEFT}}};
-		leftAction.gamepadAxisBindings = {
-			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}}};
-		Input::setAction("MOVE_LEFT", leftAction);
-
-		InputAction rightAction{};
-		rightAction.keyboardBindings = {
-			KeyboardBinding{{GLFW_KEY_D}},
-			KeyboardBinding{{GLFW_KEY_RIGHT}}};
-		rightAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_RIGHT}}};
-		rightAction.gamepadAxisBindings = {
-			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}}};
-		Input::setAction("MOVE_RIGHT", rightAction);
-
-		InputAction upAction{};
-		upAction.keyboardBindings = {
-			KeyboardBinding{{GLFW_KEY_W}},
-			KeyboardBinding{{GLFW_KEY_UP}}};
-		upAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_UP}}};
-		upAction.gamepadAxisBindings = {
-			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_NEG}}}};
-		Input::setAction("MOVE_UP", upAction);
-
-		InputAction downAction{};
-		downAction.keyboardBindings = {
-			KeyboardBinding{{GLFW_KEY_S}},
-			KeyboardBinding{{GLFW_KEY_DOWN}}};
-		downAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_DOWN}}};
-		downAction.gamepadAxisBindings = {
-			GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_POS}}}};
-		Input::setAction("MOVE_DOWN", downAction);
+		setupInputActions();
 
 		scene = Application::getScene();
 		camera = scene->getCamera();
 		handlerUI = scene->getUIHandle();
 
-		descriptorSetLayout = Application::makeDescriptorSetLayout();
+		descriptorSetLayout = Ref<DescriptorSetLayout>(new DescriptorSetLayout());
 		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 		descriptorSetLayout->create();
 
 		pipeline = scene->makePipeline("res/shaders/baseVert.spv", "res/shaders/baseFrag.spv", descriptorSetLayout);
 
-		model = Application::makeModel("res/models/vulture.obj");
-		objUniform = Application::makeUniform<ModelBufferObject>();
-		objTexture = Application::makeTexture("res/textures/vulture.png");
+		model = Ref<Model>(Model::make("res/models/vulture.obj"));
+		objUniform = Renderer::makeUniform<ModelBufferObject>();
+		objTexture = Ref<Texture>(new Texture("res/textures/vulture.png"));
+		objTextureSampler = makeRef<TextureSampler>(*objTexture);
 
-		scene->addObject(pipeline, model, descriptorSetLayout, {objUniform, *objTexture});
+		scene->addObject(pipeline, model, descriptorSetLayout, { objUniform, *objTextureSampler });
 
 		camera->position = glm::vec3(10, 5, 10);
 
@@ -100,7 +67,6 @@ public:
 		time += dt;
 
 		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
-		//std::cout << Input::isActionPressed("MOVE_LEFT") << std::endl;
 		float y = Input::getAxis("MOVE_DOWN", "MOVE_UP");
 
 		{
@@ -142,6 +108,49 @@ public:
 
 private:
 	const float SPEED = 10;
+
+	static void setupInputActions()
+	{
+		InputAction leftAction{};
+		leftAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_A}},
+				KeyboardBinding{{GLFW_KEY_LEFT}}};
+		leftAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_LEFT}}};
+		leftAction.gamepadAxisBindings = {
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}}};
+		Input::setAction("MOVE_LEFT", leftAction);
+
+		InputAction rightAction{};
+		rightAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_D}},
+				KeyboardBinding{{GLFW_KEY_RIGHT}}};
+		rightAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_RIGHT}}};
+		rightAction.gamepadAxisBindings = {
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}}};
+		Input::setAction("MOVE_RIGHT", rightAction);
+
+		InputAction upAction{};
+		upAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_W}},
+				KeyboardBinding{{GLFW_KEY_UP}}};
+		upAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_UP}}};
+		upAction.gamepadAxisBindings = {
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_NEG}}}};
+		Input::setAction("MOVE_UP", upAction);
+
+		InputAction downAction{};
+		downAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_S}},
+				KeyboardBinding{{GLFW_KEY_DOWN}}};
+		downAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_DOWN}}};
+		downAction.gamepadAxisBindings = {
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_POS}}}};
+		Input::setAction("MOVE_DOWN", downAction);
+	}
 };
 
 int main()

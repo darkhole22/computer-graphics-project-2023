@@ -20,12 +20,13 @@ constexpr int TAB_MULTIPLIER = 4;
 
 WRef<Font> Font::s_DefaultFont{};
 
-Font::Font(const Renderer& renderer, const std::string& name)
+Font::Font(const std::string& name)
 {
 	std::string texturePath = "res/textures/" + name + ".png";
 	std::string fontPath = "res/fonts/" + name + ".fnt";
 
-	m_Texture = renderer.makeTexture(texturePath.c_str());
+	m_Texture = makeRef<Texture>(texturePath.c_str());
+	m_TextureSampler = makeRef<TextureSampler>(*m_Texture);
 
 	if (!loadFnt(fontPath))
 	{

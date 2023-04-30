@@ -10,9 +10,9 @@ RenderableObject::RenderableObject(Ref<Model> model, Ref<DescriptorSet> descript
 
 }
 
-SceneObjectList::SceneObjectList(const Renderer& renderer, const String& vertexShader, 
+SceneObjectList::SceneObjectList(const String& vertexShader, 
 	const String& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
-	m_Pipeline(new Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
+	m_Pipeline(new Pipeline(Renderer::getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
 {
 }
 
@@ -31,9 +31,9 @@ void SceneObjectList::removeObject(ObjectHandle handle)
 	m_Objects.erase(it);
 }
 
-Scene::Scene(const Renderer& renderer) :
-	m_Renderer(&renderer), m_DescriptorsPool(renderer.makeDescriptorPool()), 
-	m_Camera(renderer, m_DescriptorsPool), m_UIHandler(renderer, m_DescriptorsPool)
+Scene::Scene() :
+	m_DescriptorsPool(Renderer::makeDescriptorPool()), 
+	m_Camera(m_DescriptorsPool), m_UIHandler(m_DescriptorsPool)
 {
 	setModified();
 
@@ -42,7 +42,7 @@ Scene::Scene(const Renderer& renderer) :
 	});
 }
 
-void Scene::render(RenderTarget target, float dt)
+void Scene::render(FrameContext target, float dt)
 {
 	if (target.updated())
 	{
@@ -83,7 +83,7 @@ PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fra
 	layouts.push_back(descriptorSetLayout.get());
 	layouts.push_back(m_Camera.getDescriptorSetLayout());
 
-	m_ObjectLists.insert({ handle, SceneObjectList(*m_Renderer, vertexShader, fragmentShader, layouts) });
+	m_ObjectLists.insert({ handle, SceneObjectList(vertexShader, fragmentShader, layouts) });
 
 	return handle;
 }
@@ -98,7 +98,7 @@ ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<Des
 	return handle;
 }
 
-void Scene::recordCommandBuffer(RenderTarget& target)
+void Scene::recordCommandBuffer(FrameContext& target)
 {
 	target.beginCommandRecording();
 
@@ -122,7 +122,7 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 	target.endCommandRecording();
 }
 
-void Scene::updateUniforms(RenderTarget& target)
+void Scene::updateUniforms(FrameContext& target)
 {
 	auto [index, count] = target.getFrameInfo();
 

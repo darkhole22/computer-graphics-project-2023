@@ -1,49 +1,52 @@
 #include "UIHandler.h"
+
+// #define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
 
 namespace vulture
 {
 
-	UIHandler::UIHandler(const Renderer &renderer, DescriptorPool &descriptorsPool) : m_Renderer(&renderer), m_DescriptorPool(&descriptorsPool)
-	{
-		m_TextDSLayout = renderer.makeDescriptorSetLayout();
-		m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-		m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-		m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
-		m_TextDSLayout->create();
+UIHandler::UIHandler(DescriptorPool &descriptorsPool)
+	: m_DescriptorPool(&descriptorsPool)
+{
+	m_TextDSLayout = makeRef<DescriptorSetLayout>();
+	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	m_TextDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_TextDSLayout->create();
 
-		m_ScreenDSLayout = renderer.makeDescriptorSetLayout();
-		m_ScreenDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-		m_ScreenDSLayout->create();
+	m_ScreenDSLayout = makeRef<DescriptorSetLayout>();
+	m_ScreenDSLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	m_ScreenDSLayout->create();
 
-		m_ScreenUniform = m_Renderer->makeUniform<ScreenBufferObject>();
-		m_ScreenDescriptorSet = m_DescriptorPool->getDescriptorSet(*m_ScreenDSLayout, {m_ScreenUniform});
+	m_ScreenUniform = Renderer::makeUniform<ScreenBufferObject>();
+	m_ScreenDescriptorSet = m_DescriptorPool->getDescriptorSet(*m_ScreenDSLayout, {m_ScreenUniform});
 
 		PipelineAdvancedConfig pipelineConfig{};
 		pipelineConfig.compareOperator = VK_COMPARE_OP_ALWAYS;
 		pipelineConfig.useAlpha = true;
 
-		m_Pipeline.reset(new Pipeline(
-			renderer.getRenderPass(),
-			"res/shaders/UItextSDF_vert.spv", "res/shaders/UItextSDF_frag.spv",
-			{m_TextDSLayout.get(), m_ScreenDSLayout.get()},
-			VertexLayout(sizeof(UIVertex),
-						 {{VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(UIVertex, position))},
-						  {VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(UIVertex, textureCoordinate))}}),
-			pipelineConfig));
+	m_Pipeline.reset(new Pipeline(
+		Renderer::getRenderPass(),
+		"res/shaders/UItextSDF_vert.spv", "res/shaders/UItextSDF_frag.spv",
+		{ m_TextDSLayout.get(), m_ScreenDSLayout.get() },
+		VertexLayout(sizeof(UIVertex),
+			{ {VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(UIVertex, position))},
+			{VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(UIVertex, textureCoordinate))} }),
+		pipelineConfig));
 
-		m_Font = Font::getDefault(renderer);
-	}
+	m_Font = Font::getDefault();
+}
 
-	Ref<UIText> UIHandler::makeText(String text, glm::vec2 position, float scale)
-	{
-		UITextHandle handle = m_NextTextHandle++;
-		auto uiText = Ref<UIText>(new UIText(handle, *m_Renderer, *m_DescriptorPool,
-											 m_TextDSLayout, m_Font, text, position, scale));
-		m_Texts.insert({handle, uiText});
+Ref<UIText> UIHandler::makeText(String text, glm::vec2 position, float scale)
+{
+	UITextHandle handle = m_NextTextHandle++;
+	auto uiText = Ref<UIText>(new UIText(handle, *m_DescriptorPool,
+		m_TextDSLayout, m_Font, text, position, scale));
+	m_Texts.insert({handle, uiText});
 
-		uiText->addCallback([this](const UITextRecreated &event)
-							{ emit(UIModified()); });
+	uiText->addCallback([this](const UITextRecreated &event)
+						{ emit(UIModified()); });
 
 		emit(UIModified());
 		return uiText;
@@ -55,17 +58,17 @@ namespace vulture
 		m_Texts.erase(it);
 	}
 
-	void UIHandler::recordCommandBuffer(RenderTarget &target)
-	{
-		target.bindPipeline(*m_Pipeline);
+void UIHandler::recordCommandBuffer(FrameContext &target)
+{
+	target.bindPipeline(*m_Pipeline);
 
 		target.bindDescriptorSet(*m_Pipeline, *m_ScreenDescriptorSet, 1);
 
-		for (auto &[handle, text] : m_Texts)
-		{
-			if (!text->m_Visible)
-				continue;
-			target.bindDescriptorSet(*m_Pipeline, text->getDescriptorSet(), 0);
+	for (auto &[handle, text] : m_Texts)
+	{
+		if (!text->m_Visible)
+			continue;
+		target.bindDescriptorSet(*m_Pipeline, text->getDescriptorSet(), 0);
 
 			target.bindVertexBuffer(text->m_VertexBuffer);
 			target.bindIndexBuffer(text->m_IndexBuffer);
@@ -73,36 +76,36 @@ namespace vulture
 		}
 	}
 
-	void UIHandler::updateUniforms(RenderTarget &target)
-	{
-		auto [index, count] = target.getFrameInfo();
+void UIHandler::updateUniforms(FrameContext &target)
+{
+	auto [index, count] = target.getFrameInfo();
 
 		m_ScreenDescriptorSet->map(index);
 
-		for (auto &[handle, text] : m_Texts)
-		{
-			text->getDescriptorSet().map(index);
-		}
-	}
-
-	void UIHandler::update(float dt)
+	for (auto &[handle, text] : m_Texts)
 	{
-		for (auto &[handle, text] : m_Texts)
-		{
-			text->update(dt);
-		}
+		text->getDescriptorSet().map(index);
 	}
+}
 
-	UIText::UIText(UITextHandle handle, const Renderer &renderer,
-		DescriptorPool &descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout,
-		Ref<Font> font, const String &text, glm::vec2 position, float scale) :
-		m_Handle(handle), m_Device(&renderer.getDevice()), m_Font(font), m_Text(text)
+void UIHandler::update(float dt)
+{
+	for (auto &[handle, text] : m_Texts)
 	{
-		m_VertexUniform = renderer.makeUniform<TextVertexBufferObject>();
-		m_FragmentUniform = renderer.makeUniform<TextFragmentBufferObject>();
+		text->update(dt);
+	}
+}
 
-		m_DescriptorSet = descriptorPool.getDescriptorSet(*descriptorSetLayout,
-														  {font->getTexture(), m_VertexUniform, m_FragmentUniform});
+UIText::UIText(UITextHandle handle, DescriptorPool &descriptorPool,
+	Ref<DescriptorSetLayout> descriptorSetLayout,
+	Ref<Font> font, const String &text, glm::vec2 position, float scale) :
+	m_Handle(handle), m_Font(font), m_Text(text)
+{
+	m_VertexUniform = Renderer::makeUniform<TextVertexBufferObject>();
+	m_FragmentUniform = Renderer::makeUniform<TextFragmentBufferObject>();
+
+	m_DescriptorSet = descriptorPool.getDescriptorSet(*descriptorSetLayout,
+		{ font->getTextureSampler(), m_VertexUniform, m_FragmentUniform });
 
 		m_VertexUniform->position = position;
 		m_VertexUniform->scale = scale;
@@ -110,10 +113,10 @@ namespace vulture
 		recreate();
 	}
 
-	void UIText::setText(const String &text)
-	{
-		if (!m_Modified && m_Text == text)
-			return;
+void UIText::setText(const String &text)
+{
+	if (!m_Modified && m_Text == text)
+		return;
 
 		m_Text = text;
 		m_Modified = true;
@@ -130,17 +133,19 @@ namespace vulture
 		}
 	}
 
-	void UIText::recreate()
-	{
-		VUTRACE("Recreating text [%s].", m_Text.cString());
+void UIText::recreate()
+{
+#if defined(VU_LOGGER_TRACE_ENABLED) && defined(VU_DEBUG_BUILD)
+	VUTRACE("Recreating text: [%s]| Visible: [%s].", m_Text.cString(), m_Visible ? "true" : "false");
+#endif
 
-		size_t textLength = m_Text.length();
-		if (textLength == 0)
-		{
-			m_IndexCount = 0;
-			setVisible(false);
-			return;
-		}
+	size_t textLength = m_Text.length();
+	if (textLength == 0)
+	{
+		m_IndexCount = 0;
+		setVisible(false);
+		return;
+	}
 
 		if (textLength * 4 > m_Vertices.size())
 		{
@@ -173,7 +178,7 @@ namespace vulture
 				continue;
 			}
 
-			auto &c = m_Font->getCharacterMapping(codepoint);
+		auto &c = m_Font->getCharacterMapping(codepoint);
 
 			float minx = x + c.xOffset;
 			float miny = y + c.yOffset;
@@ -185,20 +190,20 @@ namespace vulture
 			float tminy = static_cast<float>(c.y) / m_Font->getAtlasHeight();
 			float tmaxy = static_cast<float>(c.y + c.height) / m_Font->getAtlasHeight();
 
-			m_Vertices[vertexCount + 0] = UIVertex{{minx / cSize, miny / cSize}, {tminx, tminy}};
-			m_Vertices[vertexCount + 1] = UIVertex{{maxx / cSize, miny / cSize}, {tmaxx, tminy}};
-			m_Vertices[vertexCount + 2] = UIVertex{{minx / cSize, maxy / cSize}, {tminx, tmaxy}};
-			m_Vertices[vertexCount + 3] = UIVertex{{maxx / cSize, maxy / cSize}, {tmaxx, tmaxy}};
+		m_Vertices[vertexCount + 0] = UIVertex{{minx / cSize, miny / cSize}, {tminx, tminy}};
+		m_Vertices[vertexCount + 1] = UIVertex{{maxx / cSize, miny / cSize}, {tmaxx, tminy}};
+		m_Vertices[vertexCount + 2] = UIVertex{{minx / cSize, maxy / cSize}, {tminx, tmaxy}};
+		m_Vertices[vertexCount + 3] = UIVertex{{maxx / cSize, maxy / cSize}, {tmaxx, tmaxy}};
 
-			float advance = c.xAdvance;
-			if (i < textLength - 1)
-			{
-				int32_t nextCodepoint = m_Text[i + 1LL];
-				auto *k = m_Font->getKerning(codepoint, nextCodepoint);
-				if (k)
-					advance += k->amount;
-			}
-			x += advance;
+		float advance = c.xAdvance;
+		if (i < textLength - 1)
+		{
+			int32_t nextCodepoint = m_Text[i + 1LL];
+			auto *k = m_Font->getKerning(codepoint, nextCodepoint);
+			if (k)
+				advance += k->amount;
+		}
+		x += advance;
 
 			m_Indices[m_IndexCount + 0] = static_cast<uint32_t>(vertexCount + 0);
 			m_Indices[m_IndexCount + 1] = static_cast<uint32_t>(vertexCount + 2);
@@ -212,29 +217,29 @@ namespace vulture
 			m_IndexCount += 6;
 		}
 
-		VkDeviceSize vertexBufferSize = sizeof(UIVertex) * vertexCount;
-		if (vertexBufferSize > m_VertexStagingBuffer.getSize())
-		{
-			m_VertexStagingBuffer = Buffer(*m_Device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		}
-		m_VertexStagingBuffer.map(m_Vertices.data());
-		if (vertexBufferSize > m_VertexBuffer.getSize())
-		{
-			m_VertexBuffer = Buffer(*m_Device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		}
-		m_VertexStagingBuffer.copyToBuffer(vertexBufferSize, m_VertexBuffer);
+	VkDeviceSize vertexBufferSize = sizeof(UIVertex) * vertexCount;
+	if (vertexBufferSize > m_VertexStagingBuffer.getSize())
+	{
+		m_VertexStagingBuffer = Buffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	}
+	m_VertexStagingBuffer.map(m_Vertices.data());
+	if (vertexBufferSize > m_VertexBuffer.getSize())
+	{
+		m_VertexBuffer = Buffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	}
+	m_VertexStagingBuffer.copyToBuffer(vertexBufferSize, m_VertexBuffer);
 
-		VkDeviceSize indexBufferSize = sizeof(uint32_t) * m_IndexCount;
-		if (indexBufferSize > m_IndexStagingBuffer.getSize())
-		{
-			m_IndexStagingBuffer = Buffer(*m_Device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		}
-		m_IndexStagingBuffer.map(m_Indices.data());
-		if (indexBufferSize > m_IndexBuffer.getSize())
-		{
-			m_IndexBuffer = Buffer(*m_Device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		}
-		m_IndexStagingBuffer.copyToBuffer(indexBufferSize, m_IndexBuffer);
+	VkDeviceSize indexBufferSize = sizeof(uint32_t) * m_IndexCount;
+	if (indexBufferSize > m_IndexStagingBuffer.getSize())
+	{
+		m_IndexStagingBuffer = Buffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	}
+	m_IndexStagingBuffer.map(m_Indices.data());
+	if (indexBufferSize > m_IndexBuffer.getSize())
+	{
+		m_IndexBuffer = Buffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	}
+	m_IndexStagingBuffer.copyToBuffer(indexBufferSize, m_IndexBuffer);
 
 		emit(UITextRecreated());
 	}

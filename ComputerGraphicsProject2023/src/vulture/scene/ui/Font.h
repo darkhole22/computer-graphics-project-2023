@@ -26,20 +26,20 @@ public:
 		int16_t amount;
 	};
 
-	static Ref<Font> getDefault(const Renderer& renderer)
+	static Ref<Font> getDefault()
 	{
 		if (s_DefaultFont.expired())
 		{
-			auto font = Ref<Font>(new Font(renderer, "FiraCode"));
+			auto font = Ref<Font>(new Font("FiraCode"));
 			s_DefaultFont = font;
 			return font;
 		}
 		return s_DefaultFont.lock();
 	}
 	
-	Font(const Renderer& renderer, const std::string& name);
+	Font(const std::string& name);
 
-	inline const Texture& getTexture() const { return *m_Texture; }
+	inline const TextureSampler& getTextureSampler() const { return *m_TextureSampler; }
 
 	const CharacterMapping& getCharacterMapping(int32_t code) const;
 	const Kerning* getKerning(int32_t code1, int32_t code2) const;
@@ -54,6 +54,7 @@ private:
 	static WRef<Font> s_DefaultFont;
 
 	Ref<Texture> m_Texture;
+	Ref<TextureSampler> m_TextureSampler;
 
 	uint32_t m_CharacterSize;
 	int32_t m_LineHeight;

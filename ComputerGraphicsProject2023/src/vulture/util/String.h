@@ -4,6 +4,9 @@
 #include <string>
 #include <iostream>
 
+// No header file should include Logger.h
+#define VU_STRING_LOG(msg) std::cout << "[STRING ERROR][" << __LINE__ << "]\n\t" << msg << std::endl
+
 namespace vulture {
 
 /*
@@ -15,7 +18,7 @@ namespace vulture {
 */
 constexpr u64 strlen(const char* str)
 {
-	// This needs to be reimplemented because the standard library
+	// This needs to be reinplemented because the standard library
 	// doesn't have a constexpr implementation.
 	u64 size = 0;
 	if (str) 
@@ -32,7 +35,7 @@ constexpr u64 strlen(const char* str)
 */
 constexpr void strcpy(char* dest, const char* src)
 {
-	// This needs to be reimplemented because the standard library
+	// This needs to be reinplemented because the standard library
 	// doesn't have a constexpr implementation.
 	u64 i = 0;
 	if (dest && src)
@@ -47,32 +50,6 @@ constexpr void strcpy(char* dest, const char* src)
 }
 
 /*
-* @brief Compares two null terminated string.
-*
-* @param s1 the first string.
-* @param s2 the second string.
-*
-* @return true - if the provided string are equals.
-* @return false - if the provided string are not equals.
-*/
-constexpr bool strcmp(const char* s1, const char* s2)
-{
-	// This needs to be reimplemented because the standard library
-	// doesn't have a constexpr implementation.
-	u64 i = 0;
-	if (s1 == s2) return true;
-	if (s1 && s2)
-	{
-		while (s1[i] && s2[i])
-		{
-			if (s1[i] != s2[i]) return false;
-		}
-		return s1[i] == s2[i];
-	}
-	return false;
-}
-
-/*
 * @brief Compares the first len character of two string.
 * Implementation from https://mgronhol.github.io/fast-strcmp/
 * 
@@ -84,7 +61,7 @@ constexpr bool strcmp(const char* s1, const char* s2)
 */
 constexpr i32 strncmp(const char* s1, const char* s2, u64 len)
 {
-	// This needs to be reimplemented because the standard library
+	// This needs to be reinplemented because the standard library
 	// doesn't have a constexpr implementation.
 	u64 fast = len / sizeof(size_t) + 1;
 	u64 offset = (fast - 1) * sizeof(size_t);
@@ -115,9 +92,35 @@ constexpr i32 strncmp(const char* s1, const char* s2, u64 len)
 }
 
 /*
+* @brief Compares two null terminated string.
+*
+* @param s1 the first string.
+* @param s2 the second string.
+*
+* @return 0 if the two string are equals.
+*/
+constexpr i32 strcmp(const char* s1, const char* s2)
+{
+	// This needs to be reinplemented because the standard library
+	// doesn't have a constexpr implementation.
+	u64 i = 0;
+	if (s1 == s2) return 0;
+	if (s1 && s2)
+	{
+		while (s1[i] && s2[i])
+		{
+			if (s1[i] != s2[i]) return s1[i] - s2[i];
+			++i;
+		}
+		return s1[i] - s2[i];
+	}
+	return static_cast<i32>(s1 - s2);
+}
+
+/*
 * @brief A class to handle dynamic string.
 * This class uses small string optimization so for string less than
-* 22 characters no allocation is required.
+* 22 caracters no allocation is required.
 * 
 * This class also have utf8 convenience methods and iterator.
 * All the methods of this class are constexpr.
@@ -151,7 +154,7 @@ public:
 		constexpr bool operator==(const Iterator_T& other) const { return std::is_eq(*this <=> other); }
 
 		constexpr reference operator*() { return *m_Ptr; }
-		constexpr reference operator*() const { return *m_Ptr; }
+		constexpr const reference operator*() const { return *m_Ptr; }
 
 		constexpr ~Iterator_T() = default;
 	private:
@@ -221,7 +224,8 @@ public:
 			}
 			else
 			{
-				// TODO log error
+				m_Ptr += 3;
+				VU_STRING_LOG("Trying to compute a codepoint longer than 4 byte! Skipping...");
 			}
 		}
 	};
@@ -250,7 +254,7 @@ public:
 	constexpr String() noexcept : m_Data() {}
 
 	/*
-	* @brief Copy constructor.
+	* @brief Copy contructor.
 	* 
 	* @param other the String to copy.
 	*/
@@ -267,7 +271,11 @@ public:
 			if (m_Data.data)
 			{
 				strcpy(getDynamicString(), other.cString());
-			} // TODO else log error on failed allocation
+			}
+			else
+			{
+				VU_STRING_LOG("Failed allocation.");
+			}
 		}
 	}
 
@@ -302,7 +310,12 @@ public:
 			if (m_Data.data)
 			{
 				strcpy(getDynamicString(), str);
-			} // TODO else log error on failed allocation
+				getDynamicData()->size = inLen;
+			}
+			else
+			{
+				VU_STRING_LOG("Failed allocation.");
+			}
 		}
 	}
 
@@ -337,7 +350,12 @@ public:
 				if (m_Data.data)
 				{
 					strcpy(getDynamicString(), other.cString());
-				} // TODO else log error on failed allocation
+					getDynamicData()->size = other.length();
+				}
+				else
+				{
+					VU_STRING_LOG("Failed allocation.");
+				}
 			}
 		}
 		return *this;
@@ -384,7 +402,12 @@ public:
 			if (m_Data.data)
 			{
 				strcpy(getDynamicString(), str);
-			} // TODO else log error on failed allocation
+				getDynamicData()->size = inLen;
+			}
+			else
+			{
+				VU_STRING_LOG("Failed allocation.");
+			}
 		}
 		return *this;
 	}
@@ -436,14 +459,15 @@ public:
 			{
 				return dynamicStr[position];
 			}
-			// TODO log error, returning last valid character
+	
+			VU_STRING_LOG("Trying to index (" << position << ") out of bound[len:" << dynamicData->size << "].");
 			return dynamicStr[dynamicData->size - 1];
 		}
 		if (m_Data.head > position)
 		{
 			return m_Data.str[position];
 		}
-		// TODO log error, returning last valid character
+		VU_STRING_LOG("Trying to index (" << position << ") out of bound[len:" << m_Data.head << "].");
 		return m_Data.str[m_Data.head - 1];
 	}
 
@@ -656,8 +680,8 @@ public:
 
 	/*
 	* @brief After this method is called the internal 
-	* capacity will be greater than the provided size.
-	* This method never decreases the internal capacity.
+	* capacity will be grather than the provided size.
+	* This method naver decrease the internal capacity.
 	*
 	* @param size the target size.
 	*/
@@ -781,8 +805,10 @@ public:
 	friend constexpr String operator+(const String& left, const String& right) noexcept
 	{
 		String result{};
-		result.resize(left.length() + right.length() + 1);
+		result.resize(left.length() + right.length());
+		if (left.length() > 0)
 		strcpy(&result[0], &left[0]);
+		if (right.length() > 0)
 		strcpy(&result[left.length()], &right[0]);
 		return result;
 	}
@@ -799,7 +825,8 @@ public:
 	{
 		u64 rLength = strlen(right);
 		String result{};
-		result.resize(left.length() + rLength + 1);
+		result.resize(left.length() + rLength);
+		if (left.length() > 0)
 		strcpy(&result[0], &left[0]);
 		strcpy(&result[left.length()], right);
 		return result;
@@ -817,8 +844,9 @@ public:
 	{
 		u64 lLength = strlen(left);
 		String result{};
-		result.resize(right.length() + lLength + 1);
+		result.resize(right.length() + lLength);
 		strcpy(&result[0], left);
+		if (right.length() > 0)
 		strcpy(&result[lLength], &right[0]);
 		return result;
 	}
@@ -914,14 +942,18 @@ private:
 			DynamicData* dynamicData = static_cast<DynamicData*>(m_Data.data);
 			dynamicData->size = 0;
 			dynamicData->capacity = size;
-		} // TODO else log error on failed allocation
+		}
+		else
+		{
+			VU_STRING_LOG("Failed allocation.");
+		}
 	}
 
 	constexpr void cleanup()
 	{
 		if (m_Data.head & DYNAMIC_STRING_MASK)
 		{
-			delete[] m_Data.data;
+			delete[] static_cast<u8*>(m_Data.data);
 		}
 		zeroData(m_Data);
 	}
@@ -998,7 +1030,7 @@ String stringFormat(const String& format, Args ...args)
 namespace std {
 
 	/*
-	 * @brief A simple implementation of the Fowler–Noll–Vo hash function.
+	 * @brief A simple implementation of the Fowlerï¿½Nollï¿½Vo hash function.
 	 * See https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function for reference.
 	 */
 	template<> struct hash<vulture::String>
@@ -1014,6 +1046,7 @@ namespace std {
 				h += (h << 1) + (h << 4) + (h << 5) +
 					(h << 7) + (h << 8) + (h << 40);
 			}
+
 			return h;
 		}
 	};
@@ -1046,3 +1079,5 @@ inline istream& operator>>(istream& is, vulture::String& str)
 }
 
 };
+
+#undef VU_STRING_LOG

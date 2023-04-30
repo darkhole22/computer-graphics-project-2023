@@ -16,10 +16,14 @@ std::weak_ptr<Application> Application::s_Instance = std::weak_ptr<Application>(
 Application::Application(Game& game, AppConfig config) :
 	c_Name(config.name),
 	m_Window(config.name, config.width, config.height),
-	m_Renderer(m_Window),
-	m_Scene(m_Renderer),
 	m_Game(&game)
 {
+	if (!Renderer::init(config.name, m_Window))
+	{
+		throw std::runtime_error("Unable to initialize the Renderer.");
+	}
+
+	m_Scene = makeRef<Scene>();
 }
 
 void Application::run()
@@ -41,10 +45,10 @@ void Application::run()
 
 		update(deltaT);
 
-		m_Scene.render(m_Renderer.getRenderTarget(), deltaT);
+		m_Scene->render(Renderer::getFrameContext(), deltaT);
 	}
 
-	m_Renderer.waitIdle();
+	Renderer::waitIdle();
 }
 
 void Application::setup()
@@ -60,8 +64,10 @@ void Application::update(float delta)
 
 Application::~Application()
 {
+	m_Scene.reset();
 	Input::cleanup();
-	m_Renderer.waitIdle();
+
+	Renderer::cleanup();
 }
 
 } // namespace vulture

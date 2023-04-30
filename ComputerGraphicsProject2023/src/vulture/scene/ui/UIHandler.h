@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vulture/renderer/RenderTarget.h"
+#include "vulture/renderer/FrameContext.h"
 #include "Font.h"
 #include "vulture/event/Event.h"
 
@@ -40,7 +40,7 @@ namespace vulture
 		EVENT(UITextRecreated)
 
 	public:
-		UIText(UITextHandle handle, const Renderer &renderer, DescriptorPool &descriptorPool,
+		UIText(UITextHandle handle, DescriptorPool &descriptorPool,
 			   Ref<DescriptorSetLayout> descriptorSetLayout, Ref<Font> font,
 			   const String &text, glm::vec2 position, float scale);
 
@@ -68,7 +68,6 @@ namespace vulture
 
 	private:
 		const UITextHandle m_Handle;
-		Device const *m_Device;
 		Ref<Font> m_Font;
 
 		String m_Text;
@@ -114,7 +113,7 @@ namespace vulture
 		friend class Scene;
 
 	private:
-		UIHandler(const Renderer &renderer, DescriptorPool &descriptorsPool);
+		UIHandler(DescriptorPool &descriptorsPool);
 
 		Ref<DescriptorSetLayout> m_TextDSLayout;
 		Ref<DescriptorSetLayout> m_ScreenDSLayout;
@@ -125,14 +124,13 @@ namespace vulture
 		UITextHandle m_NextTextHandle = 0;
 		std::unordered_map<UITextHandle, Ref<UIText>> m_Texts;
 
-		Renderer const *m_Renderer;
 		DescriptorPool *m_DescriptorPool;
 		Uniform<ScreenBufferObject> m_ScreenUniform;
 		Ref<DescriptorSet> m_ScreenDescriptorSet;
 
 		void update(float dt);
-		void recordCommandBuffer(RenderTarget &target);
-		void updateUniforms(RenderTarget &target);
+		void recordCommandBuffer(FrameContext &target);
+		void updateUniforms(FrameContext &target);
 	};
 
 } // namespace vulture
