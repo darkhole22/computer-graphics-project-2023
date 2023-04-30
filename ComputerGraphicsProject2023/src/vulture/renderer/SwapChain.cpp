@@ -4,6 +4,7 @@
 #include "vulture/core/Logger.h"
 
 #include <algorithm>
+#include <limits>
 
 namespace vulture {
 	

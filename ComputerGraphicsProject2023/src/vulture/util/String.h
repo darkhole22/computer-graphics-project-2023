@@ -131,13 +131,13 @@ public:
 	/*
 	* @brief A templated Iterator type to iterate over the String class.
 	*/
-	template <class T> struct Iterator_T
+	template <typename T> struct Iterator_T
 	{
 		using iterator_category = std::bidirectional_iterator_tag;
 		using difference_type = i64;
-		using value_type = typename T;
-		using pointer = typename T*;
-		using reference = typename T&;
+		using value_type = T;
+		using pointer = T*;
+		using reference = T&;
 
 		constexpr Iterator_T() : m_Ptr(nullptr) {}
 		constexpr Iterator_T(pointer ptr) : m_Ptr(ptr) {}
@@ -1030,7 +1030,7 @@ String stringFormat(const String& format, Args ...args)
 namespace std {
 
 	/*
-	 * @brief A simple implementation of the Fowler–Noll–Vo hash function.
+	 * @brief A simple implementation of the Fowlerï¿½Nollï¿½Vo hash function.
 	 * See https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function for reference.
 	 */
 	template<> struct hash<vulture::String>

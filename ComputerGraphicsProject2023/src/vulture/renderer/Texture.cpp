@@ -1,3 +1,4 @@
+#include <cmath>
 #include "Texture.h"
 
 #include "vulture/core/Logger.h"
@@ -40,10 +41,7 @@ Texture::Texture(const String& path)
 	m_Image.generateMipmaps(m_MipLevels);
 }
 
-Texture::~Texture()
-{
-	
-}
+Texture::~Texture() = default;
 
 TextureSampler::TextureSampler(const Texture& texture, const TextureSamplerConfig& config)
 {
