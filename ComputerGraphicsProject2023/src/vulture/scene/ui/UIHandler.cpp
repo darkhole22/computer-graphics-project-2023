@@ -22,9 +22,9 @@ UIHandler::UIHandler(DescriptorPool &descriptorsPool)
 	m_ScreenUniform = Renderer::makeUniform<ScreenBufferObject>();
 	m_ScreenDescriptorSet = m_DescriptorPool->getDescriptorSet(*m_ScreenDSLayout, {m_ScreenUniform});
 
-	PipelineAdvancedConfig pipelineConfig{};
-	pipelineConfig.compareOperator = VK_COMPARE_OP_ALWAYS;
-	pipelineConfig.useAlpha = true;
+		PipelineAdvancedConfig pipelineConfig{};
+		pipelineConfig.compareOperator = VK_COMPARE_OP_ALWAYS;
+		pipelineConfig.useAlpha = true;
 
 	m_Pipeline.reset(new Pipeline(
 		Renderer::getRenderPass(),
@@ -48,21 +48,21 @@ Ref<UIText> UIHandler::makeText(String text, glm::vec2 position, float scale)
 	uiText->addCallback([this](const UITextRecreated &event)
 						{ emit(UIModified()); });
 
-	emit(UIModified());
-	return uiText;
-}
+		emit(UIModified());
+		return uiText;
+	}
 
-void UIHandler::removeText(Ref<UIText> text)
-{
-	auto it = m_Texts.find(text->m_Handle);
-	m_Texts.erase(it);
-}
+	void UIHandler::removeText(Ref<UIText> text)
+	{
+		auto it = m_Texts.find(text->m_Handle);
+		m_Texts.erase(it);
+	}
 
 void UIHandler::recordCommandBuffer(FrameContext &target)
 {
 	target.bindPipeline(*m_Pipeline);
 
-	target.bindDescriptorSet(*m_Pipeline, *m_ScreenDescriptorSet, 1);
+		target.bindDescriptorSet(*m_Pipeline, *m_ScreenDescriptorSet, 1);
 
 	for (auto &[handle, text] : m_Texts)
 	{
@@ -70,17 +70,17 @@ void UIHandler::recordCommandBuffer(FrameContext &target)
 			continue;
 		target.bindDescriptorSet(*m_Pipeline, text->getDescriptorSet(), 0);
 
-		target.bindVertexBuffer(text->m_VertexBuffer);
-		target.bindIndexBuffer(text->m_IndexBuffer);
-		target.drawIndexed(static_cast<uint32_t>(text->m_IndexCount));
+			target.bindVertexBuffer(text->m_VertexBuffer);
+			target.bindIndexBuffer(text->m_IndexBuffer);
+			target.drawIndexed(static_cast<uint32_t>(text->m_IndexCount));
+		}
 	}
-}
 
 void UIHandler::updateUniforms(FrameContext &target)
 {
 	auto [index, count] = target.getFrameInfo();
 
-	m_ScreenDescriptorSet->map(index);
+		m_ScreenDescriptorSet->map(index);
 
 	for (auto &[handle, text] : m_Texts)
 	{
@@ -107,31 +107,31 @@ UIText::UIText(UITextHandle handle, DescriptorPool &descriptorPool,
 	m_DescriptorSet = descriptorPool.getDescriptorSet(*descriptorSetLayout,
 		{ font->getTextureSampler(), m_VertexUniform, m_FragmentUniform });
 
-	m_VertexUniform->position = position;
-	m_VertexUniform->scale = scale;
+		m_VertexUniform->position = position;
+		m_VertexUniform->scale = scale;
 
-	recreate();
-}
+		recreate();
+	}
 
 void UIText::setText(const String &text)
 {
 	if (!m_Modified && m_Text == text)
 		return;
 
-	m_Text = text;
-	m_Modified = true;
-}
-
-void UIText::setVisible(bool visible)
-{
-	bool wasVisible = m_Visible;
-	m_Visible = visible;
-	m_FragmentUniform->visibility = static_cast<float>(visible);
-	if (visible && !wasVisible)
-	{
-		emit(UITextRecreated());
+		m_Text = text;
+		m_Modified = true;
 	}
-}
+
+	void UIText::setVisible(bool visible)
+	{
+		bool wasVisible = m_Visible;
+		m_Visible = visible;
+		m_FragmentUniform->visibility = static_cast<float>(visible);
+		if (visible && !wasVisible)
+		{
+			emit(UITextRecreated());
+		}
+	}
 
 void UIText::recreate()
 {
@@ -147,48 +147,48 @@ void UIText::recreate()
 		return;
 	}
 
-	if (textLength * 4 > m_Vertices.size())
-	{
-		m_Vertices.resize(textLength * 4);
-		m_Indices.resize(textLength * 6);
-	}
-
-	const float cSize = m_Font->getCharacterSize();
-
-	float x = 0;
-	float y = 0;
-
-	size_t vertexCount = 0;
-	m_IndexCount = 0;
-
-	for (size_t i = 0; i < textLength; i++)
-	{
-		int32_t codepoint = m_Text[i]; // TODO handle unicode
-
-		if (codepoint == '\n')
+		if (textLength * 4 > m_Vertices.size())
 		{
-			x = 0;
-			y += m_Font->getLineHeight();
-			continue;
+			m_Vertices.resize(textLength * 4);
+			m_Indices.resize(textLength * 6);
 		}
 
-		if (codepoint == '\t')
+		const float cSize = m_Font->getCharacterSize();
+
+		float x = 0;
+		float y = 0;
+
+		size_t vertexCount = 0;
+		m_IndexCount = 0;
+
+		for (size_t i = 0; i < textLength; i++)
 		{
-			x += m_Font->getTabXAdvance();
-			continue;
-		}
+			int32_t codepoint = m_Text[i]; // TODO handle unicode
+
+			if (codepoint == '\n')
+			{
+				x = 0;
+				y += m_Font->getLineHeight();
+				continue;
+			}
+
+			if (codepoint == '\t')
+			{
+				x += m_Font->getTabXAdvance();
+				continue;
+			}
 
 		auto &c = m_Font->getCharacterMapping(codepoint);
 
-		float minx = x + c.xOffset;
-		float miny = y + c.yOffset;
-		float maxx = minx + c.width;
-		float maxy = miny + c.height;
+			float minx = x + c.xOffset;
+			float miny = y + c.yOffset;
+			float maxx = minx + c.width;
+			float maxy = miny + c.height;
 
-		float tminx = static_cast<float>(c.x) / m_Font->getAtlasWidth();
-		float tmaxx = static_cast<float>(c.x + c.width) / m_Font->getAtlasWidth();
-		float tminy = static_cast<float>(c.y) / m_Font->getAtlasHeight();
-		float tmaxy = static_cast<float>(c.y + c.height) / m_Font->getAtlasHeight();
+			float tminx = static_cast<float>(c.x) / m_Font->getAtlasWidth();
+			float tmaxx = static_cast<float>(c.x + c.width) / m_Font->getAtlasWidth();
+			float tminy = static_cast<float>(c.y) / m_Font->getAtlasHeight();
+			float tmaxy = static_cast<float>(c.y + c.height) / m_Font->getAtlasHeight();
 
 		m_Vertices[vertexCount + 0] = UIVertex{{minx / cSize, miny / cSize}, {tminx, tminy}};
 		m_Vertices[vertexCount + 1] = UIVertex{{maxx / cSize, miny / cSize}, {tmaxx, tminy}};
@@ -205,17 +205,17 @@ void UIText::recreate()
 		}
 		x += advance;
 
-		m_Indices[m_IndexCount + 0] = static_cast<uint32_t>(vertexCount + 0);
-		m_Indices[m_IndexCount + 1] = static_cast<uint32_t>(vertexCount + 2);
-		m_Indices[m_IndexCount + 2] = static_cast<uint32_t>(vertexCount + 1);
+			m_Indices[m_IndexCount + 0] = static_cast<uint32_t>(vertexCount + 0);
+			m_Indices[m_IndexCount + 1] = static_cast<uint32_t>(vertexCount + 2);
+			m_Indices[m_IndexCount + 2] = static_cast<uint32_t>(vertexCount + 1);
 
-		m_Indices[m_IndexCount + 3] = static_cast<uint32_t>(vertexCount + 1);
-		m_Indices[m_IndexCount + 4] = static_cast<uint32_t>(vertexCount + 2);
-		m_Indices[m_IndexCount + 5] = static_cast<uint32_t>(vertexCount + 3);
+			m_Indices[m_IndexCount + 3] = static_cast<uint32_t>(vertexCount + 1);
+			m_Indices[m_IndexCount + 4] = static_cast<uint32_t>(vertexCount + 2);
+			m_Indices[m_IndexCount + 5] = static_cast<uint32_t>(vertexCount + 3);
 
-		vertexCount += 4;
-		m_IndexCount += 6;
-	}
+			vertexCount += 4;
+			m_IndexCount += 6;
+		}
 
 	VkDeviceSize vertexBufferSize = sizeof(UIVertex) * vertexCount;
 	if (vertexBufferSize > m_VertexStagingBuffer.getSize())
@@ -241,16 +241,16 @@ void UIText::recreate()
 	}
 	m_IndexStagingBuffer.copyToBuffer(indexBufferSize, m_IndexBuffer);
 
-	emit(UITextRecreated());
-}
-
-void UIText::update(float dt)
-{
-	if (m_Modified)
-	{
-		m_Modified = false;
-		recreate();
+		emit(UITextRecreated());
 	}
-}
+
+	void UIText::update(float dt)
+	{
+		if (m_Modified)
+		{
+			m_Modified = false;
+			recreate();
+		}
+	}
 
 } // namespace vulture

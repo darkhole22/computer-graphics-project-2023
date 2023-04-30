@@ -131,13 +131,13 @@ public:
 	/*
 	* @brief A templated Iterator type to iterate over the String class.
 	*/
-	template <typename T> struct Iterator_T
+	template <class T> struct Iterator_T
 	{
 		using iterator_category = std::bidirectional_iterator_tag;
 		using difference_type = i64;
-		using value_type = T;
-		using pointer = T*;
-		using reference = T&;
+		using value_type = typename T;
+		using pointer = typename T*;
+		using reference = typename T&;
 
 		constexpr Iterator_T() : m_Ptr(nullptr) {}
 		constexpr Iterator_T(pointer ptr) : m_Ptr(ptr) {}
@@ -807,9 +807,9 @@ public:
 		String result{};
 		result.resize(left.length() + right.length());
 		if (left.length() > 0)
-			strcpy(&result[0], &left[0]);
+		strcpy(&result[0], &left[0]);
 		if (right.length() > 0)
-			strcpy(&result[left.length()], &right[0]);
+		strcpy(&result[left.length()], &right[0]);
 		return result;
 	}
 
@@ -827,7 +827,7 @@ public:
 		String result{};
 		result.resize(left.length() + rLength);
 		if (left.length() > 0)
-			strcpy(&result[0], &left[0]);
+		strcpy(&result[0], &left[0]);
 		strcpy(&result[left.length()], right);
 		return result;
 	}
@@ -847,7 +847,7 @@ public:
 		result.resize(right.length() + lLength);
 		strcpy(&result[0], left);
 		if (right.length() > 0)
-			strcpy(&result[lLength], &right[0]);
+		strcpy(&result[lLength], &right[0]);
 		return result;
 	}
 
@@ -953,7 +953,7 @@ private:
 	{
 		if (m_Data.head & DYNAMIC_STRING_MASK)
 		{
-			delete[] m_Data.data;
+			delete[] static_cast<u8*>(m_Data.data);
 		}
 		zeroData(m_Data);
 	}
@@ -1030,7 +1030,7 @@ String stringFormat(const String& format, Args ...args)
 namespace std {
 
 	/*
-	 * @brief A simple implementation of the Fowlerï¿½Nollï¿½Vo hash function.
+	 * @brief A simple implementation of the Fowler–Noll–Vo hash function.
 	 * See https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function for reference.
 	 */
 	template<> struct hash<vulture::String>
