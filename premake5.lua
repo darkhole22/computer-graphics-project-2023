@@ -74,7 +74,13 @@ project "ComputerGraphicsProject2023"
         
         links {
             "vulkan",
-            "glfw"
+            "glfw",
+            "pthread",
+            "X11",
+            "Xxf86vm",
+            "Xrandr",
+            "Xi",
+            "dl"
         }
     
     filter "configurations:Debug"

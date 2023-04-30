@@ -15,7 +15,7 @@ namespace vulture {
 */
 constexpr u64 strlen(const char* str)
 {
-	// This needs to be reinplemented because the standard library
+	// This needs to be reimplemented because the standard library
 	// doesn't have a constexpr implementation.
 	u64 size = 0;
 	if (str) 
@@ -32,7 +32,7 @@ constexpr u64 strlen(const char* str)
 */
 constexpr void strcpy(char* dest, const char* src)
 {
-	// This needs to be reinplemented because the standard library
+	// This needs to be reimplemented because the standard library
 	// doesn't have a constexpr implementation.
 	u64 i = 0;
 	if (dest && src)
@@ -57,7 +57,7 @@ constexpr void strcpy(char* dest, const char* src)
 */
 constexpr bool strcmp(const char* s1, const char* s2)
 {
-	// This needs to be reinplemented because the standard library
+	// This needs to be reimplemented because the standard library
 	// doesn't have a constexpr implementation.
 	u64 i = 0;
 	if (s1 == s2) return true;
@@ -84,7 +84,7 @@ constexpr bool strcmp(const char* s1, const char* s2)
 */
 constexpr i32 strncmp(const char* s1, const char* s2, u64 len)
 {
-	// This needs to be reinplemented because the standard library
+	// This needs to be reimplemented because the standard library
 	// doesn't have a constexpr implementation.
 	u64 fast = len / sizeof(size_t) + 1;
 	u64 offset = (fast - 1) * sizeof(size_t);
@@ -117,7 +117,7 @@ constexpr i32 strncmp(const char* s1, const char* s2, u64 len)
 /*
 * @brief A class to handle dynamic string.
 * This class uses small string optimization so for string less than
-* 22 caracters no allocation is required.
+* 22 characters no allocation is required.
 * 
 * This class also have utf8 convenience methods and iterator.
 * All the methods of this class are constexpr.
@@ -128,13 +128,13 @@ public:
 	/*
 	* @brief A templated Iterator type to iterate over the String class.
 	*/
-	template <class T> struct Iterator_T
+	template <typename T> struct Iterator_T
 	{
 		using iterator_category = std::bidirectional_iterator_tag;
 		using difference_type = i64;
-		using value_type = typename T;
-		using pointer = typename T*;
-		using reference = typename T&;
+		using value_type = T;
+		using pointer = T*;
+		using reference = T&;
 
 		constexpr Iterator_T() : m_Ptr(nullptr) {}
 		constexpr Iterator_T(pointer ptr) : m_Ptr(ptr) {}
@@ -151,7 +151,7 @@ public:
 		constexpr bool operator==(const Iterator_T& other) const { return std::is_eq(*this <=> other); }
 
 		constexpr reference operator*() { return *m_Ptr; }
-		constexpr const reference operator*() const { return *m_Ptr; }
+		constexpr reference operator*() const { return *m_Ptr; }
 
 		constexpr ~Iterator_T() = default;
 	private:
@@ -250,7 +250,7 @@ public:
 	constexpr String() noexcept : m_Data() {}
 
 	/*
-	* @brief Copy contructor.
+	* @brief Copy constructor.
 	* 
 	* @param other the String to copy.
 	*/
@@ -656,8 +656,8 @@ public:
 
 	/*
 	* @brief After this method is called the internal 
-	* capacity will be grather than the provided size.
-	* This method naver decrease the internal capacity.
+	* capacity will be greater than the provided size.
+	* This method never decreases the internal capacity.
 	*
 	* @param size the target size.
 	*/
