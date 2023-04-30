@@ -41,7 +41,8 @@ void Input::setAction(const std::string& actionName, InputAction action)
 		}
 	}
 
-	s_Actions[actionName] = std::move(action);}
+	s_Actions[actionName] = action;
+}
 
 
 bool Input::isActionReleased(const std::string& actionName)
