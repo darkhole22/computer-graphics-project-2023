@@ -28,7 +28,7 @@ private:
 	std::vector<VkDescriptorSetLayoutBinding> m_Bindings;
 };
 
-template <class _Type>
+template <class Type>
 class Uniform
 {
 public:
@@ -44,12 +44,12 @@ public:
 
 	Uniform(u32 count)
 	{
-		m_LocalData = new _Type();
+		m_LocalData = new Type();
 		m_Buffers.reserve(count);
 
 		for (u64 i = 0; i < count; i++)
 		{
-			m_Buffers.emplace_back(sizeof(_Type),
+			m_Buffers.emplace_back(sizeof(Type),
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 				m_LocalData);
@@ -58,8 +58,8 @@ public:
 
 	inline const std::vector<Buffer>* getBuffers() const { return &m_Buffers; }
 
-	inline _Type* operator->() noexcept { return m_LocalData; }
-	inline const _Type* operator->() const noexcept { return m_LocalData; }
+	inline Type* operator->() noexcept { return m_LocalData; }
+	inline const Type* operator->() const noexcept { return m_LocalData; }
 
 	Uniform& operator=(const Uniform& other) = delete;
 	Uniform& operator=(Uniform&& other) noexcept {
@@ -82,7 +82,7 @@ public:
 private:
 	std::vector<Buffer> m_Buffers;
 
-	_Type* m_LocalData = nullptr;
+	Type* m_LocalData = nullptr;
 };
 
 class DescriptorWrite
@@ -126,6 +126,51 @@ private:
 	std::optional<VkDescriptorImageInfo> m_TextureInfo;
 };
 
+/*
+*/
+	class DescriptorPool
+	{
+	public:
+		NO_COPY(DescriptorPool)
+
+		/*
+		* @brief Constructor of a DescriptorPool
+		*
+		* @param device - The logical device on witch the pool will be allocated.
+		* @param frameCount - The number of framebuffers.
+		*/
+		explicit DescriptorPool(u32 frameCount);
+
+		inline u32 getFrameCount() const { return m_FrameCount; }
+		void setFrameCount(u32 frameCount);
+
+		inline VkDescriptorPool getHandle() const { return m_Handle; }
+
+		void reserveSpace(u32 count, const DescriptorSetLayout& layout);
+
+		Ref<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
+
+		~DescriptorPool();
+
+		struct DescriptorTypePoolInfo
+		{
+			u32 size;
+			u32 count;
+		};
+
+		friend class DescriptorSet;
+	private:
+		VkDescriptorPool m_Handle = VK_NULL_HANDLE;
+		u32 m_FrameCount = 0;
+		u32 m_Size = 0;
+		std::unordered_map<VkDescriptorType, DescriptorTypePoolInfo> m_TypeInfos;
+		std::unordered_set<Ref<DescriptorSet>> m_Sets;
+
+		void cleanupDescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
+		void cleanup();
+		bool recreate();
+	};
+
 class DescriptorSet
 {
 public:
@@ -150,51 +195,6 @@ private:
 	DescriptorPool* m_Pool;
 	DescriptorSetLayout const* m_Layout;
 	std::vector<DescriptorWrite> m_DescriptorWrites;
-};
-
-/*
-*/
-class DescriptorPool
-{
-public:
-	NO_COPY(DescriptorPool)
-
-	/*
-	* @brief Constructor of a DescriptorPool
-	*
-	* @param device - The logical device on witch the pool will be allocated.
-	* @param frameCount - The number of framebuffers.
-	*/
-	DescriptorPool(u32 frameCount);
-
-	inline u32 getFrameCount() const { return m_FrameCount; }
-	void setFrameCount(u32 frameCount);
-
-	inline VkDescriptorPool getHandle() const { return m_Handle; }
-
-	void reserveSpace(u32 count, const DescriptorSetLayout& layout);
-
-	Ref<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
-
-	~DescriptorPool();
-
-	struct DescriptorTypePoolInfo
-	{
-		u32 size;
-		u32 count;
-	};
-
-	friend class DescriptorSet;
-private:
-	VkDescriptorPool m_Handle = VK_NULL_HANDLE;
-	u32 m_FrameCount = 0;
-	u32 m_Size = 0;
-	std::unordered_map<VkDescriptorType, DescriptorTypePoolInfo> m_TypeInfos;
-	std::unordered_set<Ref<DescriptorSet>> m_Sets;
-
-	void cleanupDescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
-	void cleanup();
-	bool recreate();
 };
 
 } // namespace vulture

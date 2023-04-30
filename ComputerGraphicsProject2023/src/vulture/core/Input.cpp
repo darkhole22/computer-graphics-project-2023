@@ -7,7 +7,7 @@ namespace vulture {
 #define GAMEPAD_BTN_IDX(BTN) (BTN + MOUSE_BTN_IDX(GLFW_MOUSE_BUTTON_LAST) + 1)
 #define GAMEPAD_AXIS_IDX(AXIS) (AXIS + GAMEPAD_BTN_IDX(GLFW_GAMEPAD_BUTTON_LAST) + 1)
 
-void Input::setAction(const String& actionName, InputAction action)
+void Input::setAction(const std::string& actionName, InputAction action)
 {
 	for (const auto& keyboardBinding: action.keyboardBindings)
 	{
@@ -41,12 +41,11 @@ void Input::setAction(const String& actionName, InputAction action)
 		}
 	}
 
-	s_Actions[actionName] = std::move(action);
-	std::cout << "added" << actionName << std::endl;
+	s_Actions[actionName] = action;
 }
 
 
-bool Input::isActionReleased(const String& actionName)
+bool Input::isActionReleased(const std::string& actionName)
 {
 	auto it = s_Actions.find(actionName);
 	if(it == s_Actions.end()) return false;
@@ -83,11 +82,10 @@ bool Input::isActionReleased(const String& actionName)
 	return mayRelease;
 }
 
-float Input::getActionStrength(const String& actionName)
+float Input::getActionStrength(const std::string& actionName)
 {
 	auto it = s_Actions.find(actionName);
 	if(it == s_Actions.end()) {
-		//std::cout << actionName << " not found" << std::endl;
 		return false;
 	}
 

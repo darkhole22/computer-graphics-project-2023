@@ -4,7 +4,6 @@
 #include <unordered_map>
 
 #include "vulture/renderer/Window.h"
-#include "vulture/core/Core.h"
 
 namespace vulture {
 
@@ -53,15 +52,15 @@ class Input
 public:
 	Input() = delete;
 
-	static void setAction(const String& actionName, InputAction action);
+	static void setAction(const std::string& actionName, InputAction action);
 
-	inline static bool isActionPressed(const String& actionName) { return getActionStrength(actionName) > 0.0f; }
+	inline static bool isActionPressed(const std::string& actionName) { return getActionStrength(actionName) > 0.0f; }
 
-	static bool isActionReleased(const String& actionName);
+	static bool isActionReleased(const std::string& actionName);
 
-	static float getActionStrength(const String& actionName);
+	static float getActionStrength(const std::string& actionName);
 
-	inline static float getAxis(const String& negativeAction, const String& positiveAction)
+	inline static float getAxis(const std::string& negativeAction, const std::string& positiveAction)
 	{
 		return getActionStrength(positiveAction) - getActionStrength(negativeAction);
 	}
@@ -76,7 +75,7 @@ public:
 
 private:
 	inline static Window const* s_Window;
-	inline static std::unordered_map<String, InputAction> s_Actions;
+	inline static std::unordered_map<std::string, InputAction> s_Actions;
 	inline static std::unordered_map<int, InputStatus*> s_InputStatuses;
 	inline static constexpr float GAMEPAD_AXIS_DEADZONE = 0.25f;
 

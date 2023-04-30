@@ -7,13 +7,8 @@
 // #define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
 
-#include <iostream>
 #include <stdexcept>
-#include <unordered_set>
-#include <optional>
-#include <set>
-#include <algorithm>
-
+#include <cstring>
 
 #ifdef VUDEBUG
 // DEBUG

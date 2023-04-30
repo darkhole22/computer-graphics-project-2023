@@ -131,13 +131,13 @@ public:
 	/*
 	* @brief A templated Iterator type to iterate over the String class.
 	*/
-	template <class T> struct Iterator_T
+	template <typename T> struct Iterator_T
 	{
 		using iterator_category = std::bidirectional_iterator_tag;
 		using difference_type = i64;
-		using value_type = typename T;
-		using pointer = typename T*;
-		using reference = typename T&;
+		using value_type = T;
+		using pointer = T*;
+		using reference = T&;
 
 		constexpr Iterator_T() : m_Ptr(nullptr) {}
 		constexpr Iterator_T(pointer ptr) : m_Ptr(ptr) {}
@@ -1047,6 +1047,7 @@ namespace std {
 					(h << 7) + (h << 8) + (h << 40);
 				buffer++;
 			}
+
 			return h;
 		}
 	};
