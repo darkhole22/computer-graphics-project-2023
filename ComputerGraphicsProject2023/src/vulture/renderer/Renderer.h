@@ -53,8 +53,8 @@ public:
 	inline DescriptorPool makeDescriptorPool() const { return DescriptorPool(m_Device, m_SwapChain.getImageCount()); }
 	inline Ref<DescriptorSetLayout> makeDescriptorSetLayout() const { return Ref<DescriptorSetLayout>(new DescriptorSetLayout(m_Device)); }
 	template <class T> inline Uniform<T> makeUniform() const { return Uniform<T>(m_Device, m_SwapChain.getImageCount()); }
-	inline Ref<Texture> makeTexture(const std::string& path) const { return Ref<Texture>(new Texture(m_Device, path)); }
-	inline Ref<Model> makeBaseModel(const std::string& modelPath) const 
+	inline Ref<Texture> makeTexture(const String& path) const { return Ref<Texture>(new Texture(m_Device, path)); }
+	inline Ref<Model> makeBaseModel(const String& modelPath) const 
 	{
 		// return Ref<Model>(Model::make<Vertex, VertexBuilder>(m_Device, modelPath));
 		return Ref<Model>(Model::make(m_Device, modelPath));

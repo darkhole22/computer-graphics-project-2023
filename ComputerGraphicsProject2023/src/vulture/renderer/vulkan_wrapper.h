@@ -44,7 +44,7 @@ class Instance
 public:
 	NO_COPY(Instance)
 
-	explicit Instance(const std::string& applicationName);
+	explicit Instance(const String& applicationName);
 
 	inline const VkInstance& getHandle() const { return m_Handle; }
 
@@ -318,7 +318,7 @@ class Shader
 public:
 	NO_COPY(Shader)
 
-	Shader(const Device& device, const std::string& name);
+	Shader(const Device& device, const String& name);
 
 	VkPipelineShaderStageCreateInfo getStage(VkShaderStageFlagBits stageType, const char* mainName = "main") const;
 
@@ -436,7 +436,7 @@ class Texture
 public:
 	NO_COPY(Texture)
 
-	Texture(const Device& device, const std::string& path);
+	Texture(const Device& device, const String& path);
 
 	inline VkImageView getView() const { return m_Image.getView(); }
 	inline VkSampler getSampler() const { return m_Sampler; };
@@ -578,7 +578,7 @@ class Pipeline
 public:
 	NO_COPY(Pipeline)
 
-	Pipeline(const RenderPass& renderPass, const std::string& vertexShader, const std::string& fragmentShader, 
+	Pipeline(const RenderPass& renderPass, const String& vertexShader, const String& fragmentShader, 
 		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, const VertexLayout& vertexLayout, const PipelineAdvancedConfig& config = PipelineAdvancedConfig::defaultConfig);
 
 	inline VkPipeline getHandle() const { return m_Handle; }

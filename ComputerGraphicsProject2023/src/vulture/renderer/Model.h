@@ -76,7 +76,7 @@ public:
 	};
 
 	// template<class _Vertex, class _VertexBuilder>
-	static Model* make(const Device& device, const std::string& modelPath)
+	static Model* make(const Device& device, const String& modelPath)
 	{
 		Model* m = new Model();
 
@@ -85,7 +85,7 @@ public:
 		std::vector<tinyobj::material_t> materials;
 		std::string warn, err;
 
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelPath.c_str())) {
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelPath.cString())) {
 			throw std::runtime_error(warn + err);
 		}
 

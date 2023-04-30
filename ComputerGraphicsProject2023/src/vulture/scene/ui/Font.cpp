@@ -25,7 +25,7 @@ Font::Font(const Renderer& renderer, const std::string& name)
 	std::string texturePath = "res/textures/" + name + ".png";
 	std::string fontPath = "res/fonts/" + name + ".fnt";
 
-	m_Texture = renderer.makeTexture(texturePath);
+	m_Texture = renderer.makeTexture(texturePath.c_str());
 
 	if (!loadFnt(fontPath))
 	{

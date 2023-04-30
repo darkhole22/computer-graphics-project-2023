@@ -3,6 +3,7 @@
                        CLASS operator=(const CLASS& other) = delete;
 #endif // NO_COPY
 
+#include "vulture/util/String.h"
 #include <memory>
 
 namespace vulture {
