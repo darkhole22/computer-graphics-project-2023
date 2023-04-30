@@ -953,7 +953,7 @@ private:
 	{
 		if (m_Data.head & DYNAMIC_STRING_MASK)
 		{
-			delete[] m_Data.data;
+			delete[] static_cast<u8*>(m_Data.data);
 		}
 		zeroData(m_Data);
 	}
