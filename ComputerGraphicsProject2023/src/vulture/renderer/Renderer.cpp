@@ -1,29 +1,66 @@
 #include "Renderer.h"
-#include "RenderTarget.h"
+#include "FrameContext.h"
+
+#include "VulkanContext.h"
 
 namespace vulture {
 
-Renderer::Renderer(const Window& window) :
-	m_Instance(window.getName()), m_Surface(m_Instance, window), m_Device(m_Instance, m_Surface),
-	m_RenderPass(m_Device, m_Surface), m_SwapChain(m_Device, m_Surface, m_RenderPass)
+extern VulkanContextData vulkanData;
+
+struct RendererData
 {
-	m_SwapChain.addCallback([this](const SwapChainRecreatedEvent& e) {
-		m_SwapChainRecreated = true;
-	});
+	SwapChain* swapChain = nullptr;
+	RenderPass* renderPass = nullptr;
+
+	uint32_t currentFrame = 0;
+};
+
+static RendererData rendererData = {};
+
+bool Renderer::init(const String& applicationName, const Window& window)
+{
+	if (!VulkanContext::init(applicationName, window))
+		return false;
+
+	rendererData.swapChain = new SwapChain(window);
+	rendererData.renderPass = new RenderPass(rendererData.swapChain->getImageFormat());
+	if (!rendererData.swapChain->attachRenderPass(*rendererData.renderPass))
+		return false;
+
+	return true;
 }
 
-RenderTarget Renderer::getRenderTarget()
+void Renderer::cleanup()
 {
-	uint32_t frame = m_CurrentFrame;
-	m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	vkDeviceWaitIdle(vulkanData.device);
+
+	delete rendererData.swapChain;
+	delete rendererData.renderPass;
+
+	VulkanContext::cleanup();
+}
+
+FrameContext Renderer::getFrameContext()
+{
+	uint32_t frame = rendererData.currentFrame;
+	rendererData.currentFrame = (rendererData.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	
-	return RenderTarget(m_SwapChain, m_Device, frame, m_SwapChainRecreated);
-	m_SwapChainRecreated = false;
+	return FrameContext(*rendererData.swapChain, frame, rendererData.swapChain->wasRecreated());
 }
 
-Renderer::~Renderer()
+void Renderer::waitIdle()
 {
-	m_Device.waitIdle();
+	vkDeviceWaitIdle(vulkanData.device);
+}
+
+const RenderPass& Renderer::getRenderPass()
+{
+	return *rendererData.renderPass;
+}
+
+u32 Renderer::getImageCount()
+{
+	return rendererData.swapChain->getImageCount();
 }
 
 } // namespace vulture

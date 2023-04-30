@@ -4,8 +4,8 @@
 
 namespace vulture {
 
-Camera::Camera(const Renderer& renderer, DescriptorPool& descriptorsPool) :
-	m_Uniform(renderer.makeUniform<CameraBufferObject>()), m_DescriptorSetLayout(renderer.makeDescriptorSetLayout())
+Camera::Camera(DescriptorPool& descriptorsPool) :
+	m_Uniform(Renderer::makeUniform<CameraBufferObject>()), m_DescriptorSetLayout(makeRef<DescriptorSetLayout>())
 {
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 	m_DescriptorSetLayout->create();

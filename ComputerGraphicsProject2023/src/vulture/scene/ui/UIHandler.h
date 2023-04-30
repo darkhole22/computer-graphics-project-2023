@@ -1,103 +1,136 @@
 #pragma once
 
-#include "vulture/renderer/RenderTarget.h"
+#include "vulture/renderer/FrameContext.h"
 #include "Font.h"
 #include "vulture/event/Event.h"
 
-namespace vulture {
-
-struct UIVertex
+namespace vulture
 {
-	glm::vec2 position = { 0 , 0 };
-	glm::vec2 textureCoordinate = { 0 , 0 };
-};
 
-struct TextBufferObject
-{
-	glm::vec2 position = { 0 , 0 };
-	float scale = 1.0f;
-};
+	struct UIVertex
+	{
+		glm::vec2 position = {0, 0};
+		glm::vec2 textureCoordinate = {0, 0};
+	};
 
-using UITextHandle = int64_t;
+	struct TextVertexBufferObject
+	{
+		alignas(8) glm::vec2 position = {0, 0};
+		alignas(8) float scale = 1.0f;
+	};
 
-class UITextRecreated {};
+	struct TextFragmentBufferObject
+	{
+		alignas(16) glm::vec3 color = {1, 1, 1};
+		alignas(16) glm::vec3 borderColor = {1, 0, 0};
+		alignas(16) float width = 0.4f;
+		alignas(4) float edge = 0.1f;
+		alignas(4) float borderWidth = 0.4f;
+		alignas(4) float visibility = 1.0f;
+	};
 
-class UIText
-{
-	EVENT(UITextRecreated)
+	using UITextHandle = int64_t;
 
-public:
-	UIText(UITextHandle handle, const Renderer& renderer, DescriptorPool& descriptorPool,
-		Ref<DescriptorSetLayout> descriptorSetLayout, Ref<Font> font, 
-		const std::string& text, glm::vec2 position, float scale);
+	class UITextRecreated
+	{
+	};
 
-	void setText(const std::string& text);
-	void setPosition(glm::vec2 position) { m_Uniform->position = position; } // TODO boundary check
-	void setSize(float size) { m_Uniform->scale = size; } // TODO boundary check
+	class UIText
+	{
+		EVENT(UITextRecreated)
 
-	inline const std::string& getText() const { return m_Text; }
-	inline glm::vec2 getPosition() const { return m_Uniform->position; }
-	inline float getSize() const { return m_Uniform->scale; }
+	public:
+		UIText(UITextHandle handle, DescriptorPool &descriptorPool,
+			   Ref<DescriptorSetLayout> descriptorSetLayout, Ref<Font> font,
+			   const String &text, glm::vec2 position, float scale);
 
-	friend class UIHandler;
-private:
-	const UITextHandle m_Hndle;
-	Device const* m_Device;
-	Ref<Font> m_Font;
+		void setText(const String &text);
+		void setPosition(glm::vec2 position) { m_VertexUniform->position = position; } // TODO boundary check
+		void setSize(float size) { m_VertexUniform->scale = size; }					   // TODO boundary check
+		void setColor(glm::vec3 color) { m_FragmentUniform->color = color; }
+		void setColor(float r, float g, float b) { m_FragmentUniform->color = glm::vec3(r, g, b); }
+		void setBorderColor(glm::vec3 color) { m_FragmentUniform->borderColor = color; }
+		void setBorderColor(float r, float g, float b) { m_FragmentUniform->borderColor = glm::vec3(r, g, b); }
+		void setStroke(float stroke) { m_FragmentUniform->width = stroke; }
+		void setBorder(bool border) { m_FragmentUniform->borderWidth = border ? m_FragmentUniform->width * 1.5f : m_FragmentUniform->width; }
+		void setVisible(bool visible);
 
-	std::string m_Text;
-	bool m_Modified = false;
+		inline const String &getText() const { return m_Text; }
+		inline glm::vec2 getPosition() const { return m_VertexUniform->position; }
+		inline float getSize() const { return m_VertexUniform->scale; }
+		inline glm::vec3 getColor() const { return m_FragmentUniform->color; }
+		inline glm::vec3 getBorderColor() const { return m_FragmentUniform->borderColor; }
+		inline float getStroke() const { return m_FragmentUniform->width; }
+		inline bool isBorder() const { return m_FragmentUniform->borderWidth != m_FragmentUniform->width; }
+		inline bool isVisible() const { return m_Visible; }
 
-	Buffer m_VertexBuffer;
-	Buffer m_IndexBuffer;
-	uint32_t m_IndexCount = 0;
+		friend class UIHandler;
 
-	Uniform<TextBufferObject> m_Uniform;
+	private:
+		const UITextHandle m_Handle;
+		Ref<Font> m_Font;
 
-	Ref<DescriptorSet> m_DescriptorSet;
-	inline const DescriptorSet& getDescriptorSet() const { return *m_DescriptorSet; }
+		String m_Text;
+		bool m_Modified = false;
+		bool m_Visible = true;
 
-	void recreate();
-	void update(float dt);
-};
+		std::vector<UIVertex> m_Vertices;
+		std::vector<uint32_t> m_Indices;
+		Buffer m_VertexStagingBuffer; // TODO consider implementing a staging buffer pool
+		Buffer m_IndexStagingBuffer;
+		Buffer m_VertexBuffer;
+		Buffer m_IndexBuffer;
+		size_t m_IndexCount = 0;
 
-struct ScreenBufferObject
-{
-	float width;
-	float height;
-};
+		Uniform<TextVertexBufferObject> m_VertexUniform;
+		Uniform<TextFragmentBufferObject> m_FragmentUniform;
 
-class UIModified {};
+		Ref<DescriptorSet> m_DescriptorSet;
+		inline const DescriptorSet &getDescriptorSet() const { return *m_DescriptorSet; }
 
-class UIHandler
-{
-	EVENT(UIModified)
+		void recreate();
+		void update(float dt);
+	};
 
-public:
-	Ref<UIText> makeText(std::string text, glm::vec2 position = {20, 0.5}, float scale = 22.0f);
-	void removeText(Ref<UIText> text);
+	struct ScreenBufferObject
+	{
+		float width;
+		float height;
+	};
 
-	friend class Scene;
-private:
-	UIHandler(const Renderer& renderer, DescriptorPool& descriptorsPool);
+	class UIModified
+	{
+	};
 
-	Ref<DescriptorSetLayout> m_TextDSLayout;
-	Ref<DescriptorSetLayout> m_ScreenDSLayout;
-	Ref<Pipeline> m_Pipeline;
+	class UIHandler
+	{
+		EVENT(UIModified)
 
-	Ref<Font> m_Font;
+	public:
+		Ref<UIText> makeText(String text, glm::vec2 position = {20, 20}, float scale = 22.0f);
+		void removeText(Ref<UIText> text);
 
-	UITextHandle m_NextTextHandle = 0;
-	std::unordered_map<UITextHandle, Ref<UIText>> m_Texts;
+		friend class Scene;
 
-	Renderer const* m_Renderer;
-	DescriptorPool* m_DescriptorPool;
-	Uniform<ScreenBufferObject> m_ScreenUniform;
-	Ref<DescriptorSet> m_ScreenDescriptorSet;
+	private:
+		UIHandler(DescriptorPool &descriptorsPool);
 
-	void update(float dt);
-	void recordCommandBuffer(RenderTarget& target);
-	void updateUniforms(RenderTarget& target);
-};
+		Ref<DescriptorSetLayout> m_TextDSLayout;
+		Ref<DescriptorSetLayout> m_ScreenDSLayout;
+		Ref<Pipeline> m_Pipeline;
+
+		Ref<Font> m_Font;
+
+		UITextHandle m_NextTextHandle = 0;
+		std::unordered_map<UITextHandle, Ref<UIText>> m_Texts;
+
+		DescriptorPool *m_DescriptorPool;
+		Uniform<ScreenBufferObject> m_ScreenUniform;
+		Ref<DescriptorSet> m_ScreenDescriptorSet;
+
+		void update(float dt);
+		void recordCommandBuffer(FrameContext &target);
+		void updateUniforms(FrameContext &target);
+	};
 
 } // namespace vulture

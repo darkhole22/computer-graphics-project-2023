@@ -4,7 +4,6 @@
 #include <unordered_map>
 
 #include "vulture/renderer/Window.h"
-#include "vulture/core/Core.h"
 
 namespace vulture {
 

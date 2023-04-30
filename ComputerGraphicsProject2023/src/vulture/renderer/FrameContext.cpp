@@ -1,17 +1,17 @@
-#include "RenderTarget.h"
+#include "FrameContext.h"
 
 #include <iostream>
 
 namespace vulture {
 
-RenderTarget::RenderTarget(SwapChain& swapChain, const Device& device, uint32_t currentFrame, bool swapChainRecreated) :
+FrameContext::FrameContext(SwapChain& swapChain, uint32_t currentFrame, bool swapChainRecreated) :
 	m_SwapChain(&swapChain), m_CurrentFrame(currentFrame), m_ImageIndex(m_SwapChain->getImageIndex(currentFrame)),
 	m_CommandBuffer(&swapChain.getCommandBuffer(m_ImageIndex)), m_ImageCount(m_SwapChain->getImageCount()),
 	m_SwapChainRecreated(swapChainRecreated)
 {
 }
 
-void RenderTarget::beginCommandRecording()
+void FrameContext::beginCommandRecording()
 {
 	m_CommandBuffer->reset();
 	m_CommandBuffer->begin();
@@ -19,23 +19,23 @@ void RenderTarget::beginCommandRecording()
 		m_SwapChain->m_Framebuffers[m_ImageIndex], m_SwapChain->m_Extent);
 }
 
-void RenderTarget::endCommandRecording()
+void FrameContext::endCommandRecording()
 {
 	m_CommandBuffer->endRenderPass();
 	m_CommandBuffer->end();
 }
 
-void RenderTarget::bindPipeline(const Pipeline& pipeline)
+void FrameContext::bindPipeline(const Pipeline& pipeline)
 {
 	m_CommandBuffer->bindPipeline(pipeline, *m_SwapChain);
 }
 
-void RenderTarget::bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet, uint32_t set)
+void FrameContext::bindDescriptorSet(const Pipeline& pipeline, const DescriptorSet& descriptorSet, u32 set)
 {
 	m_CommandBuffer->bindDescriptorSet(pipeline, descriptorSet.getHandle(m_ImageIndex), set);
 }
 
-void RenderTarget::drawModel(const Model& model)
+void FrameContext::drawModel(const Model& model)
 {
 	m_CommandBuffer->bindVertexBuffer(model.getVertexBuffer());
 
@@ -44,22 +44,22 @@ void RenderTarget::drawModel(const Model& model)
 	m_CommandBuffer->drawIndexed(model.getIndexCount());
 }
 
-void RenderTarget::bindVertexBuffer(const Buffer& buffer)
+void FrameContext::bindVertexBuffer(const Buffer& buffer)
 {
 	m_CommandBuffer->bindVertexBuffer(buffer);
 }
 
-void RenderTarget::bindIndexBuffer(const Buffer& buffer)
+void FrameContext::bindIndexBuffer(const Buffer& buffer)
 {
 	m_CommandBuffer->bindIndexBuffer(buffer);
 }
 
-void RenderTarget::drawIndexed(uint32_t count)
+void FrameContext::drawIndexed(u32 count)
 {
 	m_CommandBuffer->drawIndexed(count);
 }
 
-RenderTarget::~RenderTarget()
+FrameContext::~FrameContext()
 {
 	m_SwapChain->submit(m_CurrentFrame, m_ImageIndex);
 }

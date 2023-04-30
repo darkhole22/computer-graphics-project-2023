@@ -3,10 +3,8 @@
 #include <vector>
 #include <filesystem>
 
-#include "vulture/renderer/RenderTarget.h"
+#include "vulture/renderer/FrameContext.h"
 #include "vulture/scene/Camera.h"
-
-#include "GameObject.h"
 #include "vulture/scene/ui/UIHandler.h"
 
 namespace vulture {
@@ -28,7 +26,7 @@ using ObjectHandle = int64_t;
 class SceneObjectList
 {
 public:
-	SceneObjectList(const Renderer& renderer, const std::string& vertexShader, const std::string& fragmentShader,
+	SceneObjectList(const String& vertexShader, const String& fragmentShader,
 		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts);
 	
 	inline const Pipeline& getPipeline() const { return *m_Pipeline; }
@@ -43,46 +41,36 @@ private:
 	std::unordered_map<ObjectHandle, RenderableObject> m_Objects;
 };
 
-using PipelineHandle = int64_t;
+using PipelineHandle = i64;
 
 class Scene
 {
 public:
-	explicit Scene(const Renderer& renderer);
+	Scene();
 
-	void render(RenderTarget target, float dt);
+	void render(FrameContext target, float dt);
 
-	PipelineHandle makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
+	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
 	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
-	Ref<GameObject> makeObject(const std::string& modelPath, const std::string& texturePath);
 	Camera* getCamera() { return &m_Camera; }
 	UIHandler* getUIHandle() { return &m_UIHandler; }
 
 	~Scene() = default;
 private:
-	Renderer const* m_Renderer;
 	DescriptorPool m_DescriptorsPool;
 	
 	Camera m_Camera;
 	UIHandler m_UIHandler;
 
 	std::vector<bool> m_FrameModified;
-
 	PipelineHandle m_NextPipelineHandle = 0;
 	std::unordered_map<PipelineHandle, SceneObjectList> m_ObjectLists;
 
-	Ref<DescriptorSetLayout> m_GameObjectDSL;
-	PipelineHandle m_GameObjectPipeline;
-
-	std::unordered_map<ObjectHandle, Ref<GameObject>> m_GameObjects;
-
-	void recordCommandBuffer(RenderTarget& target);
-	void updateUniforms(RenderTarget& target);
+	void recordCommandBuffer(FrameContext& target);
+	void updateUniforms(FrameContext& target);
 
 	void setModified();
-
-	void removeObject(const Ref <vulture::GameObject> &obj);
 };
 
 }

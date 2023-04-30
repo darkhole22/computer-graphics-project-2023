@@ -43,11 +43,11 @@ public:
 
     inline static Ref<Application> getInstance() { return s_Instance.lock(); }
 
-    inline static Scene* getScene() { return &getInstance()->m_Scene; }
-    inline static Ref<DescriptorSetLayout> makeDescriptorSetLayout() { return getInstance()->m_Renderer.makeDescriptorSetLayout(); }
-    inline static Ref<Model> makeModel(const std::string& path) { return getInstance()->m_Renderer.makeBaseModel(path); }
-    template <class T> inline static Uniform<T> makeUniform() { return getInstance()->m_Renderer.makeUniform<T>(); }
-    inline static Ref<Texture> makeTexture(const std::string& path) { return getInstance()->m_Renderer.makeTexture(path); }
+    inline static Scene* getScene() { return getInstance()->m_Scene.get(); }
+    // inline static Ref<DescriptorSetLayout> makeDescriptorSetLayout() { return getInstance()->m_Renderer.makeDescriptorSetLayout(); }
+    // inline static Ref<Model> makeModel(const String& path) { return getInstance()->m_Renderer.makeBaseModel(path); }
+    // template <class T> inline static Uniform<T> makeUniform() { return getInstance()->m_Renderer.makeUniform<T>(); }
+    // inline static Ref<Texture> makeTexture(const String& path) { return getInstance()->m_Renderer.makeTexture(path); }
     
     ~Application();
 private:
@@ -55,10 +55,9 @@ private:
 
     static WRef<Application> s_Instance;
 
-    const std::string c_Name;
+    const String c_Name;
 	Window m_Window;
-	Renderer m_Renderer;
-	Scene m_Scene;
+	Ref<Scene> m_Scene;
     Game* m_Game;
 
     void run();

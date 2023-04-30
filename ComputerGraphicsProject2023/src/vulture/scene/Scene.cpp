@@ -1,7 +1,6 @@
 #include "Scene.h"
 
 #include <iostream>
-#include <memory>
 
 namespace vulture {
 
@@ -11,9 +10,9 @@ RenderableObject::RenderableObject(Ref<Model> model, Ref<DescriptorSet> descript
 
 }
 
-SceneObjectList::SceneObjectList(const Renderer& renderer, const std::string& vertexShader, 
-	const std::string& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
-	m_Pipeline(new Pipeline(renderer.getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
+SceneObjectList::SceneObjectList(const String& vertexShader, 
+	const String& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
+	m_Pipeline(new Pipeline(Renderer::getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
 {
 }
 
@@ -32,21 +31,10 @@ void SceneObjectList::removeObject(ObjectHandle handle)
 	m_Objects.erase(it);
 }
 
-Scene::Scene(const Renderer& renderer) :
-	m_Renderer(&renderer), m_DescriptorsPool(renderer.makeDescriptorPool()), 
-	m_Camera(renderer, m_DescriptorsPool), m_UIHandler(renderer, m_DescriptorsPool)
+Scene::Scene() :
+	m_DescriptorsPool(Renderer::makeDescriptorPool()), 
+	m_Camera(m_DescriptorsPool), m_UIHandler(m_DescriptorsPool)
 {
-	// Create the default Phong GameObject DSL.
-	m_GameObjectDSL = m_Renderer->makeDescriptorSetLayout();
-	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-	m_GameObjectDSL->create();
-
-	// Create default Phong pipeline.
-	// TODO Consider removing hardcoded values
-	m_GameObjectPipeline = makePipeline("res/shaders/baseVert.spv", "res/shaders/baseFrag.spv", m_GameObjectDSL);
-
-
 	setModified();
 
 	m_UIHandler.addCallback([this](const UIModified& event) {
@@ -54,7 +42,7 @@ Scene::Scene(const Renderer& renderer) :
 	});
 }
 
-void Scene::render(RenderTarget target, float dt)
+void Scene::render(FrameContext target, float dt)
 {
 	if (target.updated())
 	{
@@ -67,12 +55,6 @@ void Scene::render(RenderTarget target, float dt)
 		m_FrameModified.resize(count);
 		m_DescriptorsPool.setFrameCount(count);
 		setModified();
-	}
-
-	// TODO Update gameobjects
-	for (auto lst : m_ObjectLists)
-	{
-		for (lst.second.begin())
 	}
 
 	auto [width, height] = target.getExtent();
@@ -93,19 +75,15 @@ void Scene::render(RenderTarget target, float dt)
 	updateUniforms(target);
 }
 
-PipelineHandle Scene::makePipeline(const std::string& vertexShader, const std::string& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
+PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
 {
-	PipelineHandle handle = (PipelineHandle)std::hash<std::string>{}(vertexShader + fragmentShader);
+	PipelineHandle handle = m_NextPipelineHandle++; // Consider using a pseudo number generator
 
-	auto it = m_ObjectLists.find(handle);
-	if (it == m_ObjectLists.end())
-	{
-		std::vector<DescriptorSetLayout*> layouts{};
-		layouts.push_back(descriptorSetLayout.get());
-		layouts.push_back(m_Camera.getDescriptorSetLayout());
+	std::vector<DescriptorSetLayout*> layouts{};
+	layouts.push_back(descriptorSetLayout.get());
+	layouts.push_back(m_Camera.getDescriptorSetLayout());
 
-		m_ObjectLists.insert({ handle, SceneObjectList(*m_Renderer, vertexShader, fragmentShader, layouts) });
-	}
+	m_ObjectLists.insert({ handle, SceneObjectList(vertexShader, fragmentShader, layouts) });
 
 	return handle;
 }
@@ -120,24 +98,7 @@ ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<Des
 	return handle;
 }
 
-Ref<GameObject> Scene::makeObject(const std::string& modelPath, const std::string& texturePath)
-{
-	Ref<GameObject> obj = std::make_shared<GameObject>(*m_Renderer, modelPath, texturePath);
-	ObjectHandle handle = addObject(m_GameObjectPipeline, obj->m_Model, m_GameObjectDSL, { obj->m_Uniform , *obj->m_Texture });
-	obj->handle = handle;
-
-	m_GameObjects.insert({handle, obj});
-
-	return obj;
-}
-
-void Scene::removeObject(const Ref<GameObject>& obj)
-{
-	auto it = m_GameObjects.find(obj->handle);
-	m_GameObjects.erase(it);
-}
-
-void Scene::recordCommandBuffer(RenderTarget& target)
+void Scene::recordCommandBuffer(FrameContext& target)
 {
 	target.beginCommandRecording();
 
@@ -161,7 +122,7 @@ void Scene::recordCommandBuffer(RenderTarget& target)
 	target.endCommandRecording();
 }
 
-void Scene::updateUniforms(RenderTarget& target)
+void Scene::updateUniforms(FrameContext& target)
 {
 	auto [index, count] = target.getFrameInfo();
 
