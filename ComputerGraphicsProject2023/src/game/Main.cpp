@@ -5,7 +5,7 @@
 #include "vulture/core/Core.h"
 #include "vulture/core/Input.h"
 
-#include <unordered_map>
+#include "vulture/scene/Tween.h"
 
 using namespace vulture;
 
@@ -28,6 +28,11 @@ public:
 	Ref<TextureSampler> objTextureSampler;
 	Ref<UIText> text;
 	Ref<UIText> text2;
+	
+	Ref<Tween> tween;
+	Ref<UIText> tweenText;
+	glm::vec2 tweenValue = {10, 10};
+	u64 tweenValue2 = 15;
 
 	void setup() override
 	{
@@ -56,9 +61,27 @@ public:
 		text = handlerUI->makeText("FPS");
 		text2 = handlerUI->makeText("Frame Time");
 		text2->setPosition({20, 50});
-
 		text->setVisible(false);
 		text2->setVisible(false);
+
+		tweenText = handlerUI->makeText("Tween: running");
+		tweenText->setPosition({ 20, 100 });
+		tween = scene->makeTween();
+		tween->loop();
+		tween->addIntervalTweener(0.5);
+		auto parallel = tween->addParallelTweener();
+		{
+			auto sequential = parallel->addSequentialTweener();
+			{
+				sequential->addValueTweener(&tweenValue2, 3000ULL, 1);
+				sequential->addValueTweener(&tweenValue2, 150ULL, 1);
+			}
+			parallel->addValueTweener(&tweenValue, { 20, 200 }, 1.5f);
+		}
+		tween->addIntervalTweener(0.5);
+		tween->addValueTweener(&tweenValue, { 250, 250 }, 1.5f);
+		tween->addValueTweener(&tweenValue, { 20, 100 }, 1.0f);
+
 	}
 
 	void update(float dt) override
@@ -74,6 +97,21 @@ public:
 			objPos += glm::vec3(x * SPEED * dt, y * SPEED * dt, 0.0f);
 			objUniform->model = glm::translate(glm::mat4(1), objPos);
 			camera->lookAt(objPos);
+		}
+
+		{
+			static bool wasKPressed = false;
+			bool isKPressed = Input::isKeyPressed(GLFW_KEY_K);
+			if (isKPressed && !wasKPressed)
+			{
+				tween->stop();
+			}
+			wasKPressed = isKPressed;
+
+			tweenText->setText(stringFormat("Time %f\nValue: %llu", 
+				time, tweenValue2));
+			tweenText->setPosition(tweenValue);
+			// tweenValue * 1.1;
 		}
 
 		{
