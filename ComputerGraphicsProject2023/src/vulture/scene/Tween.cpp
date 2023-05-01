@@ -35,6 +35,12 @@ void Tween::stop()
 	m_Valid = false;
 }
 
+void Tween::reset(bool autoStart)
+{
+	m_Tweener.reset();
+	autoStart ? play() : pause();
+}
+
 Tween* Tween::loop(u64 loops)
 {
 	m_LoopCount = loops;

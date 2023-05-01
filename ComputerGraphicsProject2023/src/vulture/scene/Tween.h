@@ -8,6 +8,10 @@
 
 namespace vulture {
 
+/**
+* @brief Tweener object performs a specific animation tasks,
+* like interpolating a value or calling a function.
+*/
 class Tweener
 {
 public:
@@ -23,30 +27,127 @@ class ParallelTweener;
 class CallbackTweener;
 template <class Type> class MethodTweener;
 
+/**
+* @brief A Tween is a class that manages tweeners. It can be used to animate various types
+* of objects, properties, and functions.
+*/
 class Tween
 {
 public:
+	/**
+	* @brief Construct a Tween.
+	* This shoul be called only if you want to manage the Tween manually.
+	* Consider using Scene::makeTween() instead.
+	*/
 	Tween();
+
+	/**
+	* @brief Step the animationof the Tween by a specified amount.
+	* If the Tween is not running or it is stopped this has no effect.
+	* 
+	* This shoul be called only if you are managing the Tween manually.
+	* 
+	* @param dt: the delta time of the animation in seconds.
+	*/
 	void step(float dt);
 
+	/**
+	* @brief Checks if the Tween is runing.
+	* 
+	* @returns true if the tween is running.
+	*/
 	bool isRunning() const;
+
+	/**
+	* @brief Checks if the Tween is beeing managed by the scene.
+	*
+	* @returns true if the tween is valid.
+	*/
 	bool isValid() const;
 
-	void play();
+	/**
+	* @brief Pauses the animation at their current state.
+	*/
 	void pause();
+
+	/**
+	* @brief Starts playing the animation from their current state.
+	*/
+	void play();
+
+	/**
+	* @brief Stop the Tween. If the tween is stopped it cannot restart.
+	* Consider using reset().
+	*/
 	void stop();
 
+	/*
+	* @brief Reset the animation.
+	* 
+	* @param autoStart: If true the animation will automatically start, otherwise the animation will be stopped.
+	* Default: true.
+	*/
+	void reset(bool autoStart = true);
+
+	/**
+	* @brief Sets the number of times the animation should loop.
+	* If the loops parameter is set to 0 (default), the animation will loop indefinitely.
+	* 
+	* @param loops the number of loop of the animation. If 0 the animation will loop indefinitely.
+	* 
+	* @return a pointer to itself.
+	*/
 	Tween* loop(u64 loops = 0);
 
+	/**
+	* @brief Creates and append a new IntervalTweener.
+	*
+	* @param duration: the duration of the animation in seconds.
+	*
+	* @return a referance to the created Tweener.
+	*/
 	Ref<IntervalTweener> addIntervalTweener(float duration);
 
+	/**
+	* @brief Creates and append a new ValueTweener.
+	* This ValueTweener doesen't manage the memory of the provided value. 
+	*
+	* @param value: a pointer to the value to modify. This should be remain a valid pinter for the entire lifetime of the Tween.
+	* @param finalValue: the value at the end of the animation.
+	* @param duration: the duration of the animation in seconds.
+	*
+	* @return a referance to the created Tweener.
+	*/
 	template<class Type>
 	Ref<ValueTweener<Type>> addValueTweener(Type* value, Type finalValue, float duration);
 
+	/**
+	* @brief Creates and append a new ParallelTweener.
+	*
+	* @return a referance to the created Tweener.
+	*/
 	Ref<ParallelTweener> addParallelTweener();
 
+	/**
+	* @brief Creates and append a new CallbackTweener.
+	*
+	* @param callback: the callback that will be called.
+	*
+	* @return a referance to the created Tweener.
+	*/
 	Ref<CallbackTweener> addCallbackTweener(std::function<void()> callback);
 
+	/**
+	* @brief Creates and append a new MethodTweener.
+	* This Tweener will call the provided method each step with an interpolated value as paramether.
+	*
+	* @param callback: the callback that will be called.
+	* @param initialValue: the value at the start of the animation.
+	* @param finalValue: the value at the end of the animation.
+	* @param duration: the duration of the animation in seconds.
+	*
+	* @return a referance to the created Tweener.
+	*/
 	template <class Type>
 	Ref<MethodTweener<Type>> addMethodTweener(std::function<void(Type)> callback, Type initialValue, Type finalValue, float duration);
 
@@ -57,7 +158,6 @@ private:
 	u64 m_CurrentLoop = 0;
 	bool m_IsPaused = false;
 	bool m_Valid = true;
-
 };
 
 class IntervalTweener : public Tweener
