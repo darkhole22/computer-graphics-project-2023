@@ -1,5 +1,7 @@
-//
-// Created by michele on 4/12/23.
-//
-
 #include "GameObject.h"
+
+namespace vulture {
+
+ObjectHandle GameObject::s_NextHandle = 0;
+
+}

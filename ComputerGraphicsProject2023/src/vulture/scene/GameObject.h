@@ -1,11 +1,13 @@
 #pragma once
 
 #include <glm/glm.hpp>
-
+#include <string>
+#include "vulture/renderer/Model.h"
 #include "vulture/renderer/Renderer.h"
-#include "Scene.h"
 
 namespace vulture{
+
+using ObjectHandle = int64_t;
 
 struct ModelBufferObject
 {
@@ -15,11 +17,15 @@ struct ModelBufferObject
 class GameObject
 {
 public:
-	explicit GameObject(const Renderer& renderer, const std::string& modelPath, const std::string& texturePath)
+	explicit GameObject(const std::string& modelPath, const std::string& texturePath)
 	{
-		m_Model = renderer.makeBaseModel(modelPath);
-		m_Uniform = renderer.makeUniform<ModelBufferObject>();
-		m_Texture = renderer.makeTexture(texturePath);
+		m_Model = Ref<Model>(Model::make(modelPath));
+		m_Uniform = Renderer::makeUniform<vulture::ModelBufferObject>();
+		m_Texture = Ref<Texture>(new Texture(texturePath));
+		m_TextureSampler = makeRef<TextureSampler>(*m_Texture);
+
+		m_Handle = s_NextHandle;
+		s_NextHandle++;
 	}
 
 	void translate(glm::vec3 translation)
@@ -36,10 +42,13 @@ public:
 private:
 	Ref<Model> m_Model;
 	Ref<Texture> m_Texture;
+	Ref<TextureSampler> m_TextureSampler;
 	Uniform<ModelBufferObject> m_Uniform;
-	ObjectHandle handle = -1;
 
-	glm::vec3 m_Position;
+	ObjectHandle m_Handle = -1;
+	static ObjectHandle s_NextHandle;
+
+	glm::vec3 m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
 
 	void update(float dt)

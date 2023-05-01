@@ -9,25 +9,17 @@
 
 using namespace vulture;
 
-struct ModelBufferObject
-{
-	glm::mat4 model = glm::mat4(1);
-};
-
 class TestGame : public Game
 {
 public:
 	Scene *scene = nullptr;
 	Camera *camera = nullptr;
 	UIHandler *handlerUI = nullptr;
-	Ref<DescriptorSetLayout> descriptorSetLayout;
-	PipelineHandle pipeline = -1;
-	Ref<Model> model;
-	Uniform<ModelBufferObject> objUniform;
-	Ref<Texture> objTexture;
-	Ref<TextureSampler> objTextureSampler;
+
 	Ref<UIText> text;
 	Ref<UIText> text2;
+
+	Ref<GameObject> gameObject;
 
 	void setup() override
 	{
@@ -37,19 +29,9 @@ public:
 		camera = scene->getCamera();
 		handlerUI = scene->getUIHandle();
 
-		descriptorSetLayout = Ref<DescriptorSetLayout>(new DescriptorSetLayout());
-		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-		descriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-		descriptorSetLayout->create();
 
-		pipeline = scene->makePipeline("res/shaders/baseVert.spv", "res/shaders/baseFrag.spv", descriptorSetLayout);
-
-		model = Ref<Model>(Model::make("res/models/vulture.obj"));
-		objUniform = Renderer::makeUniform<ModelBufferObject>();
-		objTexture = Ref<Texture>(new Texture("res/textures/vulture.png"));
-		objTextureSampler = makeRef<TextureSampler>(*objTexture);
-
-		scene->addObject(pipeline, model, descriptorSetLayout, { objUniform, *objTextureSampler });
+		gameObject = makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png");
+		scene->addObject(gameObject);
 
 		camera->position = glm::vec3(10, 5, 10);
 
@@ -70,10 +52,16 @@ public:
 		float y = Input::getAxis("MOVE_DOWN", "MOVE_UP");
 
 		{
-			static glm::vec3 objPos{};
-			objPos += glm::vec3(x * SPEED * dt, y * SPEED * dt, 0.0f);
-			objUniform->model = glm::translate(glm::mat4(1), objPos);
-			camera->lookAt(objPos);
+			gameObject->translate(glm::vec3(-x * SPEED * dt, -y * SPEED * dt, 0.0f));
+			camera->lookAt(gameObject->getPosition());
+		}
+
+		{
+			if(Input::isKeyPressed(GLFW_KEY_U))
+			{
+				// This makes the program crash as of right now.
+				scene->removeObject(gameObject);
+			}
 		}
 
 		{

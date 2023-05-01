@@ -6,8 +6,11 @@
 #include "vulture/renderer/FrameContext.h"
 #include "vulture/scene/Camera.h"
 #include "vulture/scene/ui/UIHandler.h"
+#include "vulture/scene/GameObject.h"
 
 namespace vulture {
+
+using PipelineHandle = i64;
 
 class RenderableObject
 {
@@ -21,7 +24,6 @@ private:
 	Ref<DescriptorSet> m_DescriptorSet;
 };
 
-using ObjectHandle = int64_t;
 
 class SceneObjectList
 {
@@ -30,18 +32,16 @@ public:
 		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts);
 	
 	inline const Pipeline& getPipeline() const { return *m_Pipeline; }
-	ObjectHandle addObject(RenderableObject obj);
+	void addObject(ObjectHandle handle, const RenderableObject& obj);
 	void removeObject(ObjectHandle handle);
 
 	auto begin() { return m_Objects.begin(); }
 	auto end() { return m_Objects.end(); }
 private:
 	Ref<Pipeline> m_Pipeline;
-	ObjectHandle m_NextObjectHandle = 0;
 	std::unordered_map<ObjectHandle, RenderableObject> m_Objects;
 };
 
-using PipelineHandle = i64;
 
 class Scene
 {
@@ -50,8 +50,8 @@ public:
 
 	void render(FrameContext target, float dt);
 
-	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
-	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
+	void addObject(Ref<GameObject> obj);
+	void removeObject(Ref<GameObject> obj);
 
 	Camera* getCamera() { return &m_Camera; }
 	UIHandler* getUIHandle() { return &m_UIHandler; }
@@ -64,8 +64,14 @@ private:
 	UIHandler m_UIHandler;
 
 	std::vector<bool> m_FrameModified;
-	PipelineHandle m_NextPipelineHandle = 0;
 	std::unordered_map<PipelineHandle, SceneObjectList> m_ObjectLists;
+
+	PipelineHandle m_NextPipelineHandle = 0;
+
+	Ref<DescriptorSetLayout> m_GameObjectDSL;
+	PipelineHandle m_GameObjectPipeline;
+
+	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
 
 	void recordCommandBuffer(FrameContext& target);
 	void updateUniforms(FrameContext& target);
