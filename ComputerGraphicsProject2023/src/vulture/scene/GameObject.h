@@ -1,5 +1,6 @@
 #pragma once
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
 
@@ -37,6 +38,14 @@ public:
 	inline glm::quat getRotation() { return m_Rotation; }
 	inline void setRotation(glm::vec3 rot) { m_Rotation = glm::quat(rot); }
 	inline void setRotation(float x, float y, float z) { setRotation(glm::vec3(x, y, z)); }
+
+	inline void rotate(glm::vec3 axis, float angle) { m_Rotation = glm::rotate(m_Rotation, angle, axis); }
+	inline void rotate(float yaw, float pitch, float roll)
+	{
+		m_Rotation *= glm::quat(glm::vec3(0.0f, yaw, 0.0f)) *
+					  glm::quat(glm::vec3(pitch, 0.0f, 0.0f)) *
+					  glm::quat(glm::vec3(0.0f, 0.0f, roll));
+	}
 
 	friend class Scene;
 private:

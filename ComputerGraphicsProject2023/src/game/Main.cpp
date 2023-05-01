@@ -7,8 +7,6 @@
 #include "Volcano.h"
 #include "UI.h"
 
-#include <unordered_map>
-
 using namespace vulture;
 
 namespace game
