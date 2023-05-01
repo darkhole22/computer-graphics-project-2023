@@ -4,6 +4,7 @@
 #include "vulture/core/Application.h"
 #include "vulture/core/Core.h"
 #include "vulture/core/Input.h"
+#include "Volcano.h"
 
 #include <unordered_map>
 
@@ -19,7 +20,7 @@ public:
 	Ref<UIText> text;
 	Ref<UIText> text2;
 
-	Ref<GameObject> gameObject;
+	Volcano* v;
 
 	void setup() override
 	{
@@ -29,9 +30,8 @@ public:
 		camera = scene->getCamera();
 		handlerUI = scene->getUIHandle();
 
-
-		gameObject = makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png");
-		scene->addObject(gameObject);
+		v = new Volcano(makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png"));
+		scene->addObject(v->m_GameObject);
 
 		camera->position = glm::vec3(10, 5, 10);
 
@@ -45,34 +45,8 @@ public:
 
 	void update(float dt) override
 	{
-		static float time = 0;
-		time += dt;
-
-		float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT");
-		float y = Input::getAxis("MOVE_DOWN", "MOVE_UP");
-
-		{
-			gameObject->translate(glm::vec3(-x * SPEED * dt, -y * SPEED * dt, 0.0f));
-			camera->lookAt(gameObject->getPosition());
-		}
-
-		{
-			static bool toggleDelete = true;
-			static float lastClick = 0.0f;
-			static float time = 0.0f;
-
-			time += dt;
-
-			if (Input::isKeyPressed(GLFW_KEY_U))
-			{
-				if (time - lastClick > 0.3f)
-				{
-					lastClick = time;
-					toggleDelete ? scene->removeObject(gameObject) : scene->addObject(gameObject);
-					toggleDelete = !toggleDelete;
-				}
-			}
-		}
+		v->update(dt);
+		camera->lookAt(v->m_GameObject->getPosition());
 
 		{
 			// Press F3 to toggle info
@@ -105,8 +79,6 @@ public:
 	}
 
 private:
-	const float SPEED = 10;
-
 	static void setupInputActions()
 	{
 		InputAction leftAction{};

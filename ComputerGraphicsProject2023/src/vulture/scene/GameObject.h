@@ -17,26 +17,16 @@ struct ModelBufferObject
 class GameObject
 {
 public:
-	explicit GameObject(const std::string& modelPath, const std::string& texturePath)
-	{
-		m_Model = Ref<Model>(Model::make(modelPath));
-		m_Uniform = Renderer::makeUniform<vulture::ModelBufferObject>();
-		m_Texture = Ref<Texture>(new Texture(texturePath));
-		m_TextureSampler = makeRef<TextureSampler>(*m_Texture);
+	explicit GameObject(const std::string& modelPath, const std::string& texturePath);
 
-		m_Handle = s_NextHandle;
-		s_NextHandle++;
-	}
-
-	void translate(glm::vec3 translation)
-	{
-		m_Position += translation;
-	}
+	inline void translate(glm::vec3 translation) { m_Position += translation; }
+	inline void translate(float x, float y, float z) { translate(glm::vec3(x, y, z)); }
 
 	inline glm::vec3 getPosition() { return m_Position; }
 
 	inline glm::vec3 getScale() { return m_Scale; }
 	inline void setScale(glm::vec3 scale) { m_Scale = scale; }
+	inline void setScale(float x, float y, float z) { setScale(glm::vec3(x, y, z)); }
 
 	friend class Scene;
 private:
