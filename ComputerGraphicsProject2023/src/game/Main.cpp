@@ -5,77 +5,41 @@
 #include "vulture/core/Core.h"
 #include "vulture/core/Input.h"
 #include "Volcano.h"
+#include "UI.h"
 
 #include <unordered_map>
 
 using namespace vulture;
 
-class TestGame : public Game
+namespace game
 {
+
+class TestGame : public Game {
 public:
 	Scene *scene = nullptr;
 	Camera *camera = nullptr;
-	UIHandler *handlerUI = nullptr;
+	UI* ui = nullptr;
+	Volcano *v = nullptr;
 
-	Ref<UIText> text;
-	Ref<UIText> text2;
-
-	Volcano* v;
-
-	void setup() override
-	{
+	void setup() override {
 		setupInputActions();
 
 		scene = Application::getScene();
 		camera = scene->getCamera();
-		handlerUI = scene->getUIHandle();
+
+		ui = new UI();
 
 		v = new Volcano(makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png"));
 		scene->addObject(v->m_GameObject);
 
 		camera->position = glm::vec3(10, 5, 10);
-
-		text = handlerUI->makeText("FPS");
-		text2 = handlerUI->makeText("Frame Time");
-		text2->setPosition({20, 50});
-
-		text->setVisible(false);
-		text2->setVisible(false);
 	}
 
-	void update(float dt) override
-	{
+	void update(float dt) override {
 		v->update(dt);
 		camera->lookAt(v->m_GameObject->getPosition());
 
-		{
-			// Press F3 to toggle info
-			static bool wasF3Pressed = false;
-			bool isF3Pressed = Input::isKeyPressed(GLFW_KEY_F3);
-			if (isF3Pressed && !wasF3Pressed)
-			{
-				text->setVisible(!text->isVisible());
-				text2->setVisible(!text2->isVisible());
-			}
-			wasF3Pressed = isF3Pressed;
-
-			static float fps = 0.0f;
-			static float delta = 0;
-
-			static const float WRITE_FPS_TIMEOUT = 0.5; // seconds
-			static const float FPS_AVG_WEIGHT = 0.1f;	// 0 <= x <= 1
-
-			delta += dt;
-			fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0f / dt) * FPS_AVG_WEIGHT;
-
-			if (delta > WRITE_FPS_TIMEOUT)
-			{
-				text->setText(stringFormat("FPS: %.0f", fps));
-				text2->setText(stringFormat("Frame time: %.4fms", dt * 1000));
-
-				delta -= WRITE_FPS_TIMEOUT;
-			}
-		}
+		ui->update(dt);
 	}
 
 private:
@@ -123,6 +87,8 @@ private:
 	}
 };
 
+} // namespace game
+
 int main()
 {
 	Logger logger("output.log");
@@ -130,7 +96,7 @@ int main()
 	{
 		Ref<Application> app; // The game must be destroyed before the application
 		{
-			TestGame game;
+			game::TestGame game;
 
 			app = Application::launch(game, vulture::AppConfig{"Vulture demo", 800, 600});
 		}

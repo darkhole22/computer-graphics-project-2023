@@ -63,6 +63,12 @@ void Scene::render(FrameContext target, float dt)
 		setModified();
 	}
 
+	// Update all GameObjects in the scene.
+	for (const auto& it: m_GameObjects)
+	{
+		it.second->update(dt);
+	}
+
 	auto [width, height] = target.getExtent();
 	float aspectRatio = static_cast<float>(width) / height;
 	m_Camera.m_AspectRatio = aspectRatio;
@@ -99,12 +105,17 @@ void Scene::addObject(Ref<GameObject> obj)
 	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 
 	p.addObject(obj->m_Handle, RenderableObject(obj->m_Model, m_DescriptorsPool.getDescriptorSet(*m_GameObjectDSL.get(), {obj->m_Uniform, *obj->m_TextureSampler})));
+	m_GameObjects[obj->m_Handle] = obj;
 
 	setModified();
 }
 
 void Scene::removeObject(Ref<GameObject> obj)
 {
+	auto it = m_GameObjects.find(obj->m_Handle);
+	if (it == m_GameObjects.end()) return;
+	m_GameObjects.erase(it);
+
 	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 	p.removeObject(obj->m_Handle);
 }

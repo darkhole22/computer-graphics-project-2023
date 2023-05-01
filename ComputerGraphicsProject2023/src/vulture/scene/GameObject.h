@@ -1,9 +1,13 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
+
 #include <string>
 #include "vulture/renderer/Model.h"
 #include "vulture/renderer/Renderer.h"
+#include "vulture/core/Logger.h"
+
 
 namespace vulture{
 
@@ -23,6 +27,8 @@ public:
 	inline void translate(float x, float y, float z) { translate(glm::vec3(x, y, z)); }
 
 	inline glm::vec3 getPosition() { return m_Position; }
+	inline void setPosition(glm::vec3 pos) { m_Position = pos; }
+	inline void setPosition(float x, float y, float z) { setPosition(glm::vec3(x, y, z)); }
 
 	inline glm::vec3 getScale() { return m_Scale; }
 	inline void setScale(glm::vec3 scale) { m_Scale = scale; }
@@ -44,6 +50,7 @@ private:
 	void update(float dt)
 	{
 		m_Uniform->model = glm::translate(glm::mat4(1.0f), m_Position) *
+							glm::mat4(glm::quat(glm::vec3(0.0f))) *
 							glm::scale(glm::mat4(1.0f), m_Scale);
 	}
 };

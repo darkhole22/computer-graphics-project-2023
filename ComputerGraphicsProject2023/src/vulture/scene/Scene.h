@@ -66,6 +66,8 @@ private:
 	std::vector<bool> m_FrameModified;
 	std::unordered_map<PipelineHandle, SceneObjectList> m_ObjectLists;
 
+	std::unordered_map<ObjectHandle, Ref<GameObject>> m_GameObjects;
+
 	PipelineHandle m_NextPipelineHandle = 0;
 
 	Ref<DescriptorSetLayout> m_GameObjectDSL;

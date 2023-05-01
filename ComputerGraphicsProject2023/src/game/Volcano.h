@@ -9,12 +9,12 @@
 
 using namespace vulture;
 
+namespace game
+{
 class Volcano
 {
 private:
-	const float SPEED = 10;
-	int hp = 10;
-
+	const float c_Speed = 10;
 public:
 	Ref<GameObject> m_GameObject;
 
@@ -22,3 +22,5 @@ public:
 
 	void update(float dt);
 };
+
+} // namespace game
