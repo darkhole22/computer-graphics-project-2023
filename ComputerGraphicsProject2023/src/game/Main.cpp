@@ -18,8 +18,9 @@ class TestGame : public Game {
 public:
 	Scene *scene = nullptr;
 	Camera *camera = nullptr;
-	UI* ui = nullptr;
-	Volcano *v = nullptr;
+
+	Ref<UI> ui = nullptr;
+	Ref<Volcano> v = nullptr;
 
 	void setup() override {
 		setupInputActions();
@@ -27,9 +28,9 @@ public:
 		scene = Application::getScene();
 		camera = scene->getCamera();
 
-		ui = new UI();
+		ui = makeRef<UI>();
 
-		v = new Volcano(makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png"));
+		v = makeRef<Volcano>(makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png"));
 		scene->addObject(v->m_GameObject);
 
 		camera->position = glm::vec3(10, 5, 10);
