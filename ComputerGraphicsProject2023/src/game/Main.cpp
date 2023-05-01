@@ -66,6 +66,9 @@ public:
 
 		tweenText = handlerUI->makeText("Tween: running");
 		tweenText->setPosition({ 20, 100 });
+		std::function<void(float)> callback = [this](float size) {
+			tweenText->setSize(size);
+		};
 		tween = scene->makeTween();
 		tween->loop();
 		tween->addIntervalTweener(0.5);
@@ -87,10 +90,12 @@ public:
 				});
 			}
 			parallel->addValueTweener(&tweenValue, { 20, 300 }, 1);
+			parallel->addMethodTweener(callback, 22.0f, 40.0f, 1.0f);
 		}
 		tween->addIntervalTweener(0.5);
 		tween->addValueTweener(&tweenValue, { 250, 250 }, 1.5f);
 		tween->addValueTweener(&tweenValue, { 20, 100 }, 1.0f);
+		tween->addMethodTweener(callback, 40.0f, 22.0f, 0.5f);
 
 	}
 
@@ -118,10 +123,8 @@ public:
 			}
 			wasKPressed = isKPressed;
 
-			tweenText->setText(stringFormat("Time %f\nValue: %llu", 
-				time, tweenValue2));
+			tweenText->setText(stringFormat("Time %f\nValue: %llu", time, tweenValue2));
 			tweenText->setPosition(tweenValue);
-			// tweenValue * 1.1;
 		}
 
 		{

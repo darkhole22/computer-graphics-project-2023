@@ -21,6 +21,7 @@ class IntervalTweener;
 class SequentialTweener;
 class ParallelTweener;
 class CallbackTweener;
+template <class Type> class MethodTweener;
 
 class Tween
 {
@@ -45,6 +46,9 @@ public:
 	Ref<ParallelTweener> addParallelTweener();
 
 	Ref<CallbackTweener> addCallbackTweener(std::function<void()> callback);
+
+	template <class Type>
+	Ref<MethodTweener<Type>> addMethodTweener(std::function<void(Type)> callback, Type initialValue, Type finalValue, float duration);
 
 	~Tween();
 private:
@@ -132,6 +136,14 @@ public:
 
 	Ref<CallbackTweener> addCallbackTweener(std::function<void()> callback);
 
+	template <class Type>
+	Ref<MethodTweener<Type>> addMethodTweener(std::function<void(Type)> callback, Type initialValue, Type finalValue, float duration)
+	{
+		auto tweener = makeRef<MethodTweener<Type>>(callback, initialValue, finalValue, duration);
+		m_Tweeners.emplace_back(tweener);
+		return tweener;
+	}
+
 protected:
 	std::vector<Ref<Tweener>> m_Tweeners;
 };
@@ -165,6 +177,12 @@ Ref<ValueTweener<Type>> Tween::addValueTweener(Type* value, Type finalValue, flo
 	return m_Tweener->addValueTweener(value, finalValue, duration);
 }
 
+template<class Type>
+inline Ref<MethodTweener<Type>> Tween::addMethodTweener(std::function<void(Type)> callback, Type initialValue, Type finalValue, float duration)
+{
+	return m_Tweener->addMethodTweener(callback, initialValue, finalValue, duration);
+}
+
 class CallbackTweener : public Tweener
 {
 public:
@@ -176,6 +194,41 @@ public:
 private:
 	std::function<void()> m_Callback;
 	bool m_Started = false;
+};
+
+template <class Type>
+class MethodTweener : public Tweener
+{
+public:
+	MethodTweener(std::function<void(Type)> callback, Type initialValue, Type finalValue, float duration) :
+		m_Callback(callback), c_InitialValue(initialValue), m_Value(initialValue), m_Interpolator(&m_Value, finalValue, duration)
+	{
+	}
+
+	void step(float dt) override
+	{
+		if (!isFinisced())
+		{
+			m_Interpolator.step(dt);
+			m_Callback(m_Value);
+		}
+	}
+
+	bool isFinisced() const override
+	{
+		return m_Interpolator.isFinisced();
+	}
+
+	void reset() override
+	{
+		m_Value = c_InitialValue;
+		m_Interpolator.reset();
+	}
+private:
+	std::function<void(Type)> m_Callback;
+	Type c_InitialValue;
+	Type m_Value;
+	ValueTweener<Type> m_Interpolator;
 };
 
 } // namespace vulture
