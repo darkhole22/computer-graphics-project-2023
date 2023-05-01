@@ -21,6 +21,10 @@ void Volcano::update(float dt)
 	{
 		m_GameObject->setScale(m_GameObject->getScale() + glm::vec3(c_Speed) * dt);
 	}
+
+	static float rot = 0.0f;
+	m_GameObject->setRotation(0.0f, rot, 0.0f);
+	rot += c_RotSpeed * dt;
 }
 
 } // namespace game

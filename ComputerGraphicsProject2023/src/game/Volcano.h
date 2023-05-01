@@ -15,6 +15,7 @@ class Volcano
 {
 private:
 	const float c_Speed = 10;
+	const float c_RotSpeed = 2;
 public:
 	Ref<GameObject> m_GameObject;
 
