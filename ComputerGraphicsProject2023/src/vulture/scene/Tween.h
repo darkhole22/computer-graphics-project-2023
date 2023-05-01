@@ -160,6 +160,9 @@ private:
 	bool m_Valid = true;
 };
 
+/**
+* @brief A IntervalTweener allow to add a delay between animations.
+*/
 class IntervalTweener : public Tweener
 {
 public:
@@ -173,6 +176,9 @@ private:
 	float m_Elapsed = 0;
 };
 
+/**
+* @brief A ValueTweener allow to interpolate a value over time.
+*/
 template <class Type>
 class ValueTweener : public Tweener
 {
@@ -248,6 +254,9 @@ protected:
 	std::vector<Ref<Tweener>> m_Tweeners;
 };
 
+/**
+* @brief A SequentialTweener allow to concatenate animations.
+*/
 class SequentialTweener : public CollectionTweener
 {
 public:
@@ -261,6 +270,9 @@ private:
 	u64 m_Index = 0;
 };
 
+/**
+* @brief A ParallelTweener allow to execute animations at the same time.
+*/
 class ParallelTweener : public CollectionTweener
 {
 public:
@@ -283,6 +295,9 @@ inline Ref<MethodTweener<Type>> Tween::addMethodTweener(std::function<void(Type)
 	return m_Tweener->addMethodTweener(callback, initialValue, finalValue, duration);
 }
 
+/**
+* @brief A CallbackTweener allow to execute a method during animations.
+*/
 class CallbackTweener : public Tweener
 {
 public:
@@ -296,6 +311,9 @@ private:
 	bool m_Started = false;
 };
 
+/**
+* @brief A MethodTweener allow to execute a method with an interpolated value as input.
+*/
 template <class Type>
 class MethodTweener : public Tweener
 {
