@@ -11,21 +11,21 @@ namespace game {
 class UI
 {
 private:
-	UIHandler *handlerUI = nullptr;
+	UIHandler *m_HandlerUI = nullptr;
 
-	Ref<UIText> text;
-	Ref<UIText> text2;
+	Ref<UIText> m_FPSText;
+	Ref<UIText> m_FrameTimeText;
 public:
 	UI()
 	{
-		handlerUI = Application::getScene()->getUIHandle();
+		m_HandlerUI = Application::getScene()->getUIHandle();
 
-		text = handlerUI->makeText("FPS");
-		text2 = handlerUI->makeText("Frame Time");
-		text2->setPosition({20, 50});
+		m_FPSText = m_HandlerUI->makeText("FPS");
+		m_FrameTimeText = m_HandlerUI->makeText("Frame Time");
+		m_FrameTimeText->setPosition({20, 50});
 
-		text->setVisible(false);
-		text2->setVisible(false);
+		m_FPSText->setVisible(false);
+		m_FrameTimeText->setVisible(false);
 	}
 
 	void update(float dt)
@@ -34,8 +34,8 @@ public:
 		static bool wasF3Pressed = false;
 		bool isF3Pressed = Input::isKeyPressed(GLFW_KEY_F3);
 		if (isF3Pressed && !wasF3Pressed) {
-			text->setVisible(!text->isVisible());
-			text2->setVisible(!text2->isVisible());
+			m_FPSText->setVisible(!m_FPSText->isVisible());
+			m_FrameTimeText->setVisible(!m_FrameTimeText->isVisible());
 		}
 		wasF3Pressed = isF3Pressed;
 
@@ -49,8 +49,8 @@ public:
 		fps = fps * (1.0f - FPS_AVG_WEIGHT) + (1.0f / dt) * FPS_AVG_WEIGHT;
 
 		if (delta > WRITE_FPS_TIMEOUT) {
-			text->setText(stringFormat("FPS: %.0f", fps));
-			text2->setText(stringFormat("Frame time: %.4fms", dt * 1000));
+			m_FPSText->setText(stringFormat("FPS: %.0f", fps));
+			m_FrameTimeText->setText(stringFormat("Frame time: %.4fms", dt * 1000));
 
 			delta -= WRITE_FPS_TIMEOUT;
 		}

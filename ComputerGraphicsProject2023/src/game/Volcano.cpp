@@ -11,7 +11,7 @@ void Volcano::update(float dt)
 	float z = Input::getAxis("MOVE_DOWN", "MOVE_UP") * c_Speed * dt;
 
 	glm::vec3 movement(x, 0.0f, z);
-	if (glm::length(movement) > 1.f) {
+	if (glm::length(movement) > 1.0f) {
 		movement = glm::normalize(movement);
 	}
 
