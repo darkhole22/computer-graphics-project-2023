@@ -57,10 +57,20 @@ public:
 		}
 
 		{
-			if(Input::isKeyPressed(GLFW_KEY_U))
+			static bool toggleDelete = true;
+			static float lastClick = 0.0f;
+			static float time = 0.0f;
+
+			time += dt;
+
+			if (Input::isKeyPressed(GLFW_KEY_U))
 			{
-				// This makes the program crash as of right now.
-				scene->removeObject(gameObject);
+				if (time - lastClick > 0.3f)
+				{
+					lastClick = time;
+					toggleDelete ? scene->removeObject(gameObject) : scene->addObject(gameObject);
+					toggleDelete = !toggleDelete;
+				}
 			}
 		}
 

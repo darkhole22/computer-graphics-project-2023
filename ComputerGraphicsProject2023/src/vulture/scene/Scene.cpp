@@ -23,6 +23,7 @@ void SceneObjectList::addObject(ObjectHandle handle, const RenderableObject& obj
 void SceneObjectList::removeObject(ObjectHandle handle)
 {
 	auto it = m_Objects.find(handle);
+	if (it == m_Objects.end()) return;
 	m_Objects.erase(it);
 }
 
