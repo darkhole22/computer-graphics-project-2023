@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <functional>
 
 namespace vulture {
 
@@ -19,6 +20,7 @@ template <class Type> class ValueTweener;
 class IntervalTweener;
 class SequentialTweener;
 class ParallelTweener;
+class CallbackTweener;
 
 class Tween
 {
@@ -41,6 +43,8 @@ public:
 	Ref<ValueTweener<Type>> addValueTweener(Type* value, Type finalValue, float duration);
 
 	Ref<ParallelTweener> addParallelTweener();
+
+	Ref<CallbackTweener> addCallbackTweener(std::function<void()> callback);
 
 	~Tween();
 private:
@@ -126,6 +130,8 @@ public:
 		return tweener;
 	}
 
+	Ref<CallbackTweener> addCallbackTweener(std::function<void()> callback);
+
 protected:
 	std::vector<Ref<Tweener>> m_Tweeners;
 };
@@ -158,5 +164,18 @@ Ref<ValueTweener<Type>> Tween::addValueTweener(Type* value, Type finalValue, flo
 {
 	return m_Tweener->addValueTweener(value, finalValue, duration);
 }
+
+class CallbackTweener : public Tweener
+{
+public:
+	CallbackTweener(std::function<void()> callback);
+
+	void step(float dt) override;
+	bool isFinisced() const override;
+	void reset() override;
+private:
+	std::function<void()> m_Callback;
+	bool m_Started = false;
+};
 
 } // namespace vulture

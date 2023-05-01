@@ -73,10 +73,20 @@ public:
 		{
 			auto sequential = parallel->addSequentialTweener();
 			{
-				sequential->addValueTweener(&tweenValue2, 3000ULL, 1);
-				sequential->addValueTweener(&tweenValue2, 150ULL, 1);
+				sequential->addValueTweener(&tweenValue2, 3000ULL, 0.5);
+				sequential->addValueTweener(&tweenValue2, 150ULL, 0.5);
+				sequential->addCallbackTweener([this]() {
+					const glm::vec3 colors[3] = {
+						{1.0f, 0.0f, 0.0f},
+						{0.0f, 1.0f, 0.0f},
+						{0.0f, 0.0f, 1.0f}
+					};
+					static u64 index = 0;
+					tweenText->setColor(colors[index]);
+					index = (index + 1) % 3;
+				});
 			}
-			parallel->addValueTweener(&tweenValue, { 20, 200 }, 1.5f);
+			parallel->addValueTweener(&tweenValue, { 20, 300 }, 1);
 		}
 		tween->addIntervalTweener(0.5);
 		tween->addValueTweener(&tweenValue, { 250, 250 }, 1.5f);

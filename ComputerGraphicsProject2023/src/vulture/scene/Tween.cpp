@@ -51,6 +51,11 @@ Ref<ParallelTweener> Tween::addParallelTweener()
 	return m_Tweener->addParallelTweener();
 }
 
+Ref<CallbackTweener> Tween::addCallbackTweener(std::function<void()> callback)
+{
+	return m_Tweener->addCallbackTweener(callback);
+}
+
 Tween::~Tween()
 {
 	VUTRACE("Tween destructed.");
@@ -95,6 +100,13 @@ void IntervalTweener::reset()
 Ref<IntervalTweener> CollectionTweener::addIntervalTweener(float duration)
 {
 	auto tweener = makeRef<IntervalTweener>(duration);
+	m_Tweeners.emplace_back(tweener);
+	return tweener;
+}
+
+Ref<CallbackTweener> CollectionTweener::addCallbackTweener(std::function<void()> callback)
+{
+	auto tweener = makeRef<CallbackTweener>(callback);
 	m_Tweeners.emplace_back(tweener);
 	return tweener;
 }
@@ -161,6 +173,29 @@ Ref<SequentialTweener> ParallelTweener::addSequentialTweener()
 	auto tweener = makeRef<SequentialTweener>();
 	m_Tweeners.emplace_back(tweener);
 	return tweener;
+}
+
+CallbackTweener::CallbackTweener(std::function<void()> callback) : m_Callback(callback)
+{
+}
+
+void CallbackTweener::step(float dt)
+{
+	if (!isFinisced())
+	{
+		m_Callback();
+		m_Started = true;
+	}
+}
+
+bool CallbackTweener::isFinisced() const
+{
+	return m_Started;
+}
+
+void CallbackTweener::reset()
+{
+	m_Started = false;
 }
 
 } // namespace vulture

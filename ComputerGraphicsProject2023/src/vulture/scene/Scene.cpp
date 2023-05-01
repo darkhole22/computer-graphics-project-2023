@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-#define VU_LOGGER_TRACE_ENABLED
+// #define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
 
 namespace vulture {
