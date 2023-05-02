@@ -4,8 +4,7 @@ namespace vulture {
 
 ObjectHandle GameObject::s_NextHandle = 0;
 
-GameObject::GameObject(const std::string &modelPath, const std::string &texturePath) :
-	m_Position(0.0f, 0.0f, 0.0f), m_Scale(1.0f, 1.0f, 1.0f), m_Rotation(glm::vec3(0.0f))
+GameObject::GameObject(const std::string &modelPath, const std::string &texturePath)
 {
 	m_Model = Ref<Model>(Model::make(modelPath));
 	m_Uniform = Renderer::makeUniform<vulture::ModelBufferObject>();

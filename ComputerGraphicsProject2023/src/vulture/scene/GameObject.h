@@ -1,11 +1,6 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtx/string_cast.hpp>
-
 #include <string>
-#include "vulture/renderer/Model.h"
 #include "vulture/renderer/Renderer.h"
 #include "vulture/core/Logger.h"
 
@@ -18,6 +13,7 @@ namespace vulture{
  * Scene class to quickly and efficiently look up game objects by their handles.
  */
 using ObjectHandle = int64_t;
+
 
 /**
  * ModelBufferObject represents a uniform buffer object containing a single model matrix, which is used to transform
@@ -140,13 +136,12 @@ public:
 
 	friend class Scene;
 private:
-	static ObjectHandle s_NextHandle; 		// The next available handle for a new game object.
-
 	Ref<Model> m_Model;
 	Ref<Texture> m_Texture;
 	Ref<TextureSampler> m_TextureSampler;
 	Uniform<ModelBufferObject> m_Uniform;
 
+	static ObjectHandle s_NextHandle; 		// The next available handle for a new game object.
 	ObjectHandle m_Handle = -1;  			// The unique handle assigned to this game object.
 
 	glm::vec3 m_Position = glm::vec3(0.0f, 0.0f, 0.0f);

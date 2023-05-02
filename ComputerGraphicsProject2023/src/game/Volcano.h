@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glm/vec3.hpp>
 #include <utility>
 
 #include "vulture/scene/GameObject.h"
