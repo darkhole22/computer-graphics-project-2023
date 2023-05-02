@@ -7,34 +7,40 @@ namespace vulture {
 RenderableObject::RenderableObject(Ref<Model> model, Ref<DescriptorSet> descriptorSet) :
 	m_Model(model), m_DescriptorSet(descriptorSet)
 {
-
 }
 
-SceneObjectList::SceneObjectList(const String& vertexShader, 
+SceneObjectList::SceneObjectList(const String& vertexShader,
 	const String& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
 	m_Pipeline(new Pipeline(Renderer::getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
 {
 }
 
-ObjectHandle SceneObjectList::addObject(RenderableObject obj)
+void SceneObjectList::addObject(ObjectHandle handle, const RenderableObject& obj)
 {
-	ObjectHandle handle = m_NextObjectHandle++; // Replace with a pseudo random number generator
-
 	m_Objects.insert({ handle, obj });
-
-	return handle;
 }
 
 void SceneObjectList::removeObject(ObjectHandle handle)
 {
 	auto it = m_Objects.find(handle);
+	if (it == m_Objects.end()) return;
 	m_Objects.erase(it);
 }
 
 Scene::Scene() :
-	m_DescriptorsPool(Renderer::makeDescriptorPool()), 
+	m_DescriptorsPool(Renderer::makeDescriptorPool()),
 	m_Camera(m_DescriptorsPool), m_UIHandler(m_DescriptorsPool)
 {
+	// Create the default Phong GameObject DSL.
+	m_GameObjectDSL = Ref<DescriptorSetLayout>(new DescriptorSetLayout());
+	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_GameObjectDSL->create();
+
+	// Create default Phong pipeline.
+	// TODO Consider removing hardcoded values
+	m_GameObjectPipeline = makePipeline("res/shaders/baseVert.spv", "res/shaders/baseFrag.spv", m_GameObjectDSL);
+
 	setModified();
 
 	m_UIHandler.addCallback([this](const UIModified& event) {
@@ -57,6 +63,12 @@ void Scene::render(FrameContext target, float dt)
 		setModified();
 	}
 
+	// Update all GameObjects in the scene.
+	for (const auto& it: m_GameObjects)
+	{
+		it.second->update(dt);
+	}
+
 	auto [width, height] = target.getExtent();
 	float aspectRatio = static_cast<float>(width) / height;
 	m_Camera.m_AspectRatio = aspectRatio;
@@ -77,9 +89,9 @@ void Scene::render(FrameContext target, float dt)
 
 PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
 {
-	PipelineHandle handle = m_NextPipelineHandle++; // Consider using a pseudo number generator
+	PipelineHandle handle = m_NextPipelineHandle++;
 
-	std::vector<DescriptorSetLayout*> layouts{};
+	std::vector<DescriptorSetLayout *> layouts{};
 	layouts.push_back(descriptorSetLayout.get());
 	layouts.push_back(m_Camera.getDescriptorSetLayout());
 
@@ -88,14 +100,24 @@ PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fra
 	return handle;
 }
 
-ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites)
+void Scene::addObject(Ref<GameObject> obj)
 {
-	auto& p = m_ObjectLists.at(pipeline);
+	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 
-	auto handle = p.addObject(RenderableObject(model, m_DescriptorsPool.getDescriptorSet(*layout.get(), descriptorWrites)));
+	p.addObject(obj->m_Handle, RenderableObject(obj->m_Model, m_DescriptorsPool.getDescriptorSet(*m_GameObjectDSL.get(), {obj->m_Uniform, *obj->m_TextureSampler})));
+	m_GameObjects[obj->m_Handle] = obj;
 
 	setModified();
-	return handle;
+}
+
+void Scene::removeObject(Ref<GameObject> obj)
+{
+	auto it = m_GameObjects.find(obj->m_Handle);
+	if (it == m_GameObjects.end()) return;
+	m_GameObjects.erase(it);
+
+	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
+	p.removeObject(obj->m_Handle);
 }
 
 void Scene::recordCommandBuffer(FrameContext& target)
