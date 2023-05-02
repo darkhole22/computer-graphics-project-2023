@@ -74,7 +74,7 @@ private:
 	PipelineHandle m_GameObjectPipeline;
 
 	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
-
+	
 	void recordCommandBuffer(FrameContext& target);
 	void updateUniforms(FrameContext& target);
 

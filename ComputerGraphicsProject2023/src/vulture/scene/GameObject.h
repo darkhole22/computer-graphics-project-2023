@@ -42,7 +42,7 @@ public:
 	 * @param modelPath Path to the model file.
 	 * @param texturePath Path to the texture file.
 	 */
-	explicit GameObject(const std::string& modelPath, const std::string& texturePath);
+	GameObject(const std::string& modelPath, const std::string& texturePath);
 
 	/**
 	 * @brief Returns the position of the object.
@@ -52,35 +52,35 @@ public:
 	inline glm::vec3 getPosition() { return m_Position; }
 
 	/**
-     * @brief Sets the position of the object.
-     *
-     * @param pos The new position of the object as a glm::vec3.
-     */
+	 * @brief Sets the position of the object.
+	 *
+	 * @param pos The new position of the object as a glm::vec3.
+	 */
 	inline void setPosition(glm::vec3 pos) { m_Position = pos; }
 
 	/**
-     * @brief Sets the position of the object.
-     *
-     * @param x The x-coordinate of the new position.
-     * @param y The y-coordinate of the new position.
-     * @param z The z-coordinate of the new position.
-     */
+	 * @brief Sets the position of the object.
+	 *
+	 * @param x The x-coordinate of the new position.
+	 * @param y The y-coordinate of the new position.
+	 * @param z The z-coordinate of the new position.
+	 */
 	inline void setPosition(float x, float y, float z) { setPosition(glm::vec3(x, y, z)); }
 
 	/**
-     * @brief Translates the object by a given amount.
-     *
-     * @param translation The amount to translate the object by as a glm::vec3.
-     */
+	 * @brief Translates the object by a given amount.
+	 *
+	 * @param translation The amount to translate the object by as a glm::vec3.
+	 */
 	inline void translate(glm::vec3 translation) { m_Position += translation; }
 
 	/**
-     * @brief Translates the object by a given amount.
-     *
-     * @param x The amount to translate the object in the x direction.
-     * @param y The amount to translate the object in the y direction.
-     * @param z The amount to translate the object in the z direction.
-     */
+	 * @brief Translates the object by a given amount.
+	 *
+	 * @param x The amount to translate the object in the x direction.
+	 * @param y The amount to translate the object in the y direction.
+	 * @param z The amount to translate the object in the z direction.
+	 */
 	inline void translate(float x, float y, float z) { translate(glm::vec3(x, y, z)); }
 
 	/**
@@ -91,10 +91,10 @@ public:
 	inline glm::vec3 getScale() { return m_Scale; }
 
 	/**
-     * @brief Sets the scale of the object.
-     *
-     * @param scale The new scale of the object as a glm::vec3.
-     */
+	 * @brief Sets the scale of the object.
+	 *
+	 * @param scale The new scale of the object as a glm::vec3.
+	 */
 	inline void setScale(glm::vec3 scale) { m_Scale = scale; }
 
 	/**
@@ -140,13 +140,14 @@ public:
 
 	friend class Scene;
 private:
+	static ObjectHandle s_NextHandle; 		// The next available handle for a new game object.
+
 	Ref<Model> m_Model;
 	Ref<Texture> m_Texture;
 	Ref<TextureSampler> m_TextureSampler;
 	Uniform<ModelBufferObject> m_Uniform;
 
 	ObjectHandle m_Handle = -1;  			// The unique handle assigned to this game object.
-	static ObjectHandle s_NextHandle; 		// The next available handle for a new game object.
 
 	glm::vec3 m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -158,12 +159,7 @@ private:
 	 *
 	 * @param dt The time elapsed since the last frame, in seconds.
 	 */
-	void update(float dt)
-	{
-		m_Uniform->model = glm::translate(glm::mat4(1.0f), m_Position) *
-							glm::mat4(m_Rotation) *
-							glm::scale(glm::mat4(1.0f), m_Scale);
-	}
+	void update(float dt);
 };
 
 } // vulture
