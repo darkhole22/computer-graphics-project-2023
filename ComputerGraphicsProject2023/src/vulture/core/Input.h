@@ -47,32 +47,98 @@ struct InputAction
 	std::vector<GamepadAxisBinding> gamepadAxisBindings;
 };
 
+/*
+ * The `Input` class provides static methods to query the state of user input.
+ * It supports keyboard, mouse, and gamepad input, and provides functionality for mapping
+ * inputs to named "actions" which can then be queried in a device-agnostic manner.
+ */
 class Input
 {
 public:
+	/**
+	 * The default constructor is deleted to prevent creating instances of this class.
+     */
 	Input() = delete;
 
 	static void setAction(const String& actionName, InputAction action);
 
+	/**
+	 * @brief Checks whether an input action with the given name is currently being pressed.
+	 *
+	 * @param actionName The name of the action to check.
+	 * @return True if the action is being pressed, false otherwise.
+	 */
 	inline static bool isActionPressed(const String& actionName) { return getActionStrength(actionName) > 0.0f; }
 
+	/**
+	 * @brief Checks whether an input action with the given name has been released in the current frame.
+	 *
+	 * @param actionName The name of the action to check.
+	 * @return True if the action has been released, false otherwise.
+	 */
 	static bool isActionReleased(const String& actionName);
 
+	/**
+	 * @brief Returns the strength of an input action with the given name.
+	 *
+	 * @param actionName The name of the action to check.
+	 * @return The strength of the action as a float value between 0 and 1.
+	 */
 	static float getActionStrength(const String& actionName);
 
+	/**
+	 * @brief Returns the value of a virtual input axis.
+	 *
+	 * @param negativeAction The name of the negative input action.
+	 * @param positiveAction The name of the positive input action.
+	 * @return The value of the input axis as a float value between -1 and 1.
+	 */
 	inline static float getAxis(const String& negativeAction, const String& positiveAction)
 	{
 		return getActionStrength(positiveAction) - getActionStrength(negativeAction);
 	}
 
+	/**
+	 * @brief Returns a 2D vector based on the input actions assigned to the given input bindings.
+	 *
+	 * @param negativeX The name of the negative X-axis input action.
+	 * @param positiveX The name of the positive X-axis input action.
+	 * @param negativeY The name of the negative Y-axis input action.
+	 * @param positiveY The name of the positive Y-axis input action.
+	 * @return The input vector as a glm::vec2.
+	 */
 	static glm::vec2 getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY);
 
+	/**
+	 * @brief Checks whether a keyboard key with the given key code is currently being pressed.
+	 *
+	 * @param keyCode The key code of the key to check.
+	 * @return True if the key is being pressed, false otherwise.
+	 */
 	static bool isKeyPressed(int keyCode);
 
+	/**
+	 * @brief Checks whether a mouse button with the given button code is currently being pressed.
+	 *
+	 * @param buttonCode The button code of the mouse button to check.
+	 * @return True if the mouse button is being pressed, false otherwise.
+	 */
 	static bool isMouseButtonPressed(int buttonCode);
 
+	/**
+	 * @brief Checks whether a gamepad button with the given button code is currently being pressed.
+	 *
+	 * @param buttonCode The button code of the gamepad button to check.
+	 * @return True if the gamepad button is being pressed, false otherwise.
+	 */
 	static bool isGamepadButtonPressed(int buttonCode);
 
+	/**
+	 * @brief Returns the strength of a gamepad axis.
+	 *
+	 * @param axis The axis code of the gamepad axis to check.
+	 * @return The strength of the axis as a float value between -1 and 1.
+	 */
 	static float getGamepadAxis(int axis);
 
 private:
