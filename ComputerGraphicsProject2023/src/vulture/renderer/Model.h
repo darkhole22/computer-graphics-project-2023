@@ -6,14 +6,6 @@
 
 #include "Buffers.h"
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/string_cast.hpp>
-
 namespace vulture {
 
 struct Vertex
@@ -77,9 +69,9 @@ public:
 	};
 
 	// template<class _Vertex, class _VertexBuilder>
-	static Model* make(const String& modelPath)
+	static Ref<Model> make(const String& modelPath)
 	{
-		Model* m = new Model();
+		Ref<Model> m = makeRef<Model>();
 
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;

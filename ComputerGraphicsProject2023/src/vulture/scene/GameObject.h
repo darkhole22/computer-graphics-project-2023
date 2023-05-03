@@ -12,7 +12,7 @@ namespace vulture{
  * a 64-bit integer type that is incremented for each new game object that is added to the scene. This allows the
  * Scene class to quickly and efficiently look up game objects by their handles.
  */
-using ObjectHandle = int64_t;
+using ObjectHandle = i64;
 
 
 /**
@@ -38,7 +38,7 @@ public:
 	 * @param modelPath Path to the model file.
 	 * @param texturePath Path to the texture file.
 	 */
-	GameObject(const std::string& modelPath, const std::string& texturePath);
+	GameObject(const String& modelPath, const String& texturePath);
 
 	/**
 	 * @brief Returns the position of the object.
@@ -61,7 +61,7 @@ public:
 	 * @param y The y-coordinate of the new position.
 	 * @param z The z-coordinate of the new position.
 	 */
-	inline void setPosition(float x, float y, float z) { setPosition(glm::vec3(x, y, z)); }
+	inline void setPosition(f32 x, f32 y, f32 z) { setPosition(glm::vec3(x, y, z)); }
 
 	/**
 	 * @brief Translates the object by a given amount.
@@ -77,7 +77,7 @@ public:
 	 * @param y The amount to translate the object in the y direction.
 	 * @param z The amount to translate the object in the z direction.
 	 */
-	inline void translate(float x, float y, float z) { translate(glm::vec3(x, y, z)); }
+	inline void translate(f32 x, f32 y, f32 z) { translate(glm::vec3(x, y, z)); }
 
 	/**
 	 * @brief Returns the scale of the object.
@@ -100,7 +100,7 @@ public:
 	 * @param y The new scale in the y direction.
 	 * @param z The new scale in the z direction.
 	 */
-	inline void setScale(float x, float y, float z) { setScale(glm::vec3(x, y, z)); }
+	inline void setScale(f32 x, f32 y, f32 z) { setScale(glm::vec3(x, y, z)); }
 
 	/**
 	 * @brief Returns the rotation of the object as a quaternion.
@@ -123,7 +123,7 @@ public:
 	 * @param y The rotation angle around the y-axis.
 	 * @param z The rotation angle around the z-axis.
 	 */
-	inline void setRotation(float x, float y, float z) { setRotation(glm::vec3(x, y, z)); }
+	inline void setRotation(f32 x, f32 y, f32 z) { setRotation(glm::vec3(x, y, z)); }
 
 	/**
 	 * @brief Rotates the game object by the specified angles around the x, y, and z axes, respectively.
@@ -132,7 +132,7 @@ public:
 	 * @param y The angle to rotate around the y-axis.
 	 * @param z The angle to rotate around the z-axis.
 	 */
-	inline void rotate(float x, float y, float z) { m_Rotation *= glm::quat(glm::vec3(x, y, z)); }
+	inline void rotate(f32 x, f32 y, f32 z) { m_Rotation *= glm::quat(glm::vec3(x, y, z)); }
 
 	friend class Scene;
 private:
@@ -154,7 +154,7 @@ private:
 	 *
 	 * @param dt The time elapsed since the last frame, in seconds.
 	 */
-	void update(float dt);
+	void update(f64 dt);
 };
 
 } // vulture
