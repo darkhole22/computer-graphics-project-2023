@@ -33,12 +33,6 @@ public:
 	// inline Ref<DescriptorSetLayout> makeDescriptorSetLayout() const { return Ref<DescriptorSetLayout>(new DescriptorSetLayout(m_Device)); }
 	template <class T> static inline Uniform<T> makeUniform() { return Uniform<T>(getImageCount()); }
 	// inline Ref<Texture> makeTexture(const String& path) const { return Ref<Texture>(new Texture(m_Device, path)); }
-	
-	// static inline Ref<Model> makeBaseModel(const String& modelPath) 
-	// {
-	// 	// return Ref<Model>(Model::make<Vertex, VertexBuilder>(m_Device, modelPath));
-	// 	return Ref<Model>(Model::make(modelPath));
-	// }
 
 	static inline const VertexLayout getVertexLayout()
 	{
