@@ -1030,7 +1030,7 @@ String stringFormat(const String& format, Args ...args)
 namespace std {
 
 	/*
-	 * @brief A simple implementation of the Fowler�Noll�Vo hash function.
+	 * @brief A simple implementation of the Fowler-Noll-Vo hash function.
 	 * See https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function for reference.
 	 */
 	template<> struct hash<vulture::String>
@@ -1042,9 +1042,10 @@ namespace std {
 			size_t h = 0;
 			while (*buffer)
 			{
-				h ^= (size_t)buffer++;
+				h ^= static_cast<size_t>(*buffer);
 				h += (h << 1) + (h << 4) + (h << 5) +
 					(h << 7) + (h << 8) + (h << 40);
+				buffer++;
 			}
 
 			return h;
