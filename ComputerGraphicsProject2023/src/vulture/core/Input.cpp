@@ -116,7 +116,15 @@ float Input::getActionStrength(const String& actionName)
 	return maxStrength;
 }
 
+glm::vec2 Input::getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY)
+{
+	glm::vec2 v(getAxis(negativeX, positiveX), getAxis(negativeY, positiveY));
+	if (glm::length(v) > 1.0f) {
+		v = glm::normalize(v);
+	}
 
+	return v;
+}
 
 bool Input::isKeyPressed(int keyCode)
 {

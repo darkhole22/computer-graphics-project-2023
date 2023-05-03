@@ -65,6 +65,8 @@ public:
 		return getActionStrength(positiveAction) - getActionStrength(negativeAction);
 	}
 
+	static glm::vec2 getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY);
+
 	static bool isKeyPressed(int keyCode);
 
 	static bool isMouseButtonPressed(int buttonCode);
