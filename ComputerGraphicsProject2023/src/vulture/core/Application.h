@@ -10,7 +10,6 @@
 #include "vulture/renderer/Window.h"
 #include "vulture/renderer/Renderer.h"
 #include "vulture/scene/Scene.h"
-#include "vulture/scene/GameObject.h"
 
 namespace vulture {
 
