@@ -52,6 +52,9 @@ public:
 
 	void update(f64 dt)
 	{
+		static f64 time = 0;
+		time += dt;
+
 		static bool wasKPressed = false;
 		bool isKPressed = Input::isKeyPressed(GLFW_KEY_K);
 		if (isKPressed && !wasKPressed)
