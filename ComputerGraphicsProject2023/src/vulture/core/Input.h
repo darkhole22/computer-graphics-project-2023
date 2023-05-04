@@ -102,7 +102,7 @@ public:
      */
 	Input() = delete;
 
-	static void setAction(const String& actionName, InputAction action);
+	static void setAction(const String& actionName, const InputAction& action);
 
 	/**
 	 * @brief Checks whether an input action with the given name is currently being pressed.
@@ -111,6 +111,14 @@ public:
 	 * @return True if the action is being pressed, false otherwise.
 	 */
 	inline static bool isActionPressed(const String& actionName) { return getActionStrength(actionName) > 0.0f; }
+
+	/**
+	 * @brief Checks whether an input action with the given name is currently being pressed and was not pressed the last frame.
+	 *
+	 * @param actionName The name of the action to check.
+	 * @return True if the action is being just pressed, false otherwise.
+	 */
+	static bool isActionJustPressed(const String& actionName);
 
 	/**
 	 * @brief Checks whether an input action with the given name has been released in the current frame.
@@ -227,6 +235,8 @@ private:
 
 	// detectActionPressed checks if all the given bindings are pressed at the same time.
 	static bool detectActionPressed(const std::vector<int>& bindings, int baseIndex);
+
+	static bool detectActionJustPressed(const std::vector<int> &bindings, int baseIndex);
 
 	// This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
 	static float getActionAxisStrength(const std::vector<std::pair<int, int>>& bindings);

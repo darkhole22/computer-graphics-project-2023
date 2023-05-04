@@ -83,6 +83,18 @@ private:
 		downAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_POS}}}};
 		Input::setAction("MOVE_DOWN", downAction);
+
+		InputAction toggleInfoAction{};
+		toggleInfoAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_F3}},
+		};
+		toggleInfoAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_BACK}}
+		};
+		toggleInfoAction.gamepadAxisBindings = {
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, GAMEPAD_AXIS_POS}}}
+		};
+		Input::setAction("TOGGLE_INFO", toggleInfoAction);
 	}
 };
 
