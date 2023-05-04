@@ -166,7 +166,7 @@ private:
 class IntervalTweener : public Tweener
 {
 public:
-	IntervalTweener(float duration);
+	explicit IntervalTweener(float duration);
 
 	void step(float dt) override;
 	bool isFinished() const override;
