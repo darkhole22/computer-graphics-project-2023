@@ -10,6 +10,14 @@ namespace vulture {
 constexpr int GAMEPAD_AXIS_POS = 1;
 constexpr int GAMEPAD_AXIS_NEG = -1;
 
+/**
+ * InputStatus struct represents the current status of an input device such as keyboard, mouse, or gamepad button or gamepad axis.
+ * The struct includes the following properties:
+ * - isPressed (bool): true if the input is currently pressed, false otherwise
+ * - isJustReleased (bool): true if the input was just released in the current frame, false otherwise
+ * - strength (float): the strength of the input, which can be used for analog inputs such as joysticks. Range is -1.0f to 1.0f
+ * - lastStrength (float): the strength of the input in the previous frame. This is useful for detecting changes in input strength.
+ */
 struct InputStatus
 {
 	bool isPressed;
@@ -19,26 +27,60 @@ struct InputStatus
 	float lastStrength;
 };
 
+/**
+ * KeyboardBinding struct represents a binding for one or more keys on the keyboard.
+ * The struct includes the following property:
+ * - keys (vector<int>): a vector of key codes for the keys that are bound to this action.
+ *   Each key code is a unique integer value that represents a specific key on the keyboard.
+ */
 struct KeyboardBinding
 {
 	std::vector<int> keys;
 };
 
+/**
+ * MouseBinding struct represents a binding for one or more buttons on the mouse.
+ * The struct includes the following property:
+ * - buttons (vector<int>): a vector of button codes for the buttons that are bound to this action.
+ *   Each button code is a unique integer value that represents a specific button on the mouse.
+ */
 struct MouseBinding
 {
 	std::vector<int> buttons;
 };
 
+/**
+ * GamepadButtonBinding struct represents a binding for one or more buttons on the gamepad.
+ * The struct includes the following property:
+ * - buttons (vector<int>): a vector of button codes for the buttons that are bound to this action.
+ *   Each button code is a unique integer value that represents a specific button on the gamepad.
+ */
 struct GamepadButtonBinding
 {
 	std::vector<int> buttons;
 };
 
+/**
+ * GamepadAxisBinding struct represents a binding for one or more axes on the gamepad.
+ * The struct includes the following property:
+ * - axes (vector<pair<int, int>>): a vector of pairs of axis codes and direction values that are bound to this action.
+ *   Each pair consists of two integer values: the first value is the axis code, which represents a specific axis on the gamepad,
+ *   and the second value is the direction, which can be either GAMEPAD_AXIS_POS or GAMEPAD_AXIS_NEG and represents the  or negative direction of the axis.
+ */
 struct GamepadAxisBinding
 {
 	std::vector<std::pair<int, int>> axes;
 };
 
+
+/**
+ * InputAction struct represents an action that can be triggered by different input bindings on different input devices.
+ * The struct includes the following properties:
+ * - keyboardBindings (vector<KeyboardBinding>): a vector of keyboard bindings for the action.
+ * - mouseBindings (vector<MouseBinding>): a vector of mouse bindings for the action.
+ * - gamepadButtonBindings (vector<GamepadButtonBinding>): a vector of gamepad button bindings for the action.
+ * - gamepadAxisBindings (vector<GamepadAxisBinding>): a vector of gamepad axis bindings for the action.
+ */
 struct InputAction
 {
 	std::vector<KeyboardBinding> keyboardBindings;
