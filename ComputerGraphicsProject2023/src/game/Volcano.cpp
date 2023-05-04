@@ -7,15 +7,9 @@ namespace game {
 
 void Volcano::update(float dt)
 {
-	float x = Input::getAxis("MOVE_LEFT", "MOVE_RIGHT") * c_Speed * dt;
-	float z = Input::getAxis("MOVE_DOWN", "MOVE_UP") * c_Speed * dt;
+	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP") * c_Speed * dt;
 
-	glm::vec3 movement(x, 0.0f, z);
-	if (glm::length(movement) > 1.0f) {
-		movement = glm::normalize(movement);
-	}
-
-	m_GameObject->translate(movement);
+	m_GameObject->translate(movement.x, 0.0f, movement.y);
 
 	if (Input::isKeyPressed(GLFW_KEY_H))
 	{

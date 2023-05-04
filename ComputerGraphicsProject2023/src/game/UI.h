@@ -30,14 +30,11 @@ public:
 
 	void update(float dt)
 	{
-		// Press F3 to toggle info
-		static bool wasF3Pressed = false;
-		bool isF3Pressed = Input::isKeyPressed(GLFW_KEY_F3);
-		if (isF3Pressed && !wasF3Pressed) {
+		if (Input::isActionJustPressed("TOGGLE_INFO"))
+		{
 			m_FPSText->setVisible(!m_FPSText->isVisible());
 			m_FrameTimeText->setVisible(!m_FrameTimeText->isVisible());
 		}
-		wasF3Pressed = isF3Pressed;
 
 		static float fps = 0.0f;
 		static float delta = 0;

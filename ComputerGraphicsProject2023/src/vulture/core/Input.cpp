@@ -7,7 +7,7 @@ namespace vulture {
 #define GAMEPAD_BTN_IDX(BTN) (BTN + MOUSE_BTN_IDX(GLFW_MOUSE_BUTTON_LAST) + 1)
 #define GAMEPAD_AXIS_IDX(AXIS) (AXIS + GAMEPAD_BTN_IDX(GLFW_GAMEPAD_BUTTON_LAST) + 1)
 
-void Input::setAction(const String& actionName, InputAction action)
+void Input::setAction(const String& actionName, const InputAction& action)
 {
 	for (const auto& keyboardBinding: action.keyboardBindings)
 	{
@@ -44,6 +44,56 @@ void Input::setAction(const String& actionName, InputAction action)
 	s_Actions[actionName] = action;
 }
 
+bool Input::isActionJustPressed(const String& actionName)
+{
+	auto it = s_Actions.find(actionName);
+	if (it == s_Actions.end()) return false;
+
+	auto& action = it->second;
+
+	for (const auto& keyboardBinding : action.keyboardBindings)
+	{
+		if (detectActionJustPressed(keyboardBinding.keys, KEY_IDX(0))) return true;
+	}
+
+	for (const auto& mouseBinding : action.mouseBindings)
+	{
+		if (detectActionJustPressed(mouseBinding.buttons, MOUSE_BTN_IDX(0))) return true;
+	}
+
+
+	for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
+	{
+		if (detectActionJustPressed(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0))) return true;
+	}
+
+	for (const auto& gamepadAxisBinding: action.gamepadAxisBindings)
+	{
+		bool isPressed = true;
+		bool wasPressed = true;
+		for (auto axes: gamepadAxisBinding.axes)
+		{
+			if (s_InputStatuses[GAMEPAD_AXIS_IDX(axes.first)]->strength * axes.second <= 0.0f) isPressed = false;
+			if(s_InputStatuses[GAMEPAD_AXIS_IDX(axes.first)]->lastStrength == 0.0f) wasPressed = false;
+		}
+
+		if (isPressed && !wasPressed) return true;
+	}
+
+	return false;
+}
+
+bool Input::detectActionJustPressed(const std::vector<int> &bindings, int baseIndex)
+{
+	bool wasPressed = true;
+	for (auto binding: bindings)
+	{
+		if (s_InputStatuses[baseIndex + binding]->strength == 0.0f) return false;
+		if(s_InputStatuses[baseIndex + binding]->lastStrength == 0.0f) wasPressed = false;
+	}
+
+	return !wasPressed;
+}
 
 bool Input::isActionReleased(const String& actionName)
 {
@@ -116,7 +166,15 @@ float Input::getActionStrength(const String& actionName)
 	return maxStrength;
 }
 
+glm::vec2 Input::getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY)
+{
+	glm::vec2 v(getAxis(negativeX, positiveX), getAxis(negativeY, positiveY));
+	if (glm::length(v) > 1.0f) {
+		v = glm::normalize(v);
+	}
 
+	return v;
+}
 
 bool Input::isKeyPressed(int keyCode)
 {
@@ -175,12 +233,12 @@ float Input::getGamepadAxis(int axis)
 	return it->second->strength;
 }
 
-
 void Input::onGlfwKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	auto it = s_InputStatuses.find(KEY_IDX(key));
 	if (it == s_InputStatuses.end()) return;
 
+	it->second->strength = action != GLFW_RELEASE ? 1.0f : 0.0f;
 	it->second->isPressed = action != GLFW_RELEASE;
 	it->second->isJustReleased = action == GLFW_RELEASE;
 }
@@ -190,6 +248,7 @@ void Input::onGlfwMouseButton(GLFWwindow* window, int button, int action, int mo
 	auto it = s_InputStatuses.find(MOUSE_BTN_IDX(button));
 	if (it == s_InputStatuses.end()) return;
 
+	it->second->strength = action != GLFW_RELEASE ? 1.0f : 0.0f;
 	it->second->isPressed = action != GLFW_RELEASE;
 	it->second->isJustReleased = action == GLFW_RELEASE;
 }
@@ -288,6 +347,8 @@ void Input::resetReleased()
 	for (auto& inputStatus : s_InputStatuses)
 	{
 		inputStatus.second->isJustReleased = false;
+
+		inputStatus.second->lastStrength = inputStatus.second->strength;
 	}
 }
 
