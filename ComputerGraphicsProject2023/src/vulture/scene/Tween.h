@@ -16,7 +16,7 @@ class Tweener
 {
 public:
 	virtual void step(float dt) = 0;
-	virtual bool isFinisced() const = 0;
+	virtual bool isFinished() const = 0;
 	virtual void reset() = 0;
 };
 
@@ -36,30 +36,30 @@ class Tween
 public:
 	/**
 	* @brief Construct a Tween.
-	* This shoul be called only if you want to manage the Tween manually.
+	* This should be called only if you want to manage the Tween manually.
 	* Consider using Scene::makeTween() instead.
 	*/
 	Tween();
 
 	/**
-	* @brief Step the animationof the Tween by a specified amount.
+	* @brief Step the animation of the Tween by a specified amount.
 	* If the Tween is not running or it is stopped this has no effect.
 	* 
-	* This shoul be called only if you are managing the Tween manually.
+	* This should be called only if you are managing the Tween manually.
 	* 
 	* @param dt: the delta time of the animation in seconds.
 	*/
 	void step(float dt);
 
 	/**
-	* @brief Checks if the Tween is runing.
+	* @brief Checks if the Tween is running.
 	* 
 	* @returns true if the tween is running.
 	*/
 	bool isRunning() const;
 
 	/**
-	* @brief Checks if the Tween is beeing managed by the scene.
+	* @brief Checks if the Tween is being managed by the scene.
 	*
 	* @returns true if the tween is valid.
 	*/
@@ -81,7 +81,7 @@ public:
 	*/
 	void stop();
 
-	/*
+	/**
 	* @brief Reset the animation.
 	* 
 	* @param autoStart: If true the animation will automatically start, otherwise the animation will be stopped.
@@ -104,19 +104,19 @@ public:
 	*
 	* @param duration: the duration of the animation in seconds.
 	*
-	* @return a referance to the created Tweener.
+	* @return a reference to the created Tweener.
 	*/
 	Ref<IntervalTweener> addIntervalTweener(float duration);
 
 	/**
 	* @brief Creates and append a new ValueTweener.
-	* This ValueTweener doesen't manage the memory of the provided value. 
+	* This ValueTweener doesn't manage the memory of the provided value.
 	*
 	* @param value: a pointer to the value to modify. This should be remain a valid pinter for the entire lifetime of the Tween.
 	* @param finalValue: the value at the end of the animation.
 	* @param duration: the duration of the animation in seconds.
 	*
-	* @return a referance to the created Tweener.
+	* @return a reference to the created Tweener.
 	*/
 	template<class Type>
 	Ref<ValueTweener<Type>> addValueTweener(Type* value, Type finalValue, float duration);
@@ -124,7 +124,7 @@ public:
 	/**
 	* @brief Creates and append a new ParallelTweener.
 	*
-	* @return a referance to the created Tweener.
+	* @return a reference to the created Tweener.
 	*/
 	Ref<ParallelTweener> addParallelTweener();
 
@@ -133,9 +133,9 @@ public:
 	*
 	* @param callback: the callback that will be called.
 	*
-	* @return a referance to the created Tweener.
+	* @return a reference to the created Tweener.
 	*/
-	Ref<CallbackTweener> addCallbackTweener(std::function<void()> callback);
+	Ref<CallbackTweener> addCallbackTweener(const std::function<void()>& callback);
 
 	/**
 	* @brief Creates and append a new MethodTweener.
@@ -146,7 +146,7 @@ public:
 	* @param finalValue: the value at the end of the animation.
 	* @param duration: the duration of the animation in seconds.
 	*
-	* @return a referance to the created Tweener.
+	* @return a reference to the created Tweener.
 	*/
 	template <class Type>
 	Ref<MethodTweener<Type>> addMethodTweener(std::function<void(Type)> callback, Type initialValue, Type finalValue, float duration);
@@ -169,7 +169,7 @@ public:
 	IntervalTweener(float duration);
 
 	void step(float dt) override;
-	bool isFinisced() const override;
+	bool isFinished() const override;
 	void reset() override;
 private:
 	const float c_Duration;
@@ -197,7 +197,7 @@ public:
 			m_Started = true;
 		}
 
-		if (!isFinisced())
+		if (!isFinished())
 		{
 			m_Elapsed += dt;
 			float delta = m_Elapsed / c_Duration;
@@ -207,7 +207,7 @@ public:
 		}
 	}
 
-	bool isFinisced() const override
+	bool isFinished() const override
 	{
 		return m_Elapsed >= c_Duration;
 	}
@@ -240,7 +240,7 @@ public:
 		return tweener;
 	}
 
-	Ref<CallbackTweener> addCallbackTweener(std::function<void()> callback);
+	Ref<CallbackTweener> addCallbackTweener(const std::function<void()>& callback);
 
 	template <class Type>
 	Ref<MethodTweener<Type>> addMethodTweener(std::function<void(Type)> callback, Type initialValue, Type finalValue, float duration)
@@ -261,7 +261,7 @@ class SequentialTweener : public CollectionTweener
 {
 public:
 	void step(float dt) override;
-	bool isFinisced() const override;
+	bool isFinished() const override;
 	void reset() override;
 
 	Ref<ParallelTweener> addParallelTweener();
@@ -277,7 +277,7 @@ class ParallelTweener : public CollectionTweener
 {
 public:
 	void step(float dt) override;
-	bool isFinisced() const override;
+	bool isFinished() const override;
 	void reset() override;
 
 	Ref<SequentialTweener> addSequentialTweener();
@@ -304,7 +304,7 @@ public:
 	CallbackTweener(std::function<void()> callback);
 
 	void step(float dt) override;
-	bool isFinisced() const override;
+	bool isFinished() const override;
 	void reset() override;
 private:
 	std::function<void()> m_Callback;
@@ -325,16 +325,16 @@ public:
 
 	void step(float dt) override
 	{
-		if (!isFinisced())
+		if (!isFinished())
 		{
 			m_Interpolator.step(dt);
 			m_Callback(m_Value);
 		}
 	}
 
-	bool isFinisced() const override
+	bool isFinished() const override
 	{
-		return m_Interpolator.isFinisced();
+		return m_Interpolator.isFinished();
 	}
 
 	void reset() override

@@ -1,5 +1,7 @@
 #include "Tween.h"
 
+#include <utility>
+
 // #define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
 
@@ -12,7 +14,7 @@ Tween::Tween()
 
 bool Tween::isRunning() const
 {
-	return m_Tweener && !m_Tweener->isFinisced() && m_Valid;
+	return m_Tweener && !m_Tweener->isFinished() && m_Valid;
 }
 
 bool Tween::isValid() const
@@ -57,14 +59,14 @@ Ref<ParallelTweener> Tween::addParallelTweener()
 	return m_Tweener->addParallelTweener();
 }
 
-Ref<CallbackTweener> Tween::addCallbackTweener(std::function<void()> callback)
+Ref<CallbackTweener> Tween::addCallbackTweener(const std::function<void()>& callback)
 {
 	return m_Tweener->addCallbackTweener(callback);
 }
 
 Tween::~Tween()
 {
-	VUTRACE("Tween destructed.");
+	VUTRACE("Tween destroyed.");
 }
 
 void Tween::step(float dt)
@@ -74,7 +76,7 @@ void Tween::step(float dt)
 	{
 		m_Tweener->step(dt);
 
-		if (m_Tweener->isFinisced())
+		if (m_Tweener->isFinished())
 		{
 			m_CurrentLoop++;
 			if (m_LoopCount == 0 || m_CurrentLoop < m_LoopCount)
@@ -89,11 +91,11 @@ IntervalTweener::IntervalTweener(float duration) : c_Duration(duration)
 
 void IntervalTweener::step(float dt)
 {
-	if (!isFinisced())
+	if (!isFinished())
 		m_Elapsed += dt;
 }
 
-bool IntervalTweener::isFinisced() const
+bool IntervalTweener::isFinished() const
 {
 	return m_Elapsed >= c_Duration;
 }
@@ -110,7 +112,7 @@ Ref<IntervalTweener> CollectionTweener::addIntervalTweener(float duration)
 	return tweener;
 }
 
-Ref<CallbackTweener> CollectionTweener::addCallbackTweener(std::function<void()> callback)
+Ref<CallbackTweener> CollectionTweener::addCallbackTweener(const std::function<void()>& callback)
 {
 	auto tweener = makeRef<CallbackTweener>(callback);
 	m_Tweeners.emplace_back(tweener);
@@ -119,18 +121,18 @@ Ref<CallbackTweener> CollectionTweener::addCallbackTweener(std::function<void()>
 
 void SequentialTweener::step(float dt)
 {
-	if (!isFinisced())
+	if (!isFinished())
 	{
 		auto& tweener = m_Tweeners[m_Index];
 
 		tweener->step(dt);
 
-		if (tweener->isFinisced())
+		if (tweener->isFinished())
 			m_Index++;
 	}
 }
 
-bool SequentialTweener::isFinisced() const
+bool SequentialTweener::isFinished() const
 {
 	return m_Index >= m_Tweeners.size();
 }
@@ -151,18 +153,18 @@ Ref<ParallelTweener> SequentialTweener::addParallelTweener()
 
 void ParallelTweener::step(float dt)
 {
-	if (!isFinisced())
+	if (!isFinished())
 	{
 		for (auto& tweener : m_Tweeners)
 			tweener->step(dt);
 	}
 }
 
-bool ParallelTweener::isFinisced() const
+bool ParallelTweener::isFinished() const
 {
 	for (auto& tweener : m_Tweeners)
 	{
-		if (!tweener->isFinisced())
+		if (!tweener->isFinished())
 			return false;
 	}
 	return true;
@@ -181,20 +183,20 @@ Ref<SequentialTweener> ParallelTweener::addSequentialTweener()
 	return tweener;
 }
 
-CallbackTweener::CallbackTweener(std::function<void()> callback) : m_Callback(callback)
+CallbackTweener::CallbackTweener(std::function<void()> callback) : m_Callback(std::move(callback))
 {
 }
 
 void CallbackTweener::step(float dt)
 {
-	if (!isFinisced())
+	if (!isFinished())
 	{
 		m_Callback();
 		m_Started = true;
 	}
 }
 
-bool CallbackTweener::isFinisced() const
+bool CallbackTweener::isFinished() const
 {
 	return m_Started;
 }
