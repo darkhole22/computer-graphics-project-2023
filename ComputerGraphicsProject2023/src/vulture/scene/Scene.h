@@ -6,6 +6,7 @@
 #include "vulture/renderer/FrameContext.h"
 #include "vulture/scene/Camera.h"
 #include "vulture/scene/ui/UIHandler.h"
+#include "vulture/scene/Tween.h"
 #include "vulture/scene/GameObject.h"
 
 namespace vulture {
@@ -56,6 +57,8 @@ public:
 	Camera* getCamera() { return &m_Camera; }
 	UIHandler* getUIHandle() { return &m_UIHandler; }
 
+	Ref<Tween> makeTween();
+
 	~Scene() = default;
 private:
 	DescriptorPool m_DescriptorsPool;
@@ -69,6 +72,9 @@ private:
 	std::unordered_map<ObjectHandle, Ref<GameObject>> m_GameObjects;
 
 	PipelineHandle m_NextPipelineHandle = 0;
+
+	std::unordered_set<Ref<Tween>> m_Tweens;
+
 
 	Ref<DescriptorSetLayout> m_GameObjectDSL;
 	PipelineHandle m_GameObjectPipeline;

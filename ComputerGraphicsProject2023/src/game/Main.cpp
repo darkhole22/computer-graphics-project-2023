@@ -1,11 +1,9 @@
 #define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
-#include "vulture/core/Game.h"
 #include "vulture/core/Application.h"
-#include "vulture/core/Core.h"
-#include "vulture/core/Input.h"
 #include "Volcano.h"
 #include "UI.h"
+#include "TweenTest.h"
 
 using namespace vulture;
 
@@ -16,9 +14,10 @@ class TestGame : public Game {
 public:
 	Scene *scene = nullptr;
 	Camera *camera = nullptr;
-
+	
 	Ref<UI> ui = nullptr;
 	Ref<Volcano> v = nullptr;
+	Ref<TweenTest> tweenTest;
 
 	void setup() override {
 		setupInputActions();
@@ -32,12 +31,16 @@ public:
 		scene->addObject(v->m_GameObject);
 
 		camera->position = glm::vec3(10, 5, 10);
+
+		tweenTest = makeRef<TweenTest>();
 	}
 
-	void update(float dt) override {
+	void update(float dt) override
+	{
 		v->update(dt);
 		camera->lookAt(v->m_GameObject->getPosition());
 
+		tweenTest->update(dt);
 		ui->update(dt);
 	}
 

@@ -1,6 +1,7 @@
 #include "Scene.h"
 
-#include <iostream>
+// #define VU_LOGGER_TRACE_ENABLED
+#include "vulture/core/Logger.h"
 
 namespace vulture {
 
@@ -78,6 +79,20 @@ void Scene::render(FrameContext target, float dt)
 	m_UIHandler.m_ScreenUniform->height = static_cast<float>(height);
 	m_UIHandler.update(dt);
 
+	for (auto it = m_Tweens.begin(); it != m_Tweens.end();)
+	{
+		Tween* tween = it->get();
+		tween->step(dt);
+		if (!tween->isRunning())
+		{
+			tween->stop();
+			VUTRACE("Tween removed from the scene!");
+			it = m_Tweens.erase(it);
+		}
+		else
+			++it;
+	}
+
 	if (m_FrameModified[index])
 	{
 		recordCommandBuffer(target);
@@ -118,6 +133,13 @@ void Scene::removeObject(Ref<GameObject> obj)
 
 	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 	p.removeObject(obj->m_Handle);
+}
+
+Ref<Tween> Scene::makeTween()
+{
+	auto tween = makeRef<Tween>();
+	m_Tweens.insert(tween);
+	return tween;
 }
 
 void Scene::recordCommandBuffer(FrameContext& target)

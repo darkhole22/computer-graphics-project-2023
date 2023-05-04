@@ -128,48 +128,48 @@ private:
 
 /*
 */
-	class DescriptorPool
+class DescriptorPool
+{
+public:
+	NO_COPY(DescriptorPool)
+
+	/*
+	* @brief Constructor of a DescriptorPool
+	*
+	* @param device - The logical device on witch the pool will be allocated.
+	* @param frameCount - The number of framebuffers.
+	*/
+	explicit DescriptorPool(u32 frameCount);
+
+	inline u32 getFrameCount() const { return m_FrameCount; }
+	void setFrameCount(u32 frameCount);
+
+	inline VkDescriptorPool getHandle() const { return m_Handle; }
+
+	void reserveSpace(u32 count, const DescriptorSetLayout& layout);
+
+	Ref<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
+
+	~DescriptorPool();
+
+	struct DescriptorTypePoolInfo
 	{
-	public:
-		NO_COPY(DescriptorPool)
-
-		/*
-		* @brief Constructor of a DescriptorPool
-		*
-		* @param device - The logical device on witch the pool will be allocated.
-		* @param frameCount - The number of framebuffers.
-		*/
-		explicit DescriptorPool(u32 frameCount);
-
-		inline u32 getFrameCount() const { return m_FrameCount; }
-		void setFrameCount(u32 frameCount);
-
-		inline VkDescriptorPool getHandle() const { return m_Handle; }
-
-		void reserveSpace(u32 count, const DescriptorSetLayout& layout);
-
-		Ref<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
-
-		~DescriptorPool();
-
-		struct DescriptorTypePoolInfo
-		{
-			u32 size;
-			u32 count;
-		};
-
-		friend class DescriptorSet;
-	private:
-		VkDescriptorPool m_Handle = VK_NULL_HANDLE;
-		u32 m_FrameCount = 0;
-		u32 m_Size = 0;
-		std::unordered_map<VkDescriptorType, DescriptorTypePoolInfo> m_TypeInfos;
-		std::unordered_set<Ref<DescriptorSet>> m_Sets;
-
-		void cleanupDescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
-		void cleanup();
-		bool recreate();
+		u32 size;
+		u32 count;
 	};
+
+	friend class DescriptorSet;
+private:
+	VkDescriptorPool m_Handle = VK_NULL_HANDLE;
+	u32 m_FrameCount = 0;
+	u32 m_Size = 0;
+	std::unordered_map<VkDescriptorType, DescriptorTypePoolInfo> m_TypeInfos;
+	std::unordered_set<Ref<DescriptorSet>> m_Sets;
+
+	void cleanupDescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
+	void cleanup();
+	bool recreate();
+};
 
 class DescriptorSet
 {
