@@ -9,7 +9,7 @@ GameObject::GameObject(const String &modelPath, const String &texturePath)
 	m_Model = Model::make(modelPath);
 	m_Uniform = Renderer::makeUniform<vulture::ModelBufferObject>();
 	// m_Texture = makeRef<Texture>(texturePath);
-	m_Texture = Texture::get("vulture2");
+	m_Texture = Texture::get("vulture");
 	m_TextureSampler = makeRef<TextureSampler>(*m_Texture);
 
 	m_Handle = s_NextHandle;

@@ -74,13 +74,16 @@ void Texture::loadFromPixelArray(u32 width, u32 heigth, u8* pixels)
 	Buffer stagingBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	stagingBuffer.map(pixels);
 
-	m_Image = Image(width, heigth, m_MipLevels, VK_SAMPLE_COUNT_1_BIT,
-		VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+	ImageCreationInfo info{};
+	info.mipLevels = m_MipLevels;
 
-	m_Image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_MipLevels);
+	m_Image = Image(width, heigth,
+		VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+		info);
 
-	m_Image.copyFromBuffer(stagingBuffer);
+	m_Image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, info);
+
+	m_Image.copyFromBuffer(stagingBuffer, info);
 	m_Image.generateMipmaps(m_MipLevels);
 }
 
@@ -97,7 +100,6 @@ Ref<Texture> Texture::s_Default;
 bool Texture::init()
 {
 	// s_Textures.insert({ DEFAULT_TEXTURE_NAME, getTexture(DEFAULT_TEXTURE_NAME) });
-	// TODO create default texture
 
 	const u32 width = 256;
 	const u32 height = 256;
