@@ -1,16 +1,54 @@
 #include <cmath>
 #include "Texture.h"
 
-#include "vulture/core/Logger.h"
 #include "VulkanContext.h"
+#include "Renderer.h"
+
+#include "vulture/core/Logger.h"
 
 #include "stb_image.h"
 
 namespace vulture {
 
 extern VulkanContextData vulkanData;
+extern RendererData rendererData;
 
 const TextureSamplerConfig TextureSamplerConfig::defaultConfig = TextureSamplerConfig{};
+
+Ref<Texture> Texture::get(const String& name, TextureType type)
+{
+	auto it = s_Textures.find(name);
+	if (it != s_Textures.end())
+	{
+		auto& wref = it->second;
+		if (!wref.expired())
+			return wref.lock();
+		else
+			s_Textures.erase(it);
+	}
+	
+	switch (type)
+	{
+	case TextureType::CUBE_MAP:
+		break;
+	case TextureType::TEXTURE_2D:
+	default:
+	{
+		// TODO try other extentions.
+		try
+		{
+			auto ref = makeRef<Texture>(rendererData.resourceInfo.path + "textures/" + name + ".png");
+			return ref;
+		}
+		catch (const std::exception& exception)
+		{
+			VUERROR("%s", exception.what());
+		}
+	} break;
+	}
+
+	return s_Default;
+}
 
 Texture::Texture(const String& path)
 {
@@ -20,18 +58,23 @@ Texture::Texture(const String& path)
 
 	if (!pixels)
 	{
-		VUERROR("Failed to load texture at %s!", path.cString());
 		throw std::runtime_error(("Failed to load texture at " + path + "!").cString());
 	}
 
-	m_MipLevels = static_cast<u32>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+	loadFromPixelArray(texWidth, texHeight, pixels);
+
+	stbi_image_free(pixels);
+}
+
+void Texture::loadFromPixelArray(u32 width, u32 heigth, u8* pixels)
+{
+	VkDeviceSize imageSize = width * 4LL * heigth;
+	m_MipLevels = static_cast<u32>(std::floor(std::log2(std::max(width, heigth)))) + 1;
 
 	Buffer stagingBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	stagingBuffer.map(pixels);
 
-	stbi_image_free(pixels);
-
-	m_Image = Image(texWidth, texHeight, m_MipLevels, VK_SAMPLE_COUNT_1_BIT,
+	m_Image = Image(width, heigth, m_MipLevels, VK_SAMPLE_COUNT_1_BIT,
 		VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
 
@@ -41,7 +84,60 @@ Texture::Texture(const String& path)
 	m_Image.generateMipmaps(m_MipLevels);
 }
 
+Texture::Texture(u32 width, u32 heigth, u8* pixels)
+{
+	loadFromPixelArray(width, heigth, pixels);
+}
+
 Texture::~Texture() = default;
+
+std::unordered_map<String, WRef<Texture>> Texture::s_Textures = {};
+Ref<Texture> Texture::s_Default;
+
+bool Texture::init()
+{
+	// s_Textures.insert({ DEFAULT_TEXTURE_NAME, getTexture(DEFAULT_TEXTURE_NAME) });
+	// TODO create default texture
+
+	const u32 width = 256;
+	const u32 height = 256;
+	// u8 pixels[width * height];
+	auto pixels = std::vector<u8>(width * height * 4);
+
+	const u32 box = 64;
+
+	for (u64 y = 0; y < height; y++)
+	{
+		for (u64 x = 0; x < width; x++)
+		{
+			if (((x / box) + (y / box)) % 2)
+			{
+				// purple
+				pixels[(y + x * height) * 4 + 0] = static_cast<u8>(0xff); // r
+				pixels[(y + x * height) * 4 + 1] = static_cast<u8>(0x00); // g
+				pixels[(y + x * height) * 4 + 2] = static_cast<u8>(0xff); // b
+				pixels[(y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
+			}
+			else
+			{
+				// green
+				pixels[(y + x * height) * 4 + 0] = static_cast<u8>(0x00); // r
+				pixels[(y + x * height) * 4 + 1] = static_cast<u8>(0xff); // g
+				pixels[(y + x * height) * 4 + 2] = static_cast<u8>(0x00); // b
+				pixels[(y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
+			}
+		}
+	}
+
+	s_Default = Ref<Texture>(new Texture(width, height, pixels.data()));
+
+	return true;
+}
+
+void Texture::cleanup()
+{
+	s_Default.reset();
+}
 
 TextureSampler::TextureSampler(const Texture& texture, const TextureSamplerConfig& config)
 {

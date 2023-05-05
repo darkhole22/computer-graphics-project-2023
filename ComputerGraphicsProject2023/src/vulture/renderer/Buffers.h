@@ -59,7 +59,7 @@ public:
 	Image(u32 width, u32 height, u32 mipLevels,
 		VkSampleCountFlagBits numSamples, VkFormat format,
 		VkImageTiling tiling, VkImageUsageFlags usage,
-		VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags);
+		VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags, u8 arrayLayers = 1);
 	
 	inline VkImage getHandle() const { return m_Handle; }
 	inline VkImageView getView() const { return m_View; }

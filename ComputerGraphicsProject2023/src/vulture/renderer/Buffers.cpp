@@ -278,7 +278,7 @@ uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, Vk
 Image::Image(u32 width, u32 height, u32 mipLevels,
 	VkSampleCountFlagBits numSamples, VkFormat format,
 	VkImageTiling tiling, VkImageUsageFlags usage,
-	VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags)
+	VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags, u8 arrayLayers)
 	: m_Format(format), m_Width(width), m_Height(height)
 {
 	VkImageCreateInfo imageInfo{};
@@ -288,7 +288,7 @@ Image::Image(u32 width, u32 height, u32 mipLevels,
 	imageInfo.extent.height = height;
 	imageInfo.extent.depth = 1;
 	imageInfo.mipLevels = mipLevels;
-	imageInfo.arrayLayers = 1;
+	imageInfo.arrayLayers = arrayLayers;
 	imageInfo.format = format;
 	imageInfo.tiling = tiling;
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
