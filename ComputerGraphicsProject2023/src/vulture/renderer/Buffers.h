@@ -77,9 +77,9 @@ public:
 	inline VkImageView getView() const { return m_View; }
 	inline VkFormat getFormat() const { return m_Format; }
 
-	void transitionLayout(VkImageLayout newLayout, const ImageCreationInfo& info = ImageCreationInfo::defaultImageCreateInfo);
+	void transitionLayout(VkImageLayout newLayout, const ImageCreationInfo& info = ImageCreationInfo::defaultImageCreateInfo, u32 baseArrayLayer = 0);
 	void copyFromBuffer(const Buffer& buffer, const ImageCreationInfo& info = ImageCreationInfo::defaultImageCreateInfo);
-	void generateMipmaps(u32 mipLevels);
+	void generateMipmaps(u32 mipLevels, u32 layerCount = 1);
 
 	Image operator=(const Image& other) = delete;
 	Image& operator=(Image&& other) noexcept;

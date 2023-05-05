@@ -30,7 +30,7 @@ void SceneObjectList::removeObject(ObjectHandle handle)
 
 Scene::Scene() :
 	m_DescriptorsPool(Renderer::makeDescriptorPool()),
-	m_Camera(m_DescriptorsPool), m_UIHandler(m_DescriptorsPool)
+	m_Camera(m_DescriptorsPool), m_Skybox(m_DescriptorsPool), m_UIHandler(m_DescriptorsPool)
 {
 	// Create the default Phong GameObject DSL.
 	m_GameObjectDSL = Ref<DescriptorSetLayout>(new DescriptorSetLayout());
@@ -43,6 +43,8 @@ Scene::Scene() :
 	m_GameObjectPipeline = makePipeline("res/shaders/baseVert.spv", "res/shaders/baseFrag.spv", m_GameObjectDSL);
 
 	setModified();
+
+	m_Skybox.set("cubemap");
 
 	m_UIHandler.addCallback([this](const UIModified& event) {
 		setModified();
@@ -146,6 +148,8 @@ void Scene::recordCommandBuffer(FrameContext& target)
 {
 	target.beginCommandRecording();
 
+	m_Skybox.recordCommandBuffer(target);
+
 	for (auto& [pipelineHandle, objectList] : m_ObjectLists)
 	{
 		auto& pipeline = objectList.getPipeline();
@@ -171,6 +175,8 @@ void Scene::updateUniforms(FrameContext& target)
 	auto [index, count] = target.getFrameInfo();
 
 	m_Camera.map(index);
+
+	m_Skybox.updateUniforms(target, m_Camera);
 
 	for (auto& [pipelineHandle, objectList] : m_ObjectLists)
 	{

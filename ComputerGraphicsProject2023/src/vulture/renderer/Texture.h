@@ -36,9 +36,9 @@ public:
 
 	friend class Renderer;
 private:
-	Texture(u32 width, u32 heigth, u8* pixels);
+	Texture(u32 width, u32 heigth, u8* pixels, bool isCubeMap = false);
 
-	void loadFromPixelArray(u32 width, u32 heigth, u8* pixels);
+	void loadFromPixelArray(u32 width, u32 heigth, u8* pixels, bool isCubeMap = false);
 
 	Image m_Image;
 	u32 m_MipLevels = 0;

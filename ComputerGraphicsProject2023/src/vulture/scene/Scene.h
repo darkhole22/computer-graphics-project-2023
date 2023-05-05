@@ -5,6 +5,7 @@
 
 #include "vulture/renderer/FrameContext.h"
 #include "vulture/scene/Camera.h"
+#include "vulture/scene/Skybox.h"
 #include "vulture/scene/ui/UIHandler.h"
 #include "vulture/scene/Tween.h"
 #include "vulture/scene/GameObject.h"
@@ -64,6 +65,7 @@ private:
 	DescriptorPool m_DescriptorsPool;
 	
 	Camera m_Camera;
+	Skybox m_Skybox;
 	UIHandler m_UIHandler;
 
 	std::vector<bool> m_FrameModified;

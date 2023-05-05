@@ -321,7 +321,7 @@ inline bool hasStencilComponent(VkFormat format)
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void Image::transitionLayout(VkImageLayout newLayout, const ImageCreationInfo& info)
+void Image::transitionLayout(VkImageLayout newLayout, const ImageCreationInfo& info, u32 baseArrayLayer)
 {
 	CommandBuffer commandBuffer(true);
 
@@ -349,7 +349,7 @@ void Image::transitionLayout(VkImageLayout newLayout, const ImageCreationInfo& i
 
 	barrier.subresourceRange.baseMipLevel = 0;
 	barrier.subresourceRange.levelCount = info.mipLevels;
-	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.baseArrayLayer = baseArrayLayer;
 	barrier.subresourceRange.layerCount = info.arrayLayers;
 
 	if (m_Layout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
@@ -422,7 +422,7 @@ void Image::copyFromBuffer(const Buffer &buffer, const ImageCreationInfo& info)
 		&region);
 }
 
-void Image::generateMipmaps(u32 mipLevels)
+void Image::generateMipmaps(u32 mipLevels, u32 layerCount)
 {
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(vulkanData.physicalDevice, m_Format, &formatProperties);
@@ -441,7 +441,7 @@ void Image::generateMipmaps(u32 mipLevels)
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
+	barrier.subresourceRange.layerCount = layerCount;
 	barrier.subresourceRange.levelCount = 1;
 
 	i32 mipWidth = static_cast<i32>(m_Width);
@@ -467,13 +467,13 @@ void Image::generateMipmaps(u32 mipLevels)
 		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.srcSubresource.mipLevel = i - 1;
 		blit.srcSubresource.baseArrayLayer = 0;
-		blit.srcSubresource.layerCount = 1;
+		blit.srcSubresource.layerCount = layerCount;
 		blit.dstOffsets[0] = { 0, 0, 0 };
 		blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
 		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.dstSubresource.mipLevel = i;
 		blit.dstSubresource.baseArrayLayer = 0;
-		blit.dstSubresource.layerCount = 1;
+		blit.dstSubresource.layerCount = layerCount;
 
 		vkCmdBlitImage(commandBuffer.getHandle(),
 						m_Handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
