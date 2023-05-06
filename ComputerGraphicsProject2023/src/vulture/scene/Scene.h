@@ -55,6 +55,12 @@ public:
 	void addObject(Ref<GameObject> obj);
 	void removeObject(Ref<GameObject> obj);
 
+	/**
+	* @brief Set the skybot texture to the one specified.
+	* If name equals the empty string than the skybox is disabled.
+	* 
+	* @param name: Name of the cubemap texture to use.
+	*/
 	void setSkybox(const String& name);
 
 	Camera* getCamera() { return &m_Camera; }
