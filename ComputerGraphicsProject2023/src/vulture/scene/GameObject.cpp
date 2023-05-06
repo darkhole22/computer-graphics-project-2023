@@ -17,10 +17,15 @@ GameObject::GameObject(const String &modelPath, const String &textureName)
 
 void GameObject::update(f64 dt)
 {
-	m_Uniform->model =
-		glm::translate(glm::mat4(1.0f), m_Position) *
-		glm::mat4(m_Rotation) *
-		glm::scale(glm::mat4(1.0f), m_Scale);
+	if (shouldUpdate)
+	{
+		m_Uniform->model =
+				glm::translate(glm::mat4(1.0f), m_Position) *
+				glm::mat4(m_Rotation) *
+				glm::scale(glm::mat4(1.0f), m_Scale);
+
+		shouldUpdate = false;
+	}
 }
 
 }
