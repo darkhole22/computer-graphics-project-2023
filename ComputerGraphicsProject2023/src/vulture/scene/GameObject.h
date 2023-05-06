@@ -52,7 +52,7 @@ public:
 	 *
 	 * @param pos The new position of the object as a glm::vec3.
 	 */
-	inline void setPosition(glm::vec3 pos) { m_Position = pos; }
+	inline void setPosition(glm::vec3 pos) { m_Position = pos; shouldUpdate = true; }
 
 	/**
 	 * @brief Sets the position of the object.
@@ -68,7 +68,7 @@ public:
 	 *
 	 * @param translation The amount to translate the object by as a glm::vec3.
 	 */
-	inline void translate(glm::vec3 translation) { m_Position += translation; }
+	inline void translate(glm::vec3 translation) { m_Position += translation; shouldUpdate = true;}
 
 	/**
 	 * @brief Translates the object by a given amount.
@@ -91,7 +91,7 @@ public:
 	 *
 	 * @param scale The new scale of the object as a glm::vec3.
 	 */
-	inline void setScale(glm::vec3 scale) { m_Scale = scale; }
+	inline void setScale(glm::vec3 scale) { m_Scale = scale; shouldUpdate = true; }
 
 	/**
 	 * @brief Sets the scale of the object.
@@ -114,7 +114,7 @@ public:
 	 *
 	 * @param rot The rotation vector.
 	 */
-	inline void setRotation(glm::vec3 rot) { m_Rotation = glm::quat(rot); }
+	inline void setRotation(glm::vec3 rot) { m_Rotation = glm::quat(rot); shouldUpdate = true; }
 
 	/**
 	 * @brief Sets the rotation of the game object using Euler angles.
@@ -132,7 +132,7 @@ public:
 	 * @param y The angle to rotate around the y-axis.
 	 * @param z The angle to rotate around the z-axis.
 	 */
-	inline void rotate(f32 x, f32 y, f32 z) { m_Rotation *= glm::quat(glm::vec3(x, y, z)); }
+	inline void rotate(f32 x, f32 y, f32 z) { m_Rotation *= glm::quat(glm::vec3(x, y, z)); shouldUpdate = true; }
 
 	friend class Scene;
 private:
@@ -147,6 +147,8 @@ private:
 	glm::vec3 m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::quat m_Rotation = glm::quat(glm::vec3(0.0f));
+
+	bool shouldUpdate = false;
 
 	/**
 	 * Updates the ModelBufferObject associated with this game object by computing its current model matrix based on its

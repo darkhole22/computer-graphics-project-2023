@@ -1,7 +1,7 @@
 #define VU_LOGGER_TRACE_ENABLED
 #include "vulture/core/Logger.h"
 #include "vulture/core/Application.h"
-#include "Volcano.h"
+#include "Character.h"
 #include "UI.h"
 #include "TweenTest.h"
 
@@ -16,29 +16,52 @@ public:
 	Camera *camera = nullptr;
 	
 	Ref<UI> ui = nullptr;
-	Ref<Volcano> v = nullptr;
+	Ref<Character> character = nullptr;
 	Ref<TweenTest> tweenTest;
+
+	glm::vec3 cameraInitialPosition = glm::vec3(0.0f, 1.5f, 5.0f);
 
 	void setup() override {
 		setupInputActions();
 
 		scene = Application::getScene();
+
 		camera = scene->getCamera();
+		camera->position = cameraInitialPosition;
 
 		ui = makeRef<UI>();
 
-		v = makeRef<Volcano>(makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png"));
-		scene->addObject(v->m_GameObject);
+		auto volcano = makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png");
+		volcano->setPosition(-5.0f, 0.0f, -5.0f);
+		scene->addObject(volcano);
 
-		camera->position = glm::vec3(10, 5, 10);
+		Ref<Tween> tween = scene->makeTween();
+		tween->loop();
+		tween->addIntervalTweener(0.5f);
+
+		std::function<void(float)> callback = [volcano](float size) {
+			volcano->setScale(size, size, size);
+		};
+
+		tween->addMethodTweener(callback, 1.0f, 3.0f, 2.0f);
+		tween->addMethodTweener(callback, 3.0f, 1.0f, 2.0f);
+
+		auto f = makeRef<GameObject>("res/models/floor.obj", "res/textures/floor.png");
+		f->setPosition(-50.0f, 0, -50.0f);
+		f->setScale(100.0f, 1.0f, 100.0f);
+		scene->addObject(f);
+
+		character = makeRef<Character>(makeRef<GameObject>("res/models/character.obj", "res/textures/character.png"));
+		scene->addObject(character->m_GameObject);
 
 		tweenTest = makeRef<TweenTest>();
 	}
 
 	void update(float dt) override
 	{
-		v->update(dt);
-		camera->lookAt(v->m_GameObject->getPosition());
+		character->update(dt);
+		camera->position = character->m_GameObject->getPosition() + cameraInitialPosition;
+		camera->lookAt(character->m_GameObject->getPosition());
 
 		tweenTest->update(dt);
 		ui->update(dt);

@@ -1,13 +1,13 @@
-#include "Volcano.h"
+#include "Character.h"
 #include "vulture/core/Application.h"
 
 using namespace vulture;
 
 namespace game {
 
-void Volcano::update(float dt)
+void Character::update(float dt)
 {
-	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP") * c_Speed * dt;
+	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_UP", "MOVE_DOWN") * c_Speed * dt;
 
 	m_GameObject->translate(movement.x, 0.0f, movement.y);
 
