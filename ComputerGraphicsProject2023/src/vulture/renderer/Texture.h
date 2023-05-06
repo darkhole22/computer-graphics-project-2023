@@ -26,8 +26,6 @@ public:
 	*/
 	static Ref<Texture> get(const String& name, TextureType type = TextureType::TEXTURE_2D);
 
-	Texture(const String& path);
-
 	inline VkImageView getView() const { return m_Image.getView(); }
 	inline u32 getMipLevels() const { return m_MipLevels; };
 	inline VkImageLayout getLayout() const { return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
@@ -36,6 +34,7 @@ public:
 
 	friend class Renderer;
 private:
+	Texture(const String& path);
 	Texture(u32 width, u32 heigth, u8* pixels, bool isCubeMap = false);
 
 	void loadFromPixelArray(u32 width, u32 heigth, u8* pixels, bool isCubeMap = false);
@@ -47,7 +46,11 @@ private:
 	static void cleanup();
 
 	static std::unordered_map<String, WRef<Texture>> s_Textures;
-	static Ref<Texture> s_Default;
+	static Ref<Texture> s_Default2D;
+	static Ref<Texture> s_DefaultCubemap;
+
+	static void makeDefaultTexture2D();
+	static void makeDefaultCubemap();
 };
 
 struct TextureSamplerConfig

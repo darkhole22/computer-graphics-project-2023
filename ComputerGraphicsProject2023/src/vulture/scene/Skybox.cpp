@@ -78,8 +78,6 @@ void Skybox::set(const String& name)
 	{
 		if (name.isEmpty())
 		{
-			m_Texture.reset();
-			m_TextureSampler.reset();
 			m_DescriptorSet.reset();
 		}
 		else

@@ -19,17 +19,23 @@ public:
 	Ref<Volcano> v = nullptr;
 	Ref<TweenTest> tweenTest;
 
+#if 1
+	String skyboxName = "desert";
+#else
+	String skyboxName = "rural";
+#endif
+
 	void setup() override {
 		setupInputActions();
 
 		scene = Application::getScene();
 		camera = scene->getCamera();
 
-		scene->setSkybox("cubemap");
+		scene->setSkybox(skyboxName);
 
 		ui = makeRef<UI>();
 
-		v = makeRef<Volcano>(makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png"));
+		v = makeRef<Volcano>(makeRef<GameObject>("res/models/vulture.obj", "vulture"));
 		scene->addObject(v->m_GameObject);
 
 		camera->position = glm::vec3(10, 5, 10);
@@ -42,7 +48,7 @@ public:
 		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
 		{
 			static bool useSkybox = false;
-			scene->setSkybox(useSkybox ? "cubemap" : "");
+			scene->setSkybox(useSkybox ? skyboxName : "");
 			useSkybox = !useSkybox;
 		}
 

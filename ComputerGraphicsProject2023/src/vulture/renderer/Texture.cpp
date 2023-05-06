@@ -8,6 +8,7 @@
 
 #include <cmath> // std::floor, std::log2, std::max
 #include <cstring> // std::memcpy
+#include <filesystem>
 
 namespace vulture {
 
@@ -31,19 +32,30 @@ Ref<Texture> Texture::get(const String& name, TextureType type)
 	Ref<Texture> result;
 	
 	String namePrefix = rendererData.resourceInfo.path + "textures/" + name;
-	String format = ".png";
+
+	std::array<String, 8> supportedExtensions = {
+		".png",
+		".jpeg",
+		".jpg",
+		".tga",
+		".bmp",
+		".gif",
+		".pic",
+		".hdr"
+	};
+
 	switch (type)
 	{
 	case TextureType::CUBE_MAP:
 	{
 		// r l u d f b
 		String fileNames[6] = {
-			namePrefix + "_r" + format,
-			namePrefix + "_l" + format,
-			namePrefix + "_u" + format,
-			namePrefix + "_d" + format,
-			namePrefix + "_f" + format,
-			namePrefix + "_b" + format
+			namePrefix + "_r",
+			namePrefix + "_l",
+			namePrefix + "_u",
+			namePrefix + "_d",
+			namePrefix + "_f",
+			namePrefix + "_b"
 		};
 
 		u8* pixels = nullptr;
@@ -52,7 +64,22 @@ Ref<Texture> Texture::get(const String& name, TextureType type)
 		for (u64 i = 0; i < 6; ++i)
 		{
 			i32 texWidth, texHeight, texChannels;
-			stbi_uc* img = stbi_load(fileNames[i].cString(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+			String format;
+			for (auto& ext : supportedExtensions)
+			{
+				if (std::filesystem::exists((fileNames[i] + ext).cString()))
+				{
+					format = ext;
+					break;
+				}
+			}
+			if (format.isEmpty())
+			{
+				VUERROR("Failed to load cubemap texture for %s!", name.cString());
+				break;
+			}
+
+			stbi_uc* img = stbi_load((fileNames[i] + format).cString(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 			if (!img)
 			{
 				VUERROR("Failed to load cubemap texture at %s!", fileNames[i].cString());
@@ -87,6 +114,11 @@ Ref<Texture> Texture::get(const String& name, TextureType type)
 		if (pixels && imgSize == offset)
 		{
 			result = Ref<Texture>(new Texture(width, height, pixels, true));
+			s_Textures.insert({ name, result });
+		}
+		else
+		{
+			result = s_DefaultCubemap;
 		}
 
 		delete[] pixels;
@@ -94,22 +126,32 @@ Ref<Texture> Texture::get(const String& name, TextureType type)
 	case TextureType::TEXTURE_2D:
 	default:
 	{
-		// TODO try other extentions.
 		try
 		{
-			result = makeRef<Texture>(namePrefix + format);
+			String format;
+			for (auto& ext : supportedExtensions)
+			{
+				if (std::filesystem::exists((namePrefix + ext).cString()))
+				{
+					format = ext;
+					break;
+				}
+			}
+			if (format.isEmpty())
+			{
+				VUERROR("Failed to load texture for %s!", name.cString());
+				break;
+			}
+			result = Ref<Texture>(new Texture(namePrefix + format));
+			s_Textures.insert({ name, result });
 		}
 		catch (const std::exception& exception)
 		{
 			VUERROR("%s", exception.what());
+			result = s_Default2D;
 		}
 	} break;
 	}
-
-	if (result)
-		s_Textures.insert({ name, result });
-	else
-		result = s_Default;
 
 	return result;
 }
@@ -171,15 +213,13 @@ Texture::Texture(u32 width, u32 heigth, u8* pixels, bool isCubeMap)
 Texture::~Texture() = default;
 
 std::unordered_map<String, WRef<Texture>> Texture::s_Textures = {};
-Ref<Texture> Texture::s_Default;
+Ref<Texture> Texture::s_Default2D;
+Ref<Texture> Texture::s_DefaultCubemap;
 
-bool Texture::init()
+void Texture::makeDefaultTexture2D()
 {
-	// s_Textures.insert({ DEFAULT_TEXTURE_NAME, getTexture(DEFAULT_TEXTURE_NAME) });
-
 	const u32 width = 256;
 	const u32 height = 256;
-	// u8 pixels[width * height];
 	auto pixels = std::vector<u8>(width * height * 4);
 
 	const u32 box = 64;
@@ -207,14 +247,59 @@ bool Texture::init()
 		}
 	}
 
-	s_Default = Ref<Texture>(new Texture(width, height, pixels.data()));
+	s_Default2D = Ref<Texture>(new Texture(width, height, pixels.data()));
+}
+
+void Texture::makeDefaultCubemap()
+{
+	const u32 width = 256;
+	const u32 height = 256;
+	auto pixels = std::vector<u8>(width * height * 4 * 6);
+
+	const u32 box = 64;
+	const u64 imgOffset = width * height * 4;
+
+	for (u64 n = 0; n < 6; n++)
+	{
+		for (u64 y = 0; y < height; y++)
+		{
+			for (u64 x = 0; x < width; x++)
+			{
+				if (((x / box) + (y / box)) % 2)
+				{
+					// purple
+					pixels[imgOffset * n +(y + x * height) * 4 + 0] = static_cast<u8>(0xff); // r
+					pixels[imgOffset * n +(y + x * height) * 4 + 1] = static_cast<u8>(0x00); // g
+					pixels[imgOffset * n +(y + x * height) * 4 + 2] = static_cast<u8>(0xff); // b
+					pixels[imgOffset * n +(y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
+				}
+				else
+				{
+					// green
+					pixels[imgOffset * n + (y + x * height) * 4 + 0] = static_cast<u8>(0x00); // r
+					pixels[imgOffset * n + (y + x * height) * 4 + 1] = static_cast<u8>(0xff); // g
+					pixels[imgOffset * n + (y + x * height) * 4 + 2] = static_cast<u8>(0x00); // b
+					pixels[imgOffset * n + (y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
+				}
+			}
+		}
+	}
+
+	s_DefaultCubemap = Ref<Texture>(new Texture(width, height, pixels.data(), true));
+}
+
+bool Texture::init()
+{
+	makeDefaultTexture2D();
+	makeDefaultCubemap();
 
 	return true;
 }
 
 void Texture::cleanup()
 {
-	s_Default.reset();
+	s_Default2D.reset();
+	s_DefaultCubemap.reset();
 }
 
 TextureSampler::TextureSampler(const Texture& texture, const TextureSamplerConfig& config)
