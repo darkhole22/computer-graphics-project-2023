@@ -25,6 +25,8 @@ public:
 		scene = Application::getScene();
 		camera = scene->getCamera();
 
+		scene->setSkybox("cubemap");
+
 		ui = makeRef<UI>();
 
 		v = makeRef<Volcano>(makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png"));
@@ -37,6 +39,13 @@ public:
 
 	void update(float dt) override
 	{
+		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
+		{
+			static bool useSkybox = false;
+			scene->setSkybox(useSkybox ? "cubemap" : "");
+			useSkybox = !useSkybox;
+		}
+
 		v->update(dt);
 		camera->lookAt(v->m_GameObject->getPosition());
 
@@ -98,6 +107,15 @@ private:
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, GAMEPAD_AXIS_POS}}}
 		};
 		Input::setAction("TOGGLE_INFO", toggleInfoAction);
+
+		InputAction toggleSkyboxAction{};
+		toggleSkyboxAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_M}},
+		};
+		toggleSkyboxAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_Y}}
+		};
+		Input::setAction("TOGGLE_SKYBOX", toggleSkyboxAction);
 	}
 };
 

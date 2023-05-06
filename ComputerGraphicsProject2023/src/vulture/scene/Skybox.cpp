@@ -14,7 +14,7 @@ Skybox::Skybox(DescriptorPool& descriptorsPool) :
 	m_DSLayout->create();
 
 	PipelineAdvancedConfig config{};
-	config.compareOperator = VK_COMPARE_OP_LESS_OR_EQUAL;
+	config.useDepthTesting = false;
 
 	m_Pipeline = Ref<Pipeline>(
 		new Pipeline( Renderer::getRenderPass(),
@@ -89,6 +89,7 @@ void Skybox::set(const String& name)
 			m_DescriptorSet = m_DescriptorPool->getDescriptorSet(*m_DSLayout, { m_Uniform, *m_TextureSampler });
 		}
 		m_CurrentName = name;
+		emit(SkyboxRecreated{});
 	}
 }
 

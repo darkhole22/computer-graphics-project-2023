@@ -547,6 +547,8 @@ void Image::cleanup() noexcept
 	if (m_Handle == VK_NULL_HANDLE)
 		return;
 
+	vkDeviceWaitIdle(vulkanData.device);
+
 	if (m_View != VK_NULL_HANDLE)
 		vkDestroyImageView(vulkanData.device, m_View, vulkanData.allocator);
 	if (m_Memory != VK_NULL_HANDLE)

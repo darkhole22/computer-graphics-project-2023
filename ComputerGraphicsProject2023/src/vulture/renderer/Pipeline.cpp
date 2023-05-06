@@ -198,8 +198,9 @@ Pipeline::Pipeline(
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil{};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depthStencil.depthTestEnable = VK_TRUE;
-	depthStencil.depthWriteEnable = VK_TRUE;
+	VkBool32 useDepth = config.useDepthTesting ? VK_TRUE : VK_FALSE;
+	depthStencil.depthTestEnable = useDepth;
+	depthStencil.depthWriteEnable = useDepth;
 	depthStencil.depthCompareOp = config.compareOperator;
 	depthStencil.depthBoundsTestEnable = VK_FALSE;
 	depthStencil.minDepthBounds = 0.0f; // Optional

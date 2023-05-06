@@ -1,6 +1,7 @@
 #pragma once
 #include "vulture/renderer/FrameContext.h"
 #include "vulture/scene/Camera.h"
+#include "vulture/event/Event.h"
 
 namespace vulture {
 
@@ -15,8 +16,14 @@ struct SkyboxVertex
 	glm::vec3 position = { 0, 0, 0 };
 };
 
+class SkyboxRecreated
+{
+};
+
 class Skybox
 {
+	EVENT(SkyboxRecreated)
+
 public:
 	void set(const String& name);
 

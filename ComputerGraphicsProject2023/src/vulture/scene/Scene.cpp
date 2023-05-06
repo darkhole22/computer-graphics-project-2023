@@ -44,7 +44,9 @@ Scene::Scene() :
 
 	setModified();
 
-	m_Skybox.set("cubemap");
+	m_Skybox.addCallback([this](const SkyboxRecreated& event) {
+		setModified();
+	});
 
 	m_UIHandler.addCallback([this](const UIModified& event) {
 		setModified();
@@ -135,6 +137,11 @@ void Scene::removeObject(Ref<GameObject> obj)
 
 	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 	p.removeObject(obj->m_Handle);
+}
+
+void Scene::setSkybox(const String& name)
+{
+	m_Skybox.set(name);
 }
 
 Ref<Tween> Scene::makeTween()

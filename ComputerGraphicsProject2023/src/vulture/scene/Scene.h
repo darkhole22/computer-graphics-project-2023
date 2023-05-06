@@ -55,6 +55,8 @@ public:
 	void addObject(Ref<GameObject> obj);
 	void removeObject(Ref<GameObject> obj);
 
+	void setSkybox(const String& name);
+
 	Camera* getCamera() { return &m_Camera; }
 	UIHandler* getUIHandle() { return &m_UIHandler; }
 

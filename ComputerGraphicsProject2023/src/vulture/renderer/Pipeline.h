@@ -38,6 +38,7 @@ struct PipelineAdvancedConfig
 {
 	VkCompareOp compareOperator = VK_COMPARE_OP_LESS;
 	bool useAlpha = false;
+	bool useDepthTesting = true;
 
 	static const PipelineAdvancedConfig defaultConfig;
 };
