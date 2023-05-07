@@ -233,6 +233,7 @@ void DescriptorPool::cleanup()
 {
 	if (m_Handle != VK_NULL_HANDLE)
 	{
+		vkDeviceWaitIdle(vulkanData.device);
 		vkDestroyDescriptorPool(vulkanData.device, m_Handle, vulkanData.allocator);
 	}
 }

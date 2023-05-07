@@ -36,9 +36,9 @@ public:
 	 * @brief Constructs a new GameObject object.
 	 *
 	 * @param modelPath Path to the model file.
-	 * @param texturePath Path to the texture file.
+	 * @param texturePath Name of the texture.
 	 */
-	GameObject(const String& modelPath, const String& texturePath);
+	GameObject(const String& modelPath, const String& textureName);
 
 	/**
 	 * @brief Returns the position of the object.

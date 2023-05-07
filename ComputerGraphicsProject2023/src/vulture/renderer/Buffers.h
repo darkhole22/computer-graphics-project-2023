@@ -49,6 +49,21 @@ private:
 	void cleanup() noexcept;
 };
 
+struct ImageCreationInfo
+{
+	u32 mipLevels = 1;
+	u8 arrayLayers = 1;
+	VkImageCreateFlags flags = 0;
+	VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D;
+	VkSampleCountFlagBits numSamples = VK_SAMPLE_COUNT_1_BIT;
+	VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+	VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL;
+	VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+	VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
+
+	static ImageCreationInfo defaultImageCreateInfo;
+};
+
 class Image
 {
 public:
@@ -56,18 +71,15 @@ public:
 	Image(const Image& other) = delete;
 	Image(Image&& other) noexcept;
 	Image(VkImage image, VkFormat format);
-	Image(u32 width, u32 height, u32 mipLevels,
-		VkSampleCountFlagBits numSamples, VkFormat format,
-		VkImageTiling tiling, VkImageUsageFlags usage,
-		VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags);
+	Image(u32 width, u32 height, VkImageUsageFlags usage, const ImageCreationInfo& info = ImageCreationInfo::defaultImageCreateInfo);
 	
 	inline VkImage getHandle() const { return m_Handle; }
 	inline VkImageView getView() const { return m_View; }
 	inline VkFormat getFormat() const { return m_Format; }
 
-	void transitionLayout(VkImageLayout newLayout, u32 mipLevels);
-	void copyFromBuffer(const Buffer& buffer);
-	void generateMipmaps(u32 mipLevels);
+	void transitionLayout(VkImageLayout newLayout, const ImageCreationInfo& info = ImageCreationInfo::defaultImageCreateInfo, u32 baseArrayLayer = 0);
+	void copyFromBuffer(const Buffer& buffer, const ImageCreationInfo& info = ImageCreationInfo::defaultImageCreateInfo);
+	void generateMipmaps(u32 mipLevels, u32 layerCount = 1);
 
 	Image operator=(const Image& other) = delete;
 	Image& operator=(Image&& other) noexcept;

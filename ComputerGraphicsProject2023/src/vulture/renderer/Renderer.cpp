@@ -7,18 +7,12 @@ namespace vulture {
 
 extern VulkanContextData vulkanData;
 
-struct RendererData
-{
-	SwapChain* swapChain = nullptr;
-	RenderPass* renderPass = nullptr;
-
-	uint32_t currentFrame = 0;
-};
-
-static RendererData rendererData = {};
+RendererData rendererData = {};
 
 bool Renderer::init(const String& applicationName, const Window& window)
 {
+	rendererData.resourceInfo.path = "res/";
+
 	if (!VulkanContext::init(applicationName, window))
 		return false;
 
@@ -27,12 +21,17 @@ bool Renderer::init(const String& applicationName, const Window& window)
 	if (!rendererData.swapChain->attachRenderPass(*rendererData.renderPass))
 		return false;
 
+	if (!Texture::init())
+		return false;
+
 	return true;
 }
 
 void Renderer::cleanup()
 {
 	vkDeviceWaitIdle(vulkanData.device);
+
+	Texture::cleanup();
 
 	delete rendererData.swapChain;
 	delete rendererData.renderPass;

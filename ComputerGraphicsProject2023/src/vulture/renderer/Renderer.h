@@ -11,6 +11,21 @@ namespace vulture {
 
 class FrameContext;
 
+struct ResourceInfo
+{
+	String path;
+};
+
+struct RendererData
+{
+	ResourceInfo resourceInfo;
+
+	SwapChain* swapChain = nullptr;
+	RenderPass* renderPass = nullptr;
+
+	u32 currentFrame = 0;
+};
+
 class Renderer
 {
 public:

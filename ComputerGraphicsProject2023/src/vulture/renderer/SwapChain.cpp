@@ -262,17 +262,21 @@ void SwapChain::create()
 		m_Images.emplace_back(vkImages[i], m_ImageFormat);
 	}
 
-	m_ColorImage = Image(m_Extent.width, m_Extent.height, 1, vulkanData.msaaSamples,
-		m_ImageFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+	ImageCreationInfo imageCreationInfo{};
+	imageCreationInfo.numSamples = vulkanData.msaaSamples;
+	imageCreationInfo.format = m_ImageFormat;
 
-	VkFormat depthFormat = vulkanData.depthFormat;
+	m_ColorImage = Image(m_Extent.width, m_Extent.height,
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, imageCreationInfo);
 
-	m_DepthImage = Image(m_Extent.width, m_Extent.height, 1, vulkanData.msaaSamples,
-		depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+	imageCreationInfo.numSamples = vulkanData.msaaSamples;
+	imageCreationInfo.format = vulkanData.depthFormat;
+	imageCreationInfo.aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-	m_DepthImage.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+	m_DepthImage = Image(m_Extent.width, m_Extent.height,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, imageCreationInfo);
+
+	m_DepthImage.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, imageCreationInfo);
 
 	m_ImageInFlightFences.clear();
 	m_ImageInFlightFences.resize(imageCount, VK_NULL_HANDLE);

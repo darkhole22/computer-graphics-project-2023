@@ -19,6 +19,12 @@ public:
 	Ref<Character> character = nullptr;
 	Ref<TweenTest> tweenTest;
 
+#if 1
+	String skyboxName = "desert";
+#else
+	String skyboxName = "rural";
+#endif
+
 	glm::vec3 cameraInitialPosition = glm::vec3(0.0f, 1.5f, 5.0f);
 
 	void setup() override {
@@ -29,9 +35,11 @@ public:
 		camera = scene->getCamera();
 		camera->position = cameraInitialPosition;
 
+		scene->setSkybox(skyboxName);
+
 		ui = makeRef<UI>();
 
-		auto volcano = makeRef<GameObject>("res/models/vulture.obj", "res/textures/vulture.png");
+		auto volcano = makeRef<GameObject>("res/models/vulture.obj", "vulture");
 		volcano->setPosition(-5.0f, 0.0f, -5.0f);
 		scene->addObject(volcano);
 
@@ -46,12 +54,12 @@ public:
 		tween->addMethodTweener(callback, 1.0f, 3.0f, 2.0f);
 		tween->addMethodTweener(callback, 3.0f, 1.0f, 2.0f);
 
-		auto f = makeRef<GameObject>("res/models/floor.obj", "res/textures/floor.png");
+		auto f = makeRef<GameObject>("res/models/floor.obj", "floor");
 		f->setPosition(-50.0f, 0, -50.0f);
 		f->setScale(100.0f, 1.0f, 100.0f);
 		scene->addObject(f);
 
-		character = makeRef<Character>(makeRef<GameObject>("res/models/character.obj", "res/textures/character.png"));
+		character = makeRef<Character>(makeRef<GameObject>("res/models/character.obj", "character"));
 		scene->addObject(character->m_GameObject);
 
 		tweenTest = makeRef<TweenTest>();
@@ -59,8 +67,20 @@ public:
 
 	void update(float dt) override
 	{
+		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
+		{
+			static bool useSkybox = false;
+			scene->setSkybox(useSkybox ? skyboxName : "");
+			useSkybox = !useSkybox;
+		}
+
 		character->update(dt);
-		camera->position = character->m_GameObject->getPosition() + cameraInitialPosition;
+		static float rotation = 0;
+
+		rotation += Input::getAxis("ROTATE_LEFT", "ROTATE_RIGHT") * dt;
+
+		auto camRot = glm::vec4(cameraInitialPosition, 1.0f) * glm::rotate(glm::mat4(1), rotation, {0.0f, 1.0f, 0.0f});
+		camera->position = character->m_GameObject->getPosition() + glm::vec3(camRot);
 		camera->lookAt(character->m_GameObject->getPosition());
 
 		tweenTest->update(dt);
@@ -121,6 +141,27 @@ private:
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, GAMEPAD_AXIS_POS}}}
 		};
 		Input::setAction("TOGGLE_INFO", toggleInfoAction);
+
+		InputAction rotateLeftAction{};
+		rotateLeftAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_Q}},
+		};
+		Input::setAction("ROTATE_LEFT", rotateLeftAction);
+
+		InputAction rotateRightAction{};
+		rotateRightAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_E}},
+		};
+		Input::setAction("ROTATE_RIGHT", rotateRightAction);
+
+		InputAction toggleSkyboxAction{};
+		toggleSkyboxAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_M}},
+		};
+		toggleSkyboxAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_Y}}
+		};
+		Input::setAction("TOGGLE_SKYBOX", toggleSkyboxAction);
 	}
 };
 

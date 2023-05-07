@@ -120,6 +120,10 @@ public:
 	*/
 	void setFarPlane(float farPlane);
 
+	inline glm::mat4 getProjectionMatrix() const { return m_Uniform->proj; }
+
+	inline glm::mat4 getViewMatrix() const { return m_Uniform->view; }
+
 	friend class Scene;
 private:
 	Uniform<CameraBufferObject> m_Uniform;

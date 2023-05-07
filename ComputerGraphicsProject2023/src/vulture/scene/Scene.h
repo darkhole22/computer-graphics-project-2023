@@ -5,6 +5,7 @@
 
 #include "vulture/renderer/FrameContext.h"
 #include "vulture/scene/Camera.h"
+#include "vulture/scene/Skybox.h"
 #include "vulture/scene/ui/UIHandler.h"
 #include "vulture/scene/Tween.h"
 #include "vulture/scene/GameObject.h"
@@ -54,6 +55,14 @@ public:
 	void addObject(Ref<GameObject> obj);
 	void removeObject(Ref<GameObject> obj);
 
+	/**
+	* @brief Set the skybot texture to the one specified.
+	* If name equals the empty string than the skybox is disabled.
+	* 
+	* @param name: Name of the cubemap texture to use.
+	*/
+	void setSkybox(const String& name);
+
 	Camera* getCamera() { return &m_Camera; }
 	UIHandler* getUIHandle() { return &m_UIHandler; }
 
@@ -64,6 +73,7 @@ private:
 	DescriptorPool m_DescriptorsPool;
 	
 	Camera m_Camera;
+	Skybox m_Skybox;
 	UIHandler m_UIHandler;
 
 	std::vector<bool> m_FrameModified;

@@ -229,7 +229,7 @@ Image::Image(Image &&other) noexcept
 	other.m_Height = -1;
 }
 
-VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
+VkImageView createImageView(VkImage image, const ImageCreationInfo& info)
 {
 	VkImageView view;
 
@@ -237,14 +237,14 @@ VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags a
 	viewInfo.pNext = nullptr;
 	viewInfo.flags = 0;
 	viewInfo.image = image;
-	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	viewInfo.format = format;
+	viewInfo.viewType = info.viewType;
+	viewInfo.format = info.format;
 	// viewInfo.components;
-	viewInfo.subresourceRange.aspectMask = aspectFlags;
+	viewInfo.subresourceRange.aspectMask = info.aspectFlags;
 	viewInfo.subresourceRange.baseMipLevel = 0;
 	viewInfo.subresourceRange.levelCount = 1;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount = 1;
+	viewInfo.subresourceRange.layerCount = info.arrayLayers;
 
 	ASSERT_VK_SUCCESS(vkCreateImageView(vulkanData.device, &viewInfo, vulkanData.allocator, &view),
 		"Failed to create texture image view!");
@@ -255,7 +255,9 @@ VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags a
 Image::Image(VkImage image, VkFormat format) : m_Memory(VK_NULL_HANDLE), m_View(VK_NULL_HANDLE), m_Format(format)
 {
 	m_Handle = image;
-	m_View = createImageView(image, format, VK_IMAGE_ASPECT_COLOR_BIT);
+	ImageCreationInfo info{};
+	info.format = format;
+	m_View = createImageView(image, info);
 }
 
 uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -275,11 +277,10 @@ uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, Vk
 	throw std::runtime_error("Failed to find suitable memory type!");
 }
 
-Image::Image(u32 width, u32 height, u32 mipLevels,
-	VkSampleCountFlagBits numSamples, VkFormat format,
-	VkImageTiling tiling, VkImageUsageFlags usage,
-	VkMemoryPropertyFlags properties, VkImageAspectFlags aspectFlags)
-	: m_Format(format), m_Width(width), m_Height(height)
+ImageCreationInfo ImageCreationInfo::defaultImageCreateInfo = {};
+
+Image::Image(u32 width, u32 height, VkImageUsageFlags usage, const ImageCreationInfo& info)
+	: m_Format(info.format), m_Width(width), m_Height(height)
 {
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -287,14 +288,15 @@ Image::Image(u32 width, u32 height, u32 mipLevels,
 	imageInfo.extent.width = width;
 	imageInfo.extent.height = height;
 	imageInfo.extent.depth = 1;
-	imageInfo.mipLevels = mipLevels;
-	imageInfo.arrayLayers = 1;
-	imageInfo.format = format;
-	imageInfo.tiling = tiling;
+	imageInfo.mipLevels = info.mipLevels;
+	imageInfo.arrayLayers = info.arrayLayers;
+	imageInfo.format = info.format;
+	imageInfo.tiling = info.tiling;
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageInfo.usage = usage;
-	imageInfo.samples = numSamples;
+	imageInfo.samples = info.numSamples;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.flags = info.flags;
 
 	ASSERT_VK_SUCCESS(vkCreateImage(vulkanData.device, &imageInfo, vulkanData.allocator, &m_Handle), "Failed to create image!");
 
@@ -304,14 +306,14 @@ Image::Image(u32 width, u32 height, u32 mipLevels,
 	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = findMemoryType(vulkanData.physicalDevice, memRequirements.memoryTypeBits, properties);
+	allocInfo.memoryTypeIndex = findMemoryType(vulkanData.physicalDevice, memRequirements.memoryTypeBits, info.properties);
 
 	ASSERT_VK_SUCCESS(vkAllocateMemory(vulkanData.device, &allocInfo, vulkanData.allocator, &m_Memory),
 		"Failed to allocate image memory!");
 
 	vkBindImageMemory(vulkanData.device, m_Handle, m_Memory, 0);
 
-	m_View = createImageView(m_Handle, format, aspectFlags);
+	m_View = createImageView(m_Handle, info);
 }
 
 inline bool hasStencilComponent(VkFormat format)
@@ -319,7 +321,7 @@ inline bool hasStencilComponent(VkFormat format)
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void Image::transitionLayout(VkImageLayout newLayout, u32 mipLevels)
+void Image::transitionLayout(VkImageLayout newLayout, const ImageCreationInfo& info, u32 baseArrayLayer)
 {
 	CommandBuffer commandBuffer(true);
 
@@ -346,9 +348,9 @@ void Image::transitionLayout(VkImageLayout newLayout, u32 mipLevels)
 	}
 
 	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = mipLevels;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1; // TODO add layer parameter
+	barrier.subresourceRange.levelCount = info.mipLevels;
+	barrier.subresourceRange.baseArrayLayer = baseArrayLayer;
+	barrier.subresourceRange.layerCount = info.arrayLayers;
 
 	if (m_Layout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 	{
@@ -391,7 +393,7 @@ void Image::transitionLayout(VkImageLayout newLayout, u32 mipLevels)
 	m_Layout = newLayout;
 }
 
-void Image::copyFromBuffer(const Buffer &buffer)
+void Image::copyFromBuffer(const Buffer &buffer, const ImageCreationInfo& info)
 {
 	CommandBuffer commandBuffer(true);
 
@@ -403,7 +405,7 @@ void Image::copyFromBuffer(const Buffer &buffer)
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	region.imageSubresource.mipLevel = 0;
 	region.imageSubresource.baseArrayLayer = 0;
-	region.imageSubresource.layerCount = 1;
+	region.imageSubresource.layerCount = info.arrayLayers;
 
 	region.imageOffset = {0, 0, 0};
 	region.imageExtent = {
@@ -420,7 +422,7 @@ void Image::copyFromBuffer(const Buffer &buffer)
 		&region);
 }
 
-void Image::generateMipmaps(u32 mipLevels)
+void Image::generateMipmaps(u32 mipLevels, u32 layerCount)
 {
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(vulkanData.physicalDevice, m_Format, &formatProperties);
@@ -439,7 +441,7 @@ void Image::generateMipmaps(u32 mipLevels)
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
+	barrier.subresourceRange.layerCount = layerCount;
 	barrier.subresourceRange.levelCount = 1;
 
 	i32 mipWidth = static_cast<i32>(m_Width);
@@ -465,13 +467,13 @@ void Image::generateMipmaps(u32 mipLevels)
 		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.srcSubresource.mipLevel = i - 1;
 		blit.srcSubresource.baseArrayLayer = 0;
-		blit.srcSubresource.layerCount = 1;
+		blit.srcSubresource.layerCount = layerCount;
 		blit.dstOffsets[0] = { 0, 0, 0 };
 		blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
 		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.dstSubresource.mipLevel = i;
 		blit.dstSubresource.baseArrayLayer = 0;
-		blit.dstSubresource.layerCount = 1;
+		blit.dstSubresource.layerCount = layerCount;
 
 		vkCmdBlitImage(commandBuffer.getHandle(),
 						m_Handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -544,6 +546,8 @@ void Image::cleanup() noexcept
 {
 	if (m_Handle == VK_NULL_HANDLE)
 		return;
+
+	vkDeviceWaitIdle(vulkanData.device);
 
 	if (m_View != VK_NULL_HANDLE)
 		vkDestroyImageView(vulkanData.device, m_View, vulkanData.allocator);
