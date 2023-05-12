@@ -14,6 +14,9 @@ layout(location = 2) in vec3 fragPos;
 
 layout(location = 0) out vec4 outColor;
 
+// TODO: Move this to an input which varies based on the object.
+float gamma = 160.0f;
+
 vec3 BRDF(vec3 V, vec3 N, vec3 L, vec3 Md, vec3 Ms, float gamma) {
     //vec3 V  - direction of the viewer
     //vec3 N  - normal vector to the surface
@@ -36,8 +39,8 @@ void main() {
     vec3 lightDir = wubo.lightDirection.xyz;
     vec3 lightColor = wubo.lightColor.rgb;
 
-    vec3 DiffSpec = BRDF(CameraDir, Norm, lightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), 160.0f);
+    vec3 DiffSpec = BRDF(CameraDir, Norm, lightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), gamma);
     vec3 Ambient = texture(texSampler, fragTexCoord).rgb * 0.05f;
 
-    outColor = vec4(clamp(0.95 * (DiffSpec) * lightColor.rgb + Ambient,0.0,1.0), 1.0f);
+    outColor = vec4(clamp(0.95 * (DiffSpec) * lightColor + Ambient, 0.0f, 1.0f), 1.0f);
 }
