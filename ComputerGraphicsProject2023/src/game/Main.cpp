@@ -37,6 +37,9 @@ public:
 
 		scene->setSkybox(skyboxName);
 
+		scene->getWorld()->directLight.color = glm::vec4(1.0f);
+		scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
+
 		ui = makeRef<UI>();
 
 		auto volcano = makeRef<GameObject>("res/models/vulture.obj", "vulture");
@@ -47,12 +50,22 @@ public:
 		tween->loop();
 		tween->addIntervalTweener(0.5f);
 
-		std::function<void(float)> callback = [volcano](float size) {
+		auto parTween = tween->addParallelTweener();
+
+		std::function<void(float)> scaleCallback = [volcano](float size) {
 			volcano->setScale(size, size, size);
 		};
 
-		tween->addMethodTweener(callback, 1.0f, 3.0f, 2.0f);
-		tween->addMethodTweener(callback, 3.0f, 1.0f, 2.0f);
+		std::function<void(float)> lightRotation = [this](float angle) {
+			scene->getWorld()->directLight.direction = glm::vec3(sin(angle), 0.0f, cos(angle));
+		};
+
+		parTween->addMethodTweener(scaleCallback, 1.0f, 3.0f, 2.0f);
+		parTween->addMethodTweener(scaleCallback, 3.0f, 1.0f, 2.0f);
+
+		auto lightTween = scene->makeTween();
+		lightTween->loop();
+		lightTween->addMethodTweener(lightRotation, 0.0f, glm::radians(360.0f), 10.0f);
 
 		auto f = makeRef<GameObject>("res/models/floor.obj", "floor");
 		f->setPosition(-50.0f, 0, -50.0f);

@@ -27,8 +27,6 @@ class Skybox
 public:
 	void set(const String& name);
 
-	~Skybox() = default;
-
 	friend class Scene;
 private:
 	Skybox(DescriptorPool& descriptorsPool);

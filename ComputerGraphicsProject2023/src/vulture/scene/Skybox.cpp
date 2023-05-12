@@ -93,8 +93,7 @@ void Skybox::set(const String& name)
 
 void Skybox::recordCommandBuffer(FrameContext& target)
 {
-	if (m_DescriptorSet)
-	{
+	if (m_DescriptorSet) {
 		target.bindPipeline(*m_Pipeline);
 		target.bindDescriptorSet(*m_Pipeline, *m_DescriptorSet, 0);
 		target.bindVertexBuffer(m_VertexBuffer);
