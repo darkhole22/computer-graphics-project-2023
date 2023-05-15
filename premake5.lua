@@ -46,8 +46,8 @@ project "ComputerGraphicsProject2023"
     }
     
     postbuildcommands {
-        "glslc %{prj.location}/res/shaders/base.vert -o %{prj.location}/res/shaders/baseVert.spv",
-        "glslc %{prj.location}/res/shaders/base.frag -o %{prj.location}/res/shaders/baseFrag.spv",
+        "glslc %{prj.location}/res/shaders/Phong.vert -o %{prj.location}/res/shaders/Phong_vert.spv",
+        "glslc %{prj.location}/res/shaders/Phong.frag -o %{prj.location}/res/shaders/Phong_frag.spv",
         "glslc %{prj.location}/res/shaders/UItextSDF.vert -o %{prj.location}/res/shaders/UItextSDF_vert.spv",
         "glslc %{prj.location}/res/shaders/UItextSDF.frag -o %{prj.location}/res/shaders/UItextSDF_frag.spv",
         "glslc %{prj.location}/res/shaders/Skybox.vert -o %{prj.location}/res/shaders/Skybox_vert.spv",

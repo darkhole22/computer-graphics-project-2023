@@ -30,7 +30,7 @@ void SceneObjectList::removeObject(ObjectHandle handle)
 
 Scene::Scene() :
 	m_DescriptorsPool(Renderer::makeDescriptorPool()),
-	m_Camera(m_DescriptorsPool), m_Skybox(m_DescriptorsPool), m_UIHandler(m_DescriptorsPool)
+	m_Camera(m_DescriptorsPool), m_Skybox(m_DescriptorsPool), m_UIHandler(m_DescriptorsPool), m_World(m_DescriptorsPool)
 {
 	// Create the default Phong GameObject DSL.
 	m_GameObjectDSL = Ref<DescriptorSetLayout>(new DescriptorSetLayout());
@@ -40,7 +40,7 @@ Scene::Scene() :
 
 	// Create default Phong pipeline.
 	// TODO Consider removing hardcoded values
-	m_GameObjectPipeline = makePipeline("res/shaders/baseVert.spv", "res/shaders/baseFrag.spv", m_GameObjectDSL);
+	m_GameObjectPipeline = makePipeline("res/shaders/Phong_vert.spv", "res/shaders/Phong_frag.spv", m_GameObjectDSL);
 
 	setModified();
 
@@ -113,6 +113,7 @@ PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fra
 	std::vector<DescriptorSetLayout *> layouts{};
 	layouts.push_back(descriptorSetLayout.get());
 	layouts.push_back(m_Camera.getDescriptorSetLayout());
+	layouts.push_back(m_World.getDescriptorSetLayout());
 
 	m_ObjectLists.insert({ handle, SceneObjectList(vertexShader, fragmentShader, layouts) });
 
@@ -163,6 +164,7 @@ void Scene::recordCommandBuffer(FrameContext& target)
 		target.bindPipeline(pipeline);
 
 		target.bindDescriptorSet(pipeline, m_Camera.getDescriptorSet(), 1);
+		target.bindDescriptorSet(pipeline, m_World.getDescriptorSet(), 2);
 
 		for (auto& [objectHandle, object] : objectList)
 		{
@@ -184,6 +186,7 @@ void Scene::updateUniforms(FrameContext& target)
 	m_Camera.map(index);
 
 	m_Skybox.updateUniforms(target, m_Camera);
+	m_World.updateUniforms(target, m_Camera);
 
 	for (auto& [pipelineHandle, objectList] : m_ObjectLists)
 	{

@@ -9,6 +9,7 @@
 #include "vulture/scene/ui/UIHandler.h"
 #include "vulture/scene/Tween.h"
 #include "vulture/scene/GameObject.h"
+#include "vulture/scene/World.h"
 
 namespace vulture {
 
@@ -56,7 +57,7 @@ public:
 	void removeObject(Ref<GameObject> obj);
 
 	/**
-	* @brief Set the skybot texture to the one specified.
+	* @brief Set the skybox texture to the one specified.
 	* If name equals the empty string than the skybox is disabled.
 	* 
 	* @param name: Name of the cubemap texture to use.
@@ -65,6 +66,7 @@ public:
 
 	Camera* getCamera() { return &m_Camera; }
 	UIHandler* getUIHandle() { return &m_UIHandler; }
+	World* getWorld() { return &m_World; }
 
 	Ref<Tween> makeTween();
 
@@ -74,6 +76,7 @@ private:
 	
 	Camera m_Camera;
 	Skybox m_Skybox;
+	World m_World;
 	UIHandler m_UIHandler;
 
 	std::vector<bool> m_FrameModified;
@@ -84,7 +87,6 @@ private:
 	PipelineHandle m_NextPipelineHandle = 0;
 
 	std::unordered_set<Ref<Tween>> m_Tweens;
-
 
 	Ref<DescriptorSetLayout> m_GameObjectDSL;
 	PipelineHandle m_GameObjectPipeline;
