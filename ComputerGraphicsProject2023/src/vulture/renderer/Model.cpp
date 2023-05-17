@@ -1,15 +1,28 @@
 #include "Model.h"
 
 #include "Renderer.h"
+#define VU_LOGGER_DISABLE_INFO
 #include "vulture/core/Logger.h"
 
 #include <filesystem>
 
 namespace vulture {
 
+class VertexHash
+{
+public:
+	u64 operator()(const Vertex& v) const
+	{
+		auto hash = std::hash<float>();
+		return hash(v.pos.x) ^ hash(v.pos.y) ^ hash(v.pos.z) ^
+			hash(v.norm.x) ^ hash(v.norm.y) ^ hash(v.norm.z) ^
+			hash(v.texCoord.x) ^ hash(v.texCoord.y);
+	}
+};
+
 extern RendererData rendererData;
 
-static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indecies, const String path);
+static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indecies, const String& path);
 
 Ref<Model> Model::get(const String& name)
 {
@@ -48,7 +61,7 @@ Ref<Model> Model::get(const String& name)
 	return result;
 }
 
-static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indecies, const String path)
+static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indecies, const String& path)
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
@@ -62,6 +75,13 @@ static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& in
 		return false;
 	}
 
+	std::unordered_map <Vertex, u32, VertexHash, decltype([](const Vertex& v1, const Vertex& v2) -> bool {
+		return v1.pos == v2.pos && v1.norm == v2.norm && v1.texCoord == v2.texCoord;
+	})> uniqueVertices{};
+
+#ifdef VU_LOGGER_INFO_ENABLED
+	u32 totalVertexCount = 0;
+#endif;
 	for (const auto& shape : shapes) {
 		for (const auto& index : shape.mesh.indices) {
 			Vertex vertex{
@@ -81,15 +101,20 @@ static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& in
 				}
 			};
 
-			// if (uniqueVertices.count(vertex) == 0) {
-				//uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size()); }
-			vertices.push_back(vertex);
+			if (uniqueVertices.count(vertex) == 0)
+			{
+				uniqueVertices[vertex] = static_cast<u32>(vertices.size());
+				vertices.push_back(vertex);
+			}
 
-			// indecies.push_back(uniqueVertices[vertex]);
-			indecies.push_back(static_cast<u32>(vertices.size() - 1));
+			indecies.push_back(uniqueVertices[vertex]);
+#ifdef VU_LOGGER_INFO_ENABLED
+			++totalVertexCount;
+#endif
 		}
 	}
-	// std::unordered_map<_BaseVertex, uint32_t, _BaseVertexHash> uniqueVertices{};
+	VUINFO("Model loaded at %s. Total vertex: %d. Vertex used: %d.", fileName.cString(), totalVertexCount, vertices.size());
+	return true;
 }
 
 Model::Model(std::vector<Vertex> vertices, std::vector<u32> indecies) :
