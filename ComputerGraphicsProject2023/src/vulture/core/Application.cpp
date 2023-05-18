@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "Input.h"
+#include "vulture/core/Job.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -18,6 +19,11 @@ Application::Application(Game& game, AppConfig config) :
 	m_Window(config.name, config.width, config.height),
 	m_Game(&game)
 {
+	if (!Job::init())
+	{
+		throw std::runtime_error("Unable to initialize the Job System.");
+	}
+
 	if (!Renderer::init(config.name, m_Window))
 	{
 		throw std::runtime_error("Unable to initialize the Renderer.");
@@ -33,9 +39,12 @@ void Application::run()
 
 	setup();
 
-	while (!m_Window.shouldClose()) {
+	while (!m_Window.shouldClose())
+	{
 		Input::reset();
 		m_Window.pollEvents();
+
+		Job::process();
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>
@@ -68,6 +77,8 @@ Application::~Application()
 	Input::cleanup();
 
 	Renderer::cleanup();
+
+	Job::cleanup();
 }
 
 } // namespace vulture
