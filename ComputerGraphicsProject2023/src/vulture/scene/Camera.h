@@ -83,9 +83,9 @@ public:
 	*/
 	inline void lookAt(const glm::vec3& target)
 	{
-		auto dir = glm::normalize(position - target);
+		auto dir = glm::vec3(glm::inverse(glm::lookAt(position, target, up))[2]);
 		direction.x = glm::atan(dir.x, dir.z);
-		direction.y = glm::asin(dir.y);
+		direction.y = -glm::asin(dir.y);
 	}
 
 	/*

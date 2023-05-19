@@ -83,7 +83,7 @@ public:
 		}
 
 		if (Input::isKeyPressed(GLFW_KEY_H)) {
-			scene->getCamera()->lookAt(glm::vec3(-5.0f, 0.0f, -5.0f));
+			scene->getCamera()->lookAt(glm::vec3(-5.0f, 5.0f, -5.0f));
 		}
 
 		character->update(dt);
