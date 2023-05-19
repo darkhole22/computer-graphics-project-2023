@@ -4,13 +4,11 @@
 #include <fstream>
 #include <iomanip>
 #include <ctime>
-
-#if !defined(__unix__) && !defined(_MSC_VER)
-// Needed for secure localtime
 #include <mutex>
-#endif
 
 namespace vulture {
+
+static std::mutex loggerMutex;
 
 static const char* levelMessages[] = {
 	"[TRACE]: ",
@@ -84,6 +82,7 @@ static inline const char* getFileName(const char* filePath)
 
 void Logger::log(Logger::LoggingLevel level, const char* filePath, int fileLine, const std::string_view& message)
 {
+	std::scoped_lock lock{ loggerMutex };
 	std::time_t t = std::time(nullptr);
 	std::tm tm = localtime(t);
 
