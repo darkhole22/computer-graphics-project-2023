@@ -2,7 +2,7 @@
 
 namespace vulture {
 
-ObjectHandle GameObject::s_NextHandle = 0;
+ObjectHandle GameObject::s_NextHandle = 1; // 0 is the invalid handle.
 
 GameObject::GameObject(const String &modelName, const String &textureName)
 {

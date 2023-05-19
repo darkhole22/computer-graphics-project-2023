@@ -32,8 +32,8 @@ class SceneObjectList
 {
 public:
 	SceneObjectList(const String& vertexShader, const String& fragmentShader,
-		const std::vector<DescriptorSetLayout*>& descriptorSetLayouts);
-	
+					const std::vector<DescriptorSetLayout*>& descriptorSetLayouts);
+
 	inline const Pipeline& getPipeline() const { return *m_Pipeline; }
 	void addObject(ObjectHandle handle, const RenderableObject& obj);
 	void removeObject(ObjectHandle handle);
@@ -56,10 +56,15 @@ public:
 	void addObject(Ref<GameObject> obj);
 	void removeObject(Ref<GameObject> obj);
 
+	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
+
+	ObjectHandle addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSet> descriptorSet);
+	void removeObject(PipelineHandle pipeline, ObjectHandle obj);
+
 	/**
 	* @brief Set the skybox texture to the one specified.
 	* If name equals the empty string than the skybox is disabled.
-	* 
+	*
 	* @param name: Name of the cubemap texture to use.
 	*/
 	void setSkybox(const String& name);
@@ -73,7 +78,7 @@ public:
 	~Scene() = default;
 private:
 	DescriptorPool m_DescriptorsPool;
-	
+
 	Camera m_Camera;
 	Skybox m_Skybox;
 	World m_World;
@@ -91,8 +96,6 @@ private:
 	Ref<DescriptorSetLayout> m_GameObjectDSL;
 	PipelineHandle m_GameObjectPipeline;
 
-	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
-	
 	void recordCommandBuffer(FrameContext& target);
 	void updateUniforms(FrameContext& target);
 

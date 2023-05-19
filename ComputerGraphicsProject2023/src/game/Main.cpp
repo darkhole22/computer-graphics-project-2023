@@ -4,6 +4,7 @@
 #include "Character.h"
 #include "UI.h"
 #include "TweenTest.h"
+#include "terrain/Terrain.h"
 
 using namespace vulture;
 
@@ -14,6 +15,8 @@ class TestGame : public Game
 public:
 	Scene* scene = nullptr;
 	Camera* camera = nullptr;
+
+	Ref<Terrain> terrain = nullptr;
 
 	Ref<UI> ui = nullptr;
 	Ref<Character> character = nullptr;
@@ -43,6 +46,8 @@ public:
 
 		ui = makeRef<UI>();
 
+		terrain = makeRef<Terrain>();
+
 		auto volcano = makeRef<GameObject>("vulture", "vulture");
 		volcano->setPosition(-5.0f, 0.0f, -5.0f);
 		scene->addObject(volcano);
@@ -67,11 +72,6 @@ public:
 		auto lightTween = scene->makeTween();
 		lightTween->loop();
 		lightTween->addMethodTweener(lightRotation, 0.0f, glm::radians(360.0f), 10.0f);
-
-		auto f = makeRef<GameObject>("floor", "floor");
-		f->setPosition(-50.0f, 0, -50.0f);
-		f->setScale(100.0f, 1.0f, 100.0f);
-		scene->addObject(f);
 
 		character = makeRef<Character>(makeRef<GameObject>("character", "character"));
 		scene->addObject(character->m_GameObject);
