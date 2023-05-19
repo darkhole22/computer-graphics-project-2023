@@ -22,7 +22,7 @@ public:
 
 extern RendererData rendererData;
 
-static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indecies, const String& path);
+static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indices, const String& path);
 
 Ref<Model> Model::get(const String& name)
 {
@@ -41,15 +41,15 @@ Ref<Model> Model::get(const String& name)
 	String namePrefix = rendererData.resourceInfo.path + "models/" + name;
 
 	std::vector<Vertex> vertices{};
-	std::vector<u32> indecies{};
+	std::vector<u32> indices{};
 
-	// if (std::filesystem::exists((namePrefix + ".gltf").cString()) && loadModelFromGltf(vertices, indecies))
+	// if (std::filesystem::exists((namePrefix + ".gltf").cString()) && loadModelFromGltf(vertices, indices))
 	// {
 	// 
 	// } else
-	if (std::filesystem::exists((namePrefix + ".obj").cString()) && loadModelFromObj(vertices, indecies, namePrefix))
+	if (std::filesystem::exists((namePrefix + ".obj").cString()) && loadModelFromObj(vertices, indices, namePrefix))
 	{
-		result = Ref<Model>(new Model(vertices, indecies));
+		result = Ref<Model>(new Model(vertices, indices));
 		s_Models.insert({ name, result });
 	}
 	else
@@ -61,7 +61,7 @@ Ref<Model> Model::get(const String& name)
 	return result;
 }
 
-static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indecies, const String& path)
+static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indices, const String& path)
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
@@ -81,7 +81,7 @@ static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& in
 
 #ifdef VU_LOGGER_INFO_ENABLED
 	u32 totalVertexCount = 0;
-#endif;
+#endif
 	for (const auto& shape : shapes) {
 		for (const auto& index : shape.mesh.indices) {
 			Vertex vertex{
@@ -107,7 +107,7 @@ static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& in
 				vertices.push_back(vertex);
 			}
 
-			indecies.push_back(uniqueVertices[vertex]);
+			indices.push_back(uniqueVertices[vertex]);
 #ifdef VU_LOGGER_INFO_ENABLED
 			++totalVertexCount;
 #endif
@@ -117,8 +117,8 @@ static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& in
 	return true;
 }
 
-Model::Model(std::vector<Vertex> vertices, std::vector<u32> indecies) :
-	m_IndexCount(static_cast<u32>(indecies.size()))
+Model::Model(std::vector<Vertex> vertices, std::vector<u32> indices) :
+	m_IndexCount(static_cast<u32>(indices.size()))
 {
 	VkDeviceSize vertexBufferSize = sizeof(Vertex) * vertices.size();
 	Buffer vertexStagingBuffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -126,9 +126,9 @@ Model::Model(std::vector<Vertex> vertices, std::vector<u32> indecies) :
 	m_VertexBuffer = Buffer(vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	vertexStagingBuffer.copyToBuffer(vertexBufferSize, m_VertexBuffer);
 
-	VkDeviceSize indexBufferSize = sizeof(u32) * indecies.size();
+	VkDeviceSize indexBufferSize = sizeof(u32) * indices.size();
 	Buffer indexStagingBuffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	indexStagingBuffer.map(indecies.data());
+	indexStagingBuffer.map(indices.data());
 	m_IndexBuffer = Buffer(indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	indexStagingBuffer.copyToBuffer(indexBufferSize, m_IndexBuffer);
 }
@@ -139,21 +139,21 @@ Ref<Model> Model::s_Default;
 void Model::makeDefaultModel()
 {
 	std::vector<Vertex> vertices{};
-	std::vector<u32> indecies{};
+	std::vector<u32> indices{};
 
 	vertices.push_back({ {-1, 1, 0}, {0, 0, 1}, {0, 0} });
 	vertices.push_back({ { 1, 1, 0}, {0, 0, 1}, {0, 1} });
 	vertices.push_back({ {-1,-1, 0}, {0, 0, 1}, {1, 0} });
 	vertices.push_back({ { 1,-1, 0}, {0, 0, 1}, {1, 1} });
 
-	indecies.push_back(0);
-	indecies.push_back(2);
-	indecies.push_back(1);
-	indecies.push_back(1);
-	indecies.push_back(2);
-	indecies.push_back(3);
+	indices.push_back(0);
+	indices.push_back(2);
+	indices.push_back(1);
+	indices.push_back(1);
+	indices.push_back(2);
+	indices.push_back(3);
 
-	s_Default = Ref<Model>(new Model(vertices, indecies));
+	s_Default = Ref<Model>(new Model(vertices, indices));
 }
 
 bool Model::init()

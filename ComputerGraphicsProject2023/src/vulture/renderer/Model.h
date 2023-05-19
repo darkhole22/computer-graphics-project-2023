@@ -26,7 +26,7 @@ public:
 
 	friend class Renderer;
 private:
-	Model(std::vector<Vertex> vertices, std::vector<u32> indecies);
+	Model(std::vector<Vertex> vertices, std::vector<u32> indices);
 
 	Buffer m_VertexBuffer;
 	Buffer m_IndexBuffer;
