@@ -30,6 +30,7 @@ static const std::array<String, 8> supportedExtensions = {
 };
 
 bool loadCubemapPixels(const String& name, u8** pixels, u32& width, u32& height);
+bool loadTexture2DPixels(const String& name, u8** pixels, u32& width, u32& height);
 
 Ref<Texture> Texture::get(const String& name)
 {
@@ -43,34 +44,21 @@ Ref<Texture> Texture::get(const String& name)
 			s_Textures.erase(it);
 	}
 
+	u8* pixels = nullptr;
+	u32 width = 0, height = 0;
 	Ref<Texture> result;
 
-	String namePrefix = rendererData.resourceInfo.path + "textures/" + name;
-
-	try
+	if (loadTexture2DPixels(name, &pixels, width, height))
 	{
-		String format;
-		for (auto& ext : supportedExtensions)
-		{
-			if (std::filesystem::exists((namePrefix + ext).cString()))
-			{
-				format = ext;
-				break;
-			}
-		}
-		if (format.isEmpty())
-		{
-			VUERROR("Failed to load texture for %s!", name.cString());
-		}
-		result = Ref<Texture>(new Texture(namePrefix + format));
+		result = Ref<Texture>(new Texture(width, height, pixels, false));
 		s_Textures.insert({ name, result });
 	}
-	catch (const std::exception& exception)
+	else
 	{
-		VUERROR("%s", exception.what());
 		result = s_Default2D;
 	}
 
+	delete pixels;
 	return result;
 }
 
@@ -104,26 +92,6 @@ Ref<Texture> Texture::getCubemap(const String& name)
 	return result;
 }
 
-void Texture::getAsync(const String& name, std::function<void(Ref<Texture>)> callback)
-{
-	auto textureData = new Ref<Texture>();
-	Job::submit([name](void* data) -> bool
-	{
-		Ref<Texture>* texture = reinterpret_cast<Ref<Texture>*>(data);
-		*texture = get(name);
-		return true;
-	}, textureData, [callback](bool result, void* data)
-	{
-		Ref<Texture>* texture = reinterpret_cast<Ref<Texture>*>(data);
-		if (result)
-		{
-			callback(*reinterpret_cast<Ref<Texture>*>(data));
-		}
-		delete texture;
-	}
-	);
-}
-
 struct AsyncTextureLoadingData
 {
 	u8* pixels = nullptr;
@@ -131,8 +99,62 @@ struct AsyncTextureLoadingData
 	u32 height = 0;
 };
 
+void Texture::getAsync(const String& name, std::function<void(Ref<Texture>)> callback)
+{
+	auto it = s_Textures.find(name);
+	if (it != s_Textures.end())
+	{
+		auto& wref = it->second;
+		if (!wref.expired())
+		{
+			callback(wref.lock());
+			return;
+		}
+		else
+			s_Textures.erase(it);
+	}
+
+	AsyncTextureLoadingData* data = new AsyncTextureLoadingData;
+	Job::submit([name](void* _data) -> bool
+	{
+		AsyncTextureLoadingData* loadingData = reinterpret_cast<AsyncTextureLoadingData*>(_data);
+		return loadTexture2DPixels(name, &loadingData->pixels, loadingData->width, loadingData->height);
+	}, data, [name, callback](bool result, void* _data)
+	{
+		AsyncTextureLoadingData* loadingData = reinterpret_cast<AsyncTextureLoadingData*>(_data);
+		Ref<Texture> texture;
+		if (result)
+		{
+			texture = Ref<Texture>(new Texture(loadingData->width, loadingData->height, loadingData->pixels, false));
+			s_Textures.insert({ name, texture });
+		}
+		else
+		{
+			texture = s_Default2D;
+		}
+
+		callback(texture);
+		delete[] loadingData->pixels;
+		delete loadingData;
+	}
+	);
+}
+
 void Texture::getCubemapAsync(const String& name, std::function<void(Ref<Texture>)> callback)
 {
+	auto it = s_CubemapTextures.find(name);
+	if (it != s_CubemapTextures.end())
+	{
+		auto& wref = it->second;
+		if (!wref.expired())
+		{
+			callback(wref.lock());
+			return;
+		}
+		else
+			s_CubemapTextures.erase(it);
+	}
+
 	AsyncTextureLoadingData* data = new AsyncTextureLoadingData;
 	Job::submit([name](void* _data) -> bool
 	{
@@ -348,6 +370,48 @@ TextureSampler::~TextureSampler()
 	}
 }
 
+bool loadTexture2DPixels(const String& name, u8** outPixels, u32& width, u32& height)
+{
+	String namePrefix = rendererData.resourceInfo.path + "textures/" + name;
+
+	String format;
+	for (auto& ext : supportedExtensions)
+	{
+		if (std::filesystem::exists((namePrefix + ext).cString()))
+		{
+			format = ext;
+			break;
+		}
+	}
+	if (format.isEmpty())
+	{
+		VUERROR("Failed to load texture for %s!", name.cString());
+		return false;
+	}
+
+	String path = namePrefix + format;
+	i32 texWidth, texHeight, texChannels;
+	stbi_uc* pixels = stbi_load(path.cString(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	VkDeviceSize imageSize = texWidth * 4LL * texHeight;
+
+	if (!pixels)
+	{
+		VUERROR("Failed to load texture at %s!", path.cString());
+		return false;
+	}
+
+	u8* pix = new u8[imageSize];
+	std::memcpy(pix, pixels, imageSize);
+
+	width = texWidth;
+	height = texHeight;
+	*outPixels = pix;
+	
+	stbi_image_free(pixels);
+
+	return true;
+}
+
 bool loadCubemapPixels(const String& name, u8** pixelsPointer, u32& width, u32& height)
 {
 	String namePrefix = rendererData.resourceInfo.path + "textures/" + name;
@@ -414,7 +478,7 @@ bool loadCubemapPixels(const String& name, u8** pixelsPointer, u32& width, u32& 
 		stbi_image_free(img);
 	}
 
-	*pixelsPointer = pixels; 
+	*pixelsPointer = pixels;
 
 	return pixels && imgSize == offset;
 }
