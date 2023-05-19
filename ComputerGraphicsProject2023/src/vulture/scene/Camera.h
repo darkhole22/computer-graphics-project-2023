@@ -25,9 +25,9 @@ public:
 	glm::vec3 position = glm::vec3(0, 0, 0);
 
 	/*
-	* @brief A vec3 that holds the current camera looking direction angles.
+	* @brief A vec3 that holds the current camera looking direction.
 	*/
-	glm::vec3 direction = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 direction = glm::vec3(1.0f, 0.0f, 0.0f);
 
 	/*
 	* @brief A vec3 that holds the up direction.
@@ -35,9 +35,19 @@ public:
 	glm::vec3 up = glm::vec3(0, 1, 0);
 
 	/*
+	* @brief A float that holds the roll rotation.
+	*/
+	float roll = 0.0f;
+
+	/*
 	* @brief Maximum vertical angle the camera can be rotated by.
 	*/
 	float maxVerticalAngle = glm::radians(85.0f);
+
+	/*
+	* @brief Maximum vertical angle the camera can be rotated by.
+	*/
+	float maxRollAngle = glm::radians(45.0f);
 
 	/*
 	* @brief Translates the camera relatively to its look-direction.
@@ -52,6 +62,13 @@ public:
 	* @param rotate: rotation angles around the three axes.
 	*/
 	void rotate(glm::vec3 rotation);
+
+	/*
+	* @brief Rolls the camera without changing the up direction.
+	*
+	* @param rotation: angles around the front axis.
+	*/
+	void addRoll(float rotation);
 
 	enum class Projection
 	{
@@ -71,22 +88,14 @@ public:
 	* 
 	* @param mode: The new projection mode.
 	*/
-	inline void setProjectionMode(Projection mode)
-	{
-		m_Projection = mode;
-	}
+	inline void setProjectionMode(Projection mode) { m_Projection = mode; }
 
 	/*
 	* @brief Sets the direction of the camera to look at a specific point in 3D space.
 	* 
 	* @param target: The target point.
 	*/
-	inline void lookAt(const glm::vec3& target)
-	{
-		auto dir = glm::normalize(position - target);
-		direction.x = glm::atan(dir.x, dir.z);
-		direction.y = glm::asin(dir.y);
-	}
+	inline void lookAt(const glm::vec3& target) { this->direction = target - this->position; }
 
 	/*
 	* @brief Returns the size of the camera's projection in the x-direction for an orthogonal projection.

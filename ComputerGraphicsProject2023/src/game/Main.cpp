@@ -82,7 +82,8 @@ public:
 			useSkybox = !useSkybox;
 		}
 
-		if (Input::isKeyPressed(GLFW_KEY_H)) {
+		if (Input::isKeyPressed(GLFW_KEY_H))
+		{
 			scene->getCamera()->lookAt(glm::vec3(-5.0f, 0.0f, -5.0f));
 		}
 
@@ -159,6 +160,24 @@ private:
 		rotateDownAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, GAMEPAD_AXIS_POS}}} };
 		Input::setAction("ROTATE_DOWN", rotateDownAction);
+
+		InputAction rollLeftAction{};
+		rollLeftAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_Q}},
+		};
+		rollLeftAction.gamepadButtonBindings = {
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_LEFT_THUMB}}
+		};
+		Input::setAction("ROLL_LEFT", rollLeftAction);
+
+		InputAction rollRightAction{};
+		rollRightAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_E}},
+		};
+		rollRightAction.gamepadButtonBindings = {
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_RIGHT_THUMB}}
+		};
+		Input::setAction("ROLL_RIGHT", rollRightAction);
 
 		/**********************************************
 		 *                  DEBUG                     *
