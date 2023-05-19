@@ -38,6 +38,7 @@ public:
 
 		camera = scene->getCamera();
 		camera->position = cameraInitialPosition;
+		camera->setFarPlane(5000.0f);
 
 		scene->setSkybox(skyboxName);
 
@@ -54,9 +55,7 @@ public:
 
 		Ref<Tween> tween = scene->makeTween();
 		tween->loop();
-		tween->addIntervalTweener(0.5f);
-
-		auto parTween = tween->addParallelTweener();
+		// tween->addIntervalTweener(0.5f);
 
 		std::function<void(float)> scaleCallback = [volcano](float size) {
 			volcano->setScale(size, size, size);
@@ -66,8 +65,8 @@ public:
 			scene->getWorld()->directLight.direction = glm::vec3(sin(angle), 0.0f, cos(angle));
 		};
 
-		parTween->addMethodTweener(scaleCallback, 1.0f, 3.0f, 2.0f);
-		parTween->addMethodTweener(scaleCallback, 3.0f, 1.0f, 2.0f);
+		tween->addMethodTweener(scaleCallback, 1.0f, 0.1f, 2.0f);
+		tween->addMethodTweener(scaleCallback, 0.1f, 1.0f, 2.0f);
 
 		auto lightTween = scene->makeTween();
 		lightTween->loop();

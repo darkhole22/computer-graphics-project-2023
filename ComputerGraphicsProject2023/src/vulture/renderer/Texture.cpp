@@ -6,6 +6,7 @@
 #include "vulture/core/Job.h"
 
 #include "stb_image.h"
+#include "stb_perlin.h"
 
 #include <cmath> // std::floor, std::log2, std::max
 #include <cstring> // std::memcpy
@@ -89,6 +90,37 @@ Ref<Texture> Texture::getCubemap(const String& name)
 	}
 
 	delete pixels;
+	return result;
+}
+
+Ref<Texture> Texture::getNoise(u32 width, u32 height, i32 seed, const NoiseConfig& config)
+{
+	Ref<Texture> result;
+	u8* pixels = new u8[width * 4LL * height];
+
+	float dim = static_cast<float>(std::min(width, height));
+	const float scale = 8;
+
+	for (u64 y = 0; y < height; y++)
+	{
+		for (u64 x = 0; x < width; x++)
+		{
+			float noiseX = scale * static_cast<float>(x) / dim;
+			float noiseY = scale * static_cast<float>(y) / dim;
+
+			float noise = stb_perlin_noise3_seed(noiseX, noiseY, 0, 0, 0, 0, seed) + 1.0;
+			u8 pixelColor = static_cast<u8>(noise * 128.0f);
+			pixels[(y + x * height) * 4 + 0] = pixelColor; // r
+			pixels[(y + x * height) * 4 + 1] = pixelColor; // g
+			pixels[(y + x * height) * 4 + 2] = pixelColor; // b
+
+
+			pixels[(y + x * height) * 4 + 3] = pixelColor; // a
+		}
+	}
+
+	result = Ref<Texture>(new Texture(width, height, pixels, false));
+	delete[] pixels;
 	return result;
 }
 
@@ -406,7 +438,7 @@ bool loadTexture2DPixels(const String& name, u8** outPixels, u32& width, u32& he
 	width = texWidth;
 	height = texHeight;
 	*outPixels = pix;
-	
+
 	stbi_image_free(pixels);
 
 	return true;

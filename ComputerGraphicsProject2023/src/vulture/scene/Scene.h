@@ -72,6 +72,7 @@ public:
 	Camera* getCamera() { return &m_Camera; }
 	UIHandler* getUIHandle() { return &m_UIHandler; }
 	World* getWorld() { return &m_World; }
+	DescriptorPool* getDescriptorPool() { return &m_DescriptorsPool; }
 
 	Ref<Tween> makeTween();
 

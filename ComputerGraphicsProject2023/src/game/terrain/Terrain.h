@@ -4,6 +4,8 @@
 
 namespace game {
 
+using namespace vulture;
+
 class Terrain
 {
 public:
@@ -11,7 +13,15 @@ public:
 
 	void update(float dt);
 private:
-	vulture::Scene* scene = nullptr;
+	Scene* m_Scene = nullptr;
+	Ref<DescriptorSetLayout> m_DescriptorSetLayout;
+	PipelineHandle m_Pipeline;
+	Uniform<ModelBufferObject> m_Uniform;
+	Ref<Texture> m_NoiseTexture;
+	Ref<TextureSampler> m_NoiseSampler;
+	Ref<DescriptorSet> m_DescriptorSet;
+	Ref<Model> m_Model;
+	ObjectHandle m_Object;
 };
 
 } // namespace game

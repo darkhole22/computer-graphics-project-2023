@@ -12,21 +12,25 @@ enum class TextureType
 	CUBE_MAP
 };
 
+struct NoiseConfig
+{};
+
 class Texture
 {
 public:
 	NO_COPY(Texture)
 
-	/**
-	* @brief Returns a referance to the specified texture or to the default texture if `name` is invalid.
-	* 
-	* @param name: the texture unique identifier (not the file name).
-	* 
-	* @return a referance to the texture.
-	*/
-	static Ref<Texture> get(const String& name);
-
+		/**
+		* @brief Returns a referance to the specified texture or to the default texture if `name` is invalid.
+		*
+		* @param name: the texture unique identifier (not the file name).
+		*
+		* @return a referance to the texture.
+		*/
+		static Ref<Texture> get(const String& name);
 	static Ref<Texture> getCubemap(const String& name);
+
+	static Ref<Texture> getNoise(u32 width, u32 height, i32 seed, const NoiseConfig& config);
 
 	static void getAsync(const String& name, std::function<void(Ref<Texture>)> callback);
 	static void getCubemapAsync(const String& name, std::function<void(Ref<Texture>)> callback);
@@ -90,7 +94,7 @@ class TextureSampler
 public:
 	NO_COPY(TextureSampler)
 
-	TextureSampler(const Texture& texture, const TextureSamplerConfig& config = TextureSamplerConfig::defaultConfig);
+		TextureSampler(const Texture& texture, const TextureSamplerConfig& config = TextureSamplerConfig::defaultConfig);
 
 	inline VkSampler getHandle() const { return m_Handle; };
 	inline VkImageView getView() const { return m_View; }
