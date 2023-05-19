@@ -7,11 +7,11 @@
 namespace vulture {
 
 /**
-* @brief This class allow to submit jobs to the job system.
+* @brief This class allows to submit jobs to the job system.
 *
-* A job has two component.
+* A job has two components.
 * The first is executed on a different thread asynchronously and returns a boolean.
-* The second is executed on the main thread after the work is compleated and should be
+* The second is executed on the main thread after the work is completed and should be
 * used to cleanup all the resources used by the job.
 */
 class Job

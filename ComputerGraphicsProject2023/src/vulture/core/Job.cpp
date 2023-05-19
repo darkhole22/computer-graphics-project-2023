@@ -7,6 +7,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <utility>
 
 namespace vulture {
 
@@ -17,7 +18,7 @@ public:
 
 	void stop();
 
-	int operator()(std::stop_token);
+	int operator()(const std::stop_token&);
 private:
 	std::jthread m_Thread;
 };
@@ -35,7 +36,7 @@ void Job::submit(std::function<bool(void*)> jobCallback, void* data, std::functi
 {
 	{
 		std::scoped_lock lock{ jobsQueueMutex };
-		jobsQueue.push(Job(jobCallback, data, cleanupCallback));
+		jobsQueue.push(Job(std::move(jobCallback), data, std::move(cleanupCallback)));
 	}
 
 	jobsQueueConditionVariable.notify_one();
@@ -77,7 +78,7 @@ Job::Job() :
 {}
 
 Job::Job(std::function<bool(void*)> workCallback, void* data, std::function<void(bool, void*)> cleanupCallback) :
-	m_WorkCallback(workCallback), m_CleanupCallback(cleanupCallback), m_Data(data)
+	m_WorkCallback(std::move(workCallback)), m_CleanupCallback(std::move(cleanupCallback)), m_Data(data)
 {}
 
 void Job::execute()
@@ -121,7 +122,7 @@ void Worker::stop()
 	m_Thread.request_stop();
 }
 
-int Worker::operator()(std::stop_token stopToken)
+int Worker::operator()(const std::stop_token& stopToken)
 {
 	Job job;
 	while (!stopToken.stop_requested())
