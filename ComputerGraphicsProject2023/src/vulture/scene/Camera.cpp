@@ -36,9 +36,9 @@ void Camera::rotate(glm::vec3 rotation)
 	direction.x += rotation.x;
 	float sgn = (direction.x >= 0.0f) ? 1.0f : -1.0f;
 	float val = std::abs(direction.x);
-	if (val > 3.14)
+	if (val > glm::radians(180.0f))
 	{
-		direction.x = -sgn * (2 * 3.14f  - val);
+		direction.x = -sgn * (2 * glm::radians(180.0f)  - val);
 	}
 
 	direction.y = std::clamp(direction.y + rotation.y, -maxVerticalAngle, maxVerticalAngle);

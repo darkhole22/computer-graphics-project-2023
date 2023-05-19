@@ -37,7 +37,7 @@ public:
 	/*
 	* @brief Maximum vertical angle the camera can be rotated by.
 	*/
-	float maxVerticalAngle = 1.5f;
+	float maxVerticalAngle = glm::radians(85.0f);
 
 	/*
 	* @brief Translates the camera relatively to its look-direction.
