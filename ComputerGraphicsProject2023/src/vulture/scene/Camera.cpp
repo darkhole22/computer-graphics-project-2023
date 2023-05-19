@@ -1,7 +1,5 @@
 #include "Camera.h"
 
-#include <chrono>
-
 namespace vulture {
 
 Camera::Camera(DescriptorPool& descriptorsPool) :
@@ -14,6 +12,35 @@ Camera::Camera(DescriptorPool& descriptorsPool) :
 	
 	updateView();
 	updateProjection();
+}
+
+void Camera::translate(glm::vec3 translation)
+{
+	auto ux = glm::vec3(
+			glm::rotate(glm::mat4(1.0f), direction.x, glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)
+	);
+
+	auto uz = glm::vec3(
+			glm::rotate(glm::mat4(1.0f), direction.x, glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::vec4(0.0f, 0.0f, -1.0f, 1.0f)
+	);
+
+	position += (ux * translation.x + up * translation.y +  uz * translation.z);
+}
+
+void Camera::rotate(glm::vec3 rotation)
+{
+	direction.x += rotation.x;
+	float sgn = (direction.x >= 0.0f) ? 1.0f : -1.0f;
+	float val = std::abs(direction.x);
+	if (val > 3.14)
+	{
+		direction.x = -sgn * (2 * 3.14f  - val);
+	}
+
+	direction.y = std::clamp(direction.y + rotation.y, -maxVerticalAngle, maxVerticalAngle);
+	direction.z += rotation.z;
 }
 
 void Camera::setSize(float size)
@@ -63,7 +90,11 @@ void Camera::updateProjection()
 
 void Camera::updateView()
 {
-	m_Uniform->view = glm::lookAt(this->position, this->position + this->direction, this->up);
+	m_Uniform->view =
+			glm::rotate(glm::mat4(1.0f), -direction.z, glm::vec3(0.0f, 0.0f, 1.0f)) *
+			glm::rotate(glm::mat4(1.0f), -direction.y, glm::vec3(1.0f, 0.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), -direction.x, glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::translate(glm::mat4(1.0f), -position);
 }
 
 } // namespace vulture

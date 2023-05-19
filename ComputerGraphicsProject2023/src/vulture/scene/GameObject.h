@@ -41,6 +41,13 @@ public:
 	GameObject(const String& modelName, const String& textureName);
 
 	/**
+	 * @brief Constructs a new GameObject object.
+	 *
+	 * @param name Name of both the model and of the texture.
+	 */
+	explicit GameObject(const String& name) : GameObject(name, name) {};
+
+	/**
 	 * @brief Returns the position of the object.
 	 *
 	 * @return The position of the object as a glm::vec3.

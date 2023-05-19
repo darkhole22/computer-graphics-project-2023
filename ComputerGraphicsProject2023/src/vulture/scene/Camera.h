@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vulture/renderer/Renderer.h"
+#include "vulture/core/Logger.h"
 
 namespace vulture {
 
@@ -24,14 +25,33 @@ public:
 	glm::vec3 position = glm::vec3(0, 0, 0);
 
 	/*
-	* @brief A vec3 that holds the current camera looking direction.
+	* @brief A vec3 that holds the current camera looking direction angles.
 	*/
-	glm::vec3 direction = glm::vec3(1, 0, 0);
+	glm::vec3 direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	/*
 	* @brief A vec3 that holds the up direction.
 	*/
 	glm::vec3 up = glm::vec3(0, 1, 0);
+
+	/*
+	* @brief Maximum vertical angle the camera can be rotated by.
+	*/
+	float maxVerticalAngle = 1.5f;
+
+	/*
+	* @brief Translates the camera relatively to its look-direction.
+	*
+	* @param translation: translation amount over the three (relative) axes.
+	*/
+	void translate(glm::vec3 translation);
+
+	/*
+	* @brief Rotates the camera.
+	*
+	* @param rotate: rotation angles around the three axes.
+	*/
+	void rotate(glm::vec3 rotation);
 
 	enum class Projection
 	{
