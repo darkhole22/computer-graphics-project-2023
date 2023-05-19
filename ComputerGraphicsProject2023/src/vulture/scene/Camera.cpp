@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+#include <algorithm> // std::clamp
+
 namespace vulture {
 
 Camera::Camera(DescriptorPool& descriptorsPool) :
