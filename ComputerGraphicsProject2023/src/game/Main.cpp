@@ -1,8 +1,11 @@
 #define VU_LOGGER_TRACE_ENABLED
+
+#include <random>
 #include "vulture/core/Logger.h"
 #include "vulture/core/Application.h"
 #include "Character.h"
 #include "UI.h"
+#include "Enemy.h"
 
 using namespace vulture;
 
@@ -15,6 +18,8 @@ public:
 
 	Ref<UI> ui = nullptr;
 	Ref<Character> character = nullptr;
+
+	std::vector<Ref<Enemy>> enemies;
 
 #if 1
 	String skyboxName = "desert";
@@ -46,10 +51,6 @@ public:
 			volcano->setScale(size, size, size);
 		};
 
-		std::function<void(float)> lightRotation = [this](float angle) {
-			scene->getWorld()->directLight.direction = glm::vec3(sin(angle), 0.0f, cos(angle));
-		};
-
 		tween->addMethodTweener(scaleCallback, 3.0f, 6.0f, 2.0f);
 		tween->addMethodTweener(scaleCallback, 6.0f, 3.0f, 2.0f);
 
@@ -58,6 +59,10 @@ public:
 		 *********/
 		scene->getWorld()->directLight.color = glm::vec4(1.0f);
 		scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
+
+		std::function<void(float)> lightRotation = [this](float angle) {
+			scene->getWorld()->directLight.direction = glm::vec3(sin(angle), 0.0f, cos(angle));
+		};
 
 		auto lightTween = scene->makeTween();
 		lightTween->loop();
@@ -71,6 +76,29 @@ public:
 		f->setPosition(-50.0f, 0, -50.0f);
 		f->setScale(100.0f, 1.0f, 100.0f);
 		scene->addObject(f);
+
+		/**************
+		 * GAME LOGIC *
+		 **************/
+
+		auto waveTween = scene->makeTween();
+		waveTween->loop();
+		waveTween->addIntervalTweener(10.0f);
+		waveTween->addCallbackTweener([this]() {
+			std::random_device rd;     // Only used once to initialise (seed) engine
+			std::mt19937 rng(rd());    // Random-number engine used (Mersenne-Twister in this case)
+			std::uniform_int_distribution<int> uni(-30, 30); // Guaranteed unbiased
+
+			for(int i = 0; i <= 10; i++) {
+				auto randomLocation = scene->getCamera()->position + glm::vec3(uni(rng), -scene->getCamera()->position.y, uni(rng));
+				Ref<Enemy> enemy = makeRef<Enemy>();
+				enemy->m_GameObject->setPosition(randomLocation);
+				enemy->m_GameObject->setScale(3.0f, 3.0f, 3.0f);
+				enemies.push_back(enemy);
+				scene->addObject(enemy->m_GameObject);
+				VUINFO("Spawning enemy...");
+			}
+		});
 	}
 
 	void update(float dt) override
@@ -83,6 +111,9 @@ public:
 		}
 
 		character->update(dt);
+
+		for(const auto& enemy: enemies) enemy->update(dt);
+
 		ui->update(dt);
 	}
 
