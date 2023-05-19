@@ -7,14 +7,14 @@
 
 using namespace vulture;
 
-namespace game
-{
+namespace game {
 
-class TestGame : public Game {
+class TestGame : public Game
+{
 public:
-	Scene *scene = nullptr;
-	Camera *camera = nullptr;
-	
+	Scene* scene = nullptr;
+	Camera* camera = nullptr;
+
 	Ref<UI> ui = nullptr;
 	Ref<Character> character = nullptr;
 	Ref<TweenTest> tweenTest;
@@ -27,7 +27,8 @@ public:
 
 	glm::vec3 cameraInitialPosition = glm::vec3(0.0f, 1.5f, 5.0f);
 
-	void setup() override {
+	void setup() override
+	{
 		setupInputActions();
 
 		scene = Application::getScene();
@@ -92,7 +93,7 @@ public:
 
 		rotation += Input::getAxis("ROTATE_LEFT", "ROTATE_RIGHT") * dt;
 
-		auto camRot = glm::vec4(cameraInitialPosition, 1.0f) * glm::rotate(glm::mat4(1), rotation, {0.0f, 1.0f, 0.0f});
+		auto camRot = glm::vec4(cameraInitialPosition, 1.0f) * glm::rotate(glm::mat4(1), rotation, { 0.0f, 1.0f, 0.0f });
 		camera->position = character->m_GameObject->getPosition() + glm::vec3(camRot);
 		camera->lookAt(character->m_GameObject->getPosition());
 
@@ -106,41 +107,41 @@ private:
 		InputAction leftAction{};
 		leftAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_A}},
-				KeyboardBinding{{GLFW_KEY_LEFT}}};
+				KeyboardBinding{{GLFW_KEY_LEFT}} };
 		leftAction.gamepadButtonBindings = {
-				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_LEFT}}};
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_LEFT}} };
 		leftAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}}};
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}} };
 		Input::setAction("MOVE_LEFT", leftAction);
 
 		InputAction rightAction{};
 		rightAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_D}},
-				KeyboardBinding{{GLFW_KEY_RIGHT}}};
+				KeyboardBinding{{GLFW_KEY_RIGHT}} };
 		rightAction.gamepadButtonBindings = {
-				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_RIGHT}}};
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_RIGHT}} };
 		rightAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}}};
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}} };
 		Input::setAction("MOVE_RIGHT", rightAction);
 
 		InputAction upAction{};
 		upAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_W}},
-				KeyboardBinding{{GLFW_KEY_UP}}};
+				KeyboardBinding{{GLFW_KEY_UP}} };
 		upAction.gamepadButtonBindings = {
-				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_UP}}};
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_UP}} };
 		upAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_NEG}}}};
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_NEG}}} };
 		Input::setAction("MOVE_UP", upAction);
 
 		InputAction downAction{};
 		downAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_S}},
-				KeyboardBinding{{GLFW_KEY_DOWN}}};
+				KeyboardBinding{{GLFW_KEY_DOWN}} };
 		downAction.gamepadButtonBindings = {
-				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_DOWN}}};
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_DPAD_DOWN}} };
 		downAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_POS}}}};
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_POS}}} };
 		Input::setAction("MOVE_DOWN", downAction);
 
 		InputAction toggleInfoAction{};
@@ -189,12 +190,12 @@ int main()
 		{
 			game::TestGame game;
 
-			app = Application::launch(game, vulture::AppConfig{"Vulture demo", 800, 600});
+			app = Application::launch(game, vulture::AppConfig{ "Vulture demo", 800, 600 });
 		}
 
 		return EXIT_SUCCESS;
 	}
-	catch (const std::exception &exception)
+	catch (const std::exception& exception)
 	{
 		VUFATAL("An exception was thrown.\nMessage: %s\n\nShutting down!", exception.what());
 	}

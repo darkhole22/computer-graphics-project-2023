@@ -24,7 +24,12 @@ public:
 	* 
 	* @return a referance to the texture.
 	*/
-	static Ref<Texture> get(const String& name, TextureType type = TextureType::TEXTURE_2D);
+	static Ref<Texture> get(const String& name);
+
+	static Ref<Texture> getCubemap(const String& name);
+
+	static void getAsync(const String& name, std::function<void(Ref<Texture>)> callback);
+	static void getCubemapAsync(const String& name, std::function<void(Ref<Texture>)> callback);
 
 	inline VkImageView getView() const { return m_Image.getView(); }
 	inline u32 getMipLevels() const { return m_MipLevels; };
@@ -46,6 +51,7 @@ private:
 	static void cleanup();
 
 	static std::unordered_map<String, WRef<Texture>> s_Textures;
+	static std::unordered_map<String, WRef<Texture>> s_CubemapTextures;
 	static Ref<Texture> s_Default2D;
 	static Ref<Texture> s_DefaultCubemap;
 
