@@ -81,7 +81,12 @@ public:
 	* 
 	* @param target: The target point.
 	*/
-	inline void lookAt(const glm::vec3& target) { this->direction = target - this->position; }
+	inline void lookAt(const glm::vec3& target)
+	{
+		auto dir = glm::normalize(position - target);
+		direction.x = glm::atan(dir.x, dir.z);
+		direction.y = glm::asin(dir.y);
+	}
 
 	/*
 	* @brief Returns the size of the camera's projection in the x-direction for an orthogonal projection.
