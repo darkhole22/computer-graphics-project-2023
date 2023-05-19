@@ -6,9 +6,24 @@
 
 namespace vulture {
 
+/**
+* @brief This class allow to submit jobs to the job system.
+*
+* A job has two component.
+* The first is executed on a different thread asynchronously and returns a boolean.
+* The second is executed on the main thread after the work is compleated and should be
+* used to cleanup all the resources used by the job.
+*/
 class Job
 {
 public:
+	/**
+	* @brief Enqueues a new job.
+	*
+	* @param jobCallback: the work to do asynchronously.
+	* @param data: the data produced by the job.
+	* @param cleanupCallback: the callback used to finish the job. This is executed on the main thread.
+	*/
 	static void submit(std::function<bool(void*)> jobCallback, void* data, std::function<void(bool, void*)> cleanupCallback);
 
 	friend class Application;
