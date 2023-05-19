@@ -31,9 +31,9 @@ Ref<Texture> Texture::get(const String& name, TextureType type)
 
 	Ref<Texture> result;
 	
-	String namePrefix = rendererData.resourceInfo.path + "textures/" + name;
+	const String namePrefix = rendererData.resourceInfo.path + "textures/" + name;
 
-	std::array<String, 8> supportedExtensions = {
+	const std::array<String, 8> supportedExtensions = {
 		".png",
 		".jpeg",
 		".jpg",

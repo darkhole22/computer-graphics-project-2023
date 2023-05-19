@@ -24,6 +24,9 @@ bool Renderer::init(const String& applicationName, const Window& window)
 	if (!Texture::init())
 		return false;
 
+	if (!Model::init())
+		return false;
+
 	return true;
 }
 
@@ -31,6 +34,7 @@ void Renderer::cleanup()
 {
 	vkDeviceWaitIdle(vulkanData.device);
 
+	Model::cleanup();
 	Texture::cleanup();
 
 	delete rendererData.swapChain;

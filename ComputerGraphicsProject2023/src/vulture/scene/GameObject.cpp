@@ -4,9 +4,9 @@ namespace vulture {
 
 ObjectHandle GameObject::s_NextHandle = 0;
 
-GameObject::GameObject(const String &modelPath, const String &textureName)
+GameObject::GameObject(const String &modelName, const String &textureName)
 {
-	m_Model = Model::make(modelPath);
+	m_Model = Model::get(modelName);
 	m_Uniform = Renderer::makeUniform<vulture::ModelBufferObject>();
 	m_Texture = Texture::get(textureName);
 	m_TextureSampler = makeRef<TextureSampler>(*m_Texture);
