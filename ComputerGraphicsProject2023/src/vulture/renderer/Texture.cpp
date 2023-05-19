@@ -3,6 +3,7 @@
 #include "VulkanContext.h"
 #include "Renderer.h"
 #include "vulture/core/Logger.h"
+#include "vulture/core/Job.h"
 
 #include "stb_image.h"
 
@@ -17,7 +18,20 @@ extern RendererData rendererData;
 
 const TextureSamplerConfig TextureSamplerConfig::defaultConfig = TextureSamplerConfig{};
 
-Ref<Texture> Texture::get(const String& name, TextureType type)
+static const std::array<String, 8> supportedExtensions = {
+	".png",
+	".jpeg",
+	".jpg",
+	".tga",
+	".bmp",
+	".gif",
+	".pic",
+	".hdr"
+};
+
+bool loadCubemapPixels(const String& name, u8** pixels, u32& width, u32& height);
+
+Ref<Texture> Texture::get(const String& name)
 {
 	auto it = s_Textures.find(name);
 	if (it != s_Textures.end())
@@ -30,130 +44,119 @@ Ref<Texture> Texture::get(const String& name, TextureType type)
 	}
 
 	Ref<Texture> result;
-	
+
 	String namePrefix = rendererData.resourceInfo.path + "textures/" + name;
 
-	std::array<String, 8> supportedExtensions = {
-		".png",
-		".jpeg",
-		".jpg",
-		".tga",
-		".bmp",
-		".gif",
-		".pic",
-		".hdr"
-	};
-
-	switch (type)
+	try
 	{
-	case TextureType::CUBE_MAP:
-	{
-		// r l u d f b
-		String fileNames[6] = {
-			namePrefix + "_r",
-			namePrefix + "_l",
-			namePrefix + "_u",
-			namePrefix + "_d",
-			namePrefix + "_f",
-			namePrefix + "_b"
-		};
-
-		u8* pixels = nullptr;
-		u32 width = 0, height = 0;
-		u64 imgSize = 0, offset = 0;
-		for (u64 i = 0; i < 6; ++i)
+		String format;
+		for (auto& ext : supportedExtensions)
 		{
-			i32 texWidth, texHeight, texChannels;
-			String format;
-			for (auto& ext : supportedExtensions)
+			if (std::filesystem::exists((namePrefix + ext).cString()))
 			{
-				if (std::filesystem::exists((fileNames[i] + ext).cString()))
-				{
-					format = ext;
-					break;
-				}
-			}
-			if (format.isEmpty())
-			{
-				VUERROR("Failed to load cubemap texture for %s!", name.cString());
+				format = ext;
 				break;
 			}
-
-			stbi_uc* img = stbi_load((fileNames[i] + format).cString(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-			if (!img)
-			{
-				VUERROR("Failed to load cubemap texture at %s!", fileNames[i].cString());
-				break;
-			}
-
-			if (i == 0)
-			{
-				width = texWidth;
-				height = texHeight;
-				imgSize = width * 4LL * height * 6;
-				pixels = new u8[imgSize];
-			}
-			else
-			{
-				if (width != texWidth || height != texHeight)
-				{
-					VUERROR("Cubemap textures must have all the same size!");
-					stbi_image_free(img);
-					break;
-				}
-			}
-
-			u64 loadedImgSize = texWidth * 4LL * texHeight;
-
-			std::memcpy(pixels + offset, img, loadedImgSize);
-			offset += loadedImgSize;
-
-			stbi_image_free(img);
 		}
-
-		if (pixels && imgSize == offset)
+		if (format.isEmpty())
 		{
-			result = Ref<Texture>(new Texture(width, height, pixels, true));
-			s_Textures.insert({ name, result });
+			VUERROR("Failed to load texture for %s!", name.cString());
 		}
-		else
-		{
-			result = s_DefaultCubemap;
-		}
-
-		delete[] pixels;
-	} break;
-	case TextureType::TEXTURE_2D:
-	default:
+		result = Ref<Texture>(new Texture(namePrefix + format));
+		s_Textures.insert({ name, result });
+	}
+	catch (const std::exception& exception)
 	{
-		try
-		{
-			String format;
-			for (auto& ext : supportedExtensions)
-			{
-				if (std::filesystem::exists((namePrefix + ext).cString()))
-				{
-					format = ext;
-					break;
-				}
-			}
-			if (format.isEmpty())
-			{
-				VUERROR("Failed to load texture for %s!", name.cString());
-				break;
-			}
-			result = Ref<Texture>(new Texture(namePrefix + format));
-			s_Textures.insert({ name, result });
-		}
-		catch (const std::exception& exception)
-		{
-			VUERROR("%s", exception.what());
-			result = s_Default2D;
-		}
-	} break;
+		VUERROR("%s", exception.what());
+		result = s_Default2D;
 	}
 
 	return result;
+}
+
+Ref<Texture> Texture::getCubemap(const String& name)
+{
+	auto it = s_CubemapTextures.find(name);
+	if (it != s_CubemapTextures.end())
+	{
+		auto& wref = it->second;
+		if (!wref.expired())
+			return wref.lock();
+		else
+			s_CubemapTextures.erase(it);
+	}
+
+	u8* pixels = nullptr;
+	u32 width = 0, height = 0;
+	Ref<Texture> result;
+
+	if (loadCubemapPixels(name, &pixels, width, height))
+	{
+		result = Ref<Texture>(new Texture(width, height, pixels, true));
+		s_CubemapTextures.insert({ name, result });
+	}
+	else
+	{
+		result = s_DefaultCubemap;
+	}
+
+	delete pixels;
+	return result;
+}
+
+void Texture::getAsync(const String& name, std::function<void(Ref<Texture>)> callback)
+{
+	auto textureData = new Ref<Texture>();
+	Job::submit([name](void* data) -> bool
+	{
+		Ref<Texture>* texture = reinterpret_cast<Ref<Texture>*>(data);
+		*texture = get(name);
+		return true;
+	}, textureData, [callback](bool result, void* data)
+	{
+		Ref<Texture>* texture = reinterpret_cast<Ref<Texture>*>(data);
+		if (result)
+		{
+			callback(*reinterpret_cast<Ref<Texture>*>(data));
+		}
+		delete texture;
+	}
+	);
+}
+
+struct AsyncTextureLoadingData
+{
+	u8* pixels = nullptr;
+	u32 width = 0;
+	u32 height = 0;
+};
+
+void Texture::getCubemapAsync(const String& name, std::function<void(Ref<Texture>)> callback)
+{
+	AsyncTextureLoadingData* data = new AsyncTextureLoadingData;
+	Job::submit([name](void* _data) -> bool
+	{
+		AsyncTextureLoadingData* loadingData = reinterpret_cast<AsyncTextureLoadingData*>(_data);
+		return loadCubemapPixels(name, &loadingData->pixels, loadingData->width, loadingData->height);
+	}, data, [name, callback](bool result, void* _data)
+	{
+		AsyncTextureLoadingData* loadingData = reinterpret_cast<AsyncTextureLoadingData*>(_data);
+		Ref<Texture> texture;
+		if (result)
+		{
+			texture = Ref<Texture>(new Texture(loadingData->width, loadingData->height, loadingData->pixels, true));
+			s_CubemapTextures.insert({ name, texture });
+		}
+		else
+		{
+			texture = s_DefaultCubemap;
+		}
+
+		callback(texture);
+		delete[] loadingData->pixels;
+		delete loadingData;
+	}
+	);
 }
 
 Texture::Texture(const String& path)
@@ -193,8 +196,8 @@ void Texture::loadFromPixelArray(u32 width, u32 heigth, u8* pixels, bool isCubeM
 	}
 
 	m_Image = Image(width, heigth,
-		VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-		info);
+					VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+					info);
 
 	m_Image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, info);
 
@@ -213,6 +216,7 @@ Texture::Texture(u32 width, u32 heigth, u8* pixels, bool isCubeMap)
 Texture::~Texture() = default;
 
 std::unordered_map<String, WRef<Texture>> Texture::s_Textures = {};
+std::unordered_map<String, WRef<Texture>> Texture::s_CubemapTextures = {};
 Ref<Texture> Texture::s_Default2D;
 Ref<Texture> Texture::s_DefaultCubemap;
 
@@ -268,10 +272,10 @@ void Texture::makeDefaultCubemap()
 				if (((x / box) + (y / box)) % 2)
 				{
 					// purple
-					pixels[imgOffset * n +(y + x * height) * 4 + 0] = static_cast<u8>(0xff); // r
-					pixels[imgOffset * n +(y + x * height) * 4 + 1] = static_cast<u8>(0x00); // g
-					pixels[imgOffset * n +(y + x * height) * 4 + 2] = static_cast<u8>(0xff); // b
-					pixels[imgOffset * n +(y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
+					pixels[imgOffset * n + (y + x * height) * 4 + 0] = static_cast<u8>(0xff); // r
+					pixels[imgOffset * n + (y + x * height) * 4 + 1] = static_cast<u8>(0x00); // g
+					pixels[imgOffset * n + (y + x * height) * 4 + 2] = static_cast<u8>(0xff); // b
+					pixels[imgOffset * n + (y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
 				}
 				else
 				{
@@ -298,6 +302,9 @@ bool Texture::init()
 
 void Texture::cleanup()
 {
+	s_Textures.clear();
+	s_CubemapTextures.clear();
+
 	s_Default2D.reset();
 	s_DefaultCubemap.reset();
 }
@@ -339,6 +346,77 @@ TextureSampler::~TextureSampler()
 	{
 		vkDestroySampler(vulkanData.device, m_Handle, vulkanData.allocator);
 	}
+}
+
+bool loadCubemapPixels(const String& name, u8** pixelsPointer, u32& width, u32& height)
+{
+	String namePrefix = rendererData.resourceInfo.path + "textures/" + name;
+
+	// r l u d f b
+	String fileNames[6] = {
+		namePrefix + "_r",
+		namePrefix + "_l",
+		namePrefix + "_u",
+		namePrefix + "_d",
+		namePrefix + "_f",
+		namePrefix + "_b"
+	};
+
+	u8* pixels = nullptr;
+	u64 imgSize = 0, offset = 0;
+	for (u64 i = 0; i < 6; ++i)
+	{
+		i32 texWidth, texHeight, texChannels;
+		String format;
+		for (auto& ext : supportedExtensions)
+		{
+			if (std::filesystem::exists((fileNames[i] + ext).cString()))
+			{
+				format = ext;
+				break;
+			}
+		}
+		if (format.isEmpty())
+		{
+			VUERROR("Failed to load cubemap texture for %s!", name.cString());
+			break;
+		}
+
+		stbi_uc* img = stbi_load((fileNames[i] + format).cString(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		if (!img)
+		{
+			VUERROR("Failed to load cubemap texture at %s!", fileNames[i].cString());
+			break;
+		}
+
+		if (i == 0)
+		{
+			width = texWidth;
+			height = texHeight;
+			imgSize = width * 4LL * height * 6;
+			pixels = new u8[imgSize];
+		}
+		else
+		{
+			if (width != texWidth || height != texHeight)
+			{
+				VUERROR("Cubemap textures must have all the same size!");
+				stbi_image_free(img);
+				break;
+			}
+		}
+
+		u64 loadedImgSize = texWidth * 4LL * texHeight;
+
+		std::memcpy(pixels + offset, img, loadedImgSize);
+		offset += loadedImgSize;
+
+		stbi_image_free(img);
+	}
+
+	*pixelsPointer = pixels; 
+
+	return pixels && imgSize == offset;
 }
 
 } // namespace vulture

@@ -2,8 +2,8 @@
 
 namespace vulture {
 
-VertexLayout Skybox::s_VertexLayout = VertexLayout( sizeof(SkyboxVertex),
-	{ {VK_FORMAT_R32G32B32_SFLOAT, static_cast<u32>(offsetof(SkyboxVertex, position))} });
+VertexLayout Skybox::s_VertexLayout = VertexLayout(sizeof(SkyboxVertex),
+												   { {VK_FORMAT_R32G32B32_SFLOAT, static_cast<u32>(offsetof(SkyboxVertex, position))} });
 
 Skybox::Skybox(DescriptorPool& descriptorsPool) :
 	m_DescriptorPool(&descriptorsPool)
@@ -17,7 +17,7 @@ Skybox::Skybox(DescriptorPool& descriptorsPool) :
 	config.useDepthTesting = false;
 
 	m_Pipeline = Ref<Pipeline>(
-		new Pipeline( Renderer::getRenderPass(),
+		new Pipeline(Renderer::getRenderPass(),
 		"res/shaders/Skybox_vert.spv", "res/shaders/Skybox_frag.spv",
 		{ m_DSLayout.get() },
 		s_VertexLayout,
@@ -82,9 +82,11 @@ void Skybox::set(const String& name)
 		}
 		else
 		{
-			m_Texture = Texture::get(name, TextureType::CUBE_MAP);
-			m_TextureSampler = makeRef<TextureSampler>(*m_Texture);
-			m_DescriptorSet = m_DescriptorPool->getDescriptorSet(*m_DSLayout, { m_Uniform, *m_TextureSampler });
+			Texture::getCubemapAsync(name, [this](Ref<Texture> texture) {
+				m_Texture = texture;
+				m_TextureSampler = makeRef<TextureSampler>(*m_Texture);
+				m_DescriptorSet = m_DescriptorPool->getDescriptorSet(*m_DSLayout, { m_Uniform, *m_TextureSampler });
+			});
 		}
 		m_CurrentName = name;
 		emit(SkyboxRecreated{});
@@ -93,7 +95,8 @@ void Skybox::set(const String& name)
 
 void Skybox::recordCommandBuffer(FrameContext& target)
 {
-	if (m_DescriptorSet) {
+	if (m_DescriptorSet)
+	{
 		target.bindPipeline(*m_Pipeline);
 		target.bindDescriptorSet(*m_Pipeline, *m_DescriptorSet, 0);
 		target.bindVertexBuffer(m_VertexBuffer);
