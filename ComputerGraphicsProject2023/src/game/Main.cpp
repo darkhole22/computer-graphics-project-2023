@@ -43,7 +43,7 @@ public:
 
 		ui = makeRef<UI>();
 
-		auto volcano = makeRef<GameObject>("res/models/vulture.obj", "vulture");
+		auto volcano = makeRef<GameObject>("vulture", "vulture");
 		volcano->setPosition(-5.0f, 0.0f, -5.0f);
 		scene->addObject(volcano);
 
@@ -68,12 +68,12 @@ public:
 		lightTween->loop();
 		lightTween->addMethodTweener(lightRotation, 0.0f, glm::radians(360.0f), 10.0f);
 
-		auto f = makeRef<GameObject>("res/models/floor.obj", "floor");
+		auto f = makeRef<GameObject>("floor", "floor");
 		f->setPosition(-50.0f, 0, -50.0f);
 		f->setScale(100.0f, 1.0f, 100.0f);
 		scene->addObject(f);
 
-		character = makeRef<Character>(makeRef<GameObject>("res/models/character.obj", "character"));
+		character = makeRef<Character>(makeRef<GameObject>("character", "character"));
 		scene->addObject(character->m_GameObject);
 
 		tweenTest = makeRef<TweenTest>();

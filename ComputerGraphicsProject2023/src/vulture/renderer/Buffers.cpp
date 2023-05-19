@@ -10,16 +10,6 @@
 #include <stdexcept>
 #include <cstring>
 
-#ifdef VUDEBUG
-// DEBUG
-#define VALIDATION_LAYER true
-#define VALIDATION_LAYER_IF(x) x
-#else
-// RELEASE
-#define VALIDATION_LAYER false
-#define VALIDATION_LAYER_IF(x)
-#endif // !NDEBUG
-
 #define ASSERT_VK_SUCCESS(func, message)   \
 	if (func != VK_SUCCESS)                \
 	{                                      \
