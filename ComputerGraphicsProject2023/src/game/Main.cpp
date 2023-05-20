@@ -78,7 +78,7 @@ public:
 		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
 		{
 			static bool useSkybox = false;
-			scene->setSkybox(useSkybox ? skyboxName : "");
+			scene->setSkybox(useSkybox ? skyboxName : "rural");
 			useSkybox = !useSkybox;
 		}
 

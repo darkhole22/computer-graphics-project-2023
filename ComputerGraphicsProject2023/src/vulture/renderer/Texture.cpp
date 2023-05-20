@@ -366,6 +366,7 @@ TextureSampler::~TextureSampler()
 {
 	if (m_Handle != VK_NULL_HANDLE)
 	{
+		vkDeviceWaitIdle(vulkanData.device);
 		vkDestroySampler(vulkanData.device, m_Handle, vulkanData.allocator);
 	}
 }
