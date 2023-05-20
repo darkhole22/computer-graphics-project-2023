@@ -13,6 +13,7 @@ void Character::update(float dt)
 
 	m_Camera->rotate(glm::vec3(-rotation.x, rotation.y, 0.0f) * c_RotSpeed * dt);
 	m_Camera->addRoll(roll * c_RotSpeed * dt);
+
 	m_Camera->translate(glm::vec3(movement.x, 0.0f, movement.y) * c_Speed * dt);
 }
 

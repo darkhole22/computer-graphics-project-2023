@@ -16,6 +16,8 @@ public:
 	Ref<UI> ui = nullptr;
 	Ref<Character> character = nullptr;
 
+	Ref<GameObject> enemy;
+
 #if 1
 	String skyboxName = "desert";
 #else
@@ -35,7 +37,7 @@ public:
 		 * VOLCANO *
 		 ***********/
 		auto volcano = makeRef<GameObject>("vulture");
-		volcano->setPosition(-5.0f, 0.0f, -5.0f);
+		volcano->transform.setPosition(-5.0f, 0.0f, -5.0f);
 		scene->addObject(volcano);
 
 		Ref<Tween> tween = scene->makeTween();
@@ -43,7 +45,7 @@ public:
 		tween->addIntervalTweener(0.5f);
 
 		std::function<void(float)> scaleCallback = [volcano](float size) {
-			volcano->setScale(size, size, size);
+			volcano->transform.setScale(size, size, size);
 		};
 
 		std::function<void(float)> lightRotation = [this](float angle) {
@@ -68,9 +70,16 @@ public:
 		 *********/
 
 		auto f = makeRef<GameObject>("floor");
-		f->setPosition(-50.0f, 0, -50.0f);
-		f->setScale(100.0f, 1.0f, 100.0f);
+		f->transform.setPosition(-50.0f, 0, -50.0f);
+		f->transform.setScale(100.0f, 1.0f, 100.0f);
 		scene->addObject(f);
+
+
+		enemy = makeRef<GameObject>("character");
+		enemy->transform.setPosition(10.0f, 0.0f, 10.f);
+		enemy->transform.setScale(3.0f, 3.0f, 3.0f);
+		enemy->transform.setRotation(0.0f, glm::radians(25.0f), 0.0f);
+		scene->addObject(enemy);
 	}
 
 	void update(float dt) override
@@ -89,6 +98,9 @@ public:
 
 		character->update(dt);
 		ui->update(dt);
+
+		enemy->transform.translate(4.0f * dt, 0.0f, 0.0f);
+		enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
 	}
 
 private:
