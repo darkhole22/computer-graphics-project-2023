@@ -39,7 +39,7 @@ public:
 	 *
 	 * @param translation The amount to translate the object by as a glm::vec3.
 	 */
-	inline void translate(glm::vec3 translation) {
+	void translate(glm::vec3 translation) {
 		// m_Position += translation;
 		auto upDir = glm::vec3(0.0f, 1.0f, 0.0f);
 		auto frontDir = glm::normalize(m_Rotation * glm::vec3(1.0f, 0.0f, 0.0f));
@@ -107,11 +107,19 @@ public:
 	/**
 	 * @brief Rotates the object by the specified angles around the x, y, and z axes, respectively.
 	 *
+	 * @param rotation The rotation vector around the three axes.
+	 */
+	inline void rotate(glm::vec3 rotation) { m_Rotation *= glm::quat(rotation); m_ShouldUpdate = true; }
+
+
+	/**
+	 * @brief Rotates the object by the specified angles around the x, y, and z axes, respectively.
+	 *
 	 * @param x The angle to rotate around the x-axis.
 	 * @param y The angle to rotate around the y-axis.
 	 * @param z The angle to rotate around the z-axis.
 	 */
-	inline void rotate(f32 x, f32 y, f32 z) { m_Rotation *= glm::quat(glm::vec3(x, y, z)); m_ShouldUpdate = true; }
+	inline void rotate(f32 x, f32 y, f32 z) { rotate(glm::vec3(x, y, z)); }
 
 	/**
 	 * @brief Computes the World Matrix representing the current transform.
