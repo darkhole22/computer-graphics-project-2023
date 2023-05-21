@@ -65,15 +65,6 @@ public:
 			scene->getWorld()->directLight.direction = glm::vec3(sin(angle), 0.0f, cos(angle));
 		};
 
-		tween->addMethodTweener(scaleCallback, 3.0f, 6.0f, 2.0f);
-		tween->addMethodTweener(scaleCallback, 6.0f, 3.0f, 2.0f);
-
-		/*********
-		 * LIGHT *
-		 *********/
-		scene->getWorld()->directLight.color = glm::vec4(1.0f);
-		scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
-
 		auto lightTween = scene->makeTween();
 		lightTween->loop();
 		lightTween->addMethodTweener(lightRotation, 0.0f, glm::radians(360.0f), 10.0f);
@@ -83,8 +74,8 @@ public:
 		 *********/
 
 		auto f = makeRef<GameObject>("floor");
-		f->setPosition(-50.0f, 0, -50.0f);
-		f->setScale(100.0f, 1.0f, 100.0f);
+		f->transform.setPosition(-50.0f, 0, -50.0f);
+		f->transform.setScale(100.0f, 1.0f, 100.0f);
 		scene->addObject(f);
 
 		/**************
@@ -102,8 +93,8 @@ public:
 			for(int i = 0; i <= 10; i++) {
 				auto randomLocation = scene->getCamera()->position + glm::vec3(uni(rng), -scene->getCamera()->position.y, uni(rng));
 				Ref<Enemy> enemy = makeRef<Enemy>();
-				enemy->m_GameObject->setPosition(randomLocation);
-				enemy->m_GameObject->setScale(3.0f, 3.0f, 3.0f);
+				enemy->m_GameObject->transform.setPosition(randomLocation);
+				enemy->m_GameObject->transform.setScale(3.0f, 3.0f, 3.0f);
 				enemies.push_back(enemy);
 				scene->addObject(enemy->m_GameObject);
 				VUINFO("Spawning enemy...");
@@ -130,9 +121,6 @@ public:
 		for(const auto& enemy: enemies) enemy->update(dt);
 
 		ui->update(dt);
-
-		enemy->transform.translate(4.0f * dt, 0.0f, 0.0f);
-		enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
 	}
 
 private:

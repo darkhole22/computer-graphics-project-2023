@@ -35,6 +35,11 @@ public:
 	glm::vec3 up = glm::vec3(0, 1, 0);
 
 	/*
+	* @brief A float that holds the roll rotation.
+	*/
+	float roll = 0.0f;
+
+	/*
 	* @brief Maximum vertical angle the camera can be rotated by.
 	*/
 	float maxVerticalAngle = glm::radians(85.0f);
