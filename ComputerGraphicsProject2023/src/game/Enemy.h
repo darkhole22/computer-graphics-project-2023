@@ -19,7 +19,6 @@ public:
 
 		auto dir = glm::normalize(playerPos - m_GameObject->transform.getPosition());
 
-		VUINFO("%f %f %f", dir.x, dir.y, dir.z);
 		m_GameObject->transform.translate(dir * c_Speed * dt);
 	}
 private:

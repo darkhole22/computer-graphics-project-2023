@@ -57,11 +57,29 @@ public:
 	void translate(glm::vec3 translation);
 
 	/*
+	* @brief Translates the camera relatively to its look-direction.
+	*
+	* @param x: translation amount over the x (relative) axis.
+	* @param y: translation amount over the y (relative) axis.
+	* @param z: translation amount over the z (relative) axis.
+	*/
+	inline void translate(float x, float y, float z) { translate(glm::vec3(x, y, z)); };
+
+	/*
 	* @brief Rotates the camera.
 	*
 	* @param rotate: rotation angles around the three axes.
 	*/
 	void rotate(glm::vec3 rotation);
+
+	/*
+	* @brief Rotates the camera.
+	*
+	* @param x: rotation amount over the x axis.
+	* @param y: rotation amount over the y axis.
+	* @param z: rotation amount over the z axis.
+	*/
+	inline void rotate(float x, float y, float z) { rotate(glm::vec3(x, y, z)); };
 
 	/*
 	* @brief Rolls the camera without changing the up direction.

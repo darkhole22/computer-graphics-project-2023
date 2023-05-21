@@ -1,11 +1,9 @@
 #define VU_LOGGER_TRACE_ENABLED
 
-#include <random>
 #include "vulture/core/Logger.h"
 #include "vulture/core/Application.h"
-#include "Character.h"
 #include "UI.h"
-#include "Enemy.h"
+#include "GameManager.h"
 
 using namespace vulture;
 
@@ -15,11 +13,10 @@ class TestGame : public Game
 {
 public:
 	Scene* scene = nullptr;
+	float c_CameraHeight = 1.5f;
 
 	Ref<UI> ui = nullptr;
-	Ref<Character> character = nullptr;
-
-	std::vector<Ref<Enemy>> enemies;
+	Ref<GameManager> gameManager = nullptr;
 
 #if 1
 	String skyboxName = "desert";
@@ -29,18 +26,24 @@ public:
 
 	void setup() override
 	{
-		setupInputActions();
 		scene = Application::getScene();
 
+		setupInputActions();
+
+		/**********
+		 * SKYBOX *
+		 **********/
 		scene->setSkybox(skyboxName);
+
+		/**********
+		 *   UI   *
+		 **********/
 		ui = makeRef<UI>();
-		character = makeRef<Character>();
 
 		/***********
 		 * VOLCANO *
 		 ***********/
 		auto volcano = makeRef<GameObject>("vulture");
-
 		volcano->transform.setPosition(-5.0f, 0.0f, -5.0f);
 		scene->addObject(volcano);
 
@@ -81,25 +84,7 @@ public:
 		/**************
 		 * GAME LOGIC *
 		 **************/
-
-		auto waveTween = scene->makeTween();
-		waveTween->loop();
-		waveTween->addIntervalTweener(10.0f);
-		waveTween->addCallbackTweener([this]() {
-			std::random_device rd;     // Only used once to initialise (seed) engine
-			std::mt19937 rng(rd());    // Random-number engine used (Mersenne-Twister in this case)
-			std::uniform_int_distribution<int> uni(-30, 30); // Guaranteed unbiased
-
-			for(int i = 0; i <= 10; i++) {
-				auto randomLocation = scene->getCamera()->position + glm::vec3(uni(rng), -scene->getCamera()->position.y, uni(rng));
-				Ref<Enemy> enemy = makeRef<Enemy>();
-				enemy->m_GameObject->transform.setPosition(randomLocation);
-				enemy->m_GameObject->transform.setScale(3.0f, 3.0f, 3.0f);
-				enemies.push_back(enemy);
-				scene->addObject(enemy->m_GameObject);
-				VUINFO("Spawning enemy...");
-			}
-		});
+		 gameManager = makeRef<GameManager>();
 	}
 
 	void update(float dt) override
@@ -116,9 +101,7 @@ public:
 			scene->getCamera()->lookAt(glm::vec3(-5.0f, 5.0f, -5.0f));
 		}
 
-		character->update(dt);
-
-		for(const auto& enemy: enemies) enemy->update(dt);
+		gameManager->update(dt);
 
 		ui->update(dt);
 	}

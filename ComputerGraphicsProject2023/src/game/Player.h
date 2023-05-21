@@ -11,23 +11,21 @@ using namespace vulture;
 
 namespace game
 {
-class Character
+class Player
 {
 private:
 	const float c_Speed = 10;
 	const float c_RotSpeed = 4.0f;
 
 	Camera* m_Camera;
-
-	glm::vec3 m_Position;
-
 	float c_CameraHeight = 1.5f;
 public:
-	explicit Character()
+	Transform transform;
+
+	explicit Player()
 	{
 		m_Camera = Application::getScene()->getCamera();
-		m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
-		m_Camera->position = m_Position + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+		m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 	}
 
 	void update(float dt);
