@@ -28,7 +28,7 @@ public:
 			for(int i = 0; i <= 10; i++) {
 				auto randomLocation = m_Player->transform.getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
 
-				Ref<Enemy> enemy = makeRef<Enemy>();
+				Ref<Enemy> enemy = makeRef<Enemy>(m_Player);
 				enemy->m_GameObject->transform.setPosition(randomLocation);
 				enemy->m_GameObject->transform.setScale(3.0f, 3.0f, 3.0f);
 
@@ -42,7 +42,7 @@ public:
 	{
 		m_Player->update(dt);
 
-		for(auto e: m_Enemies) { e->update(dt); }
+		for(const auto& e: m_Enemies) { e->update(dt); }
 	}
 private:
 	Scene* m_Scene = nullptr;

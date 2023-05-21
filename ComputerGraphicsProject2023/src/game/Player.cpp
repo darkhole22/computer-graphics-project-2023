@@ -21,6 +21,16 @@ void Player::update(float dt)
 	m_Camera->translate(movement.x, 0.0f, movement.y);
 
 	std::cout << glm::to_string(transform.getPosition()) << " ; " << glm::to_string(m_Camera->position) << std::endl;
+
+	if (Input::isActionJustPressed("FIRE"))
+	{
+		auto b = Bullet();
+		b.setup(transform.getPosition(), m_Camera->direction);
+		m_Bullets.push_back(b);
+		Application::getScene()->addObject(b.m_GameObject);
+	}
+
+	for (auto b : m_Bullets) { b.update(dt); }
 }
 
 } // namespace game

@@ -9,8 +9,36 @@
 
 using namespace vulture;
 
-namespace game
+namespace game {
+
+class Bullet
 {
+private:
+	const float c_Speed = 30.0f;
+	glm::vec3 m_Direction = glm::vec3(1.0f, 0.0f, 0.0f);
+
+public:
+	Ref<GameObject> m_GameObject;
+
+	Bullet()
+	{
+		m_GameObject = makeRef<GameObject>("character");
+		m_GameObject->transform.setScale(0.7f);
+	}
+
+	inline void setup(glm::vec3 startingPosition, glm::vec3 direction)
+	{
+		m_GameObject->transform.setPosition(startingPosition + glm::vec3(0.0f, 0.8f, 0.0f));
+		m_Direction = direction;
+	}
+
+	inline void update(float dt)
+	{
+		m_GameObject->transform.translate(m_Direction * c_Speed * dt);
+	}
+
+};
+
 class Player
 {
 private:
@@ -21,6 +49,8 @@ private:
 	float c_CameraHeight = 1.5f;
 public:
 	Transform transform;
+
+	std::vector<Bullet> m_Bullets;
 
 	explicit Player()
 	{

@@ -82,6 +82,13 @@ public:
 	inline void setScale(f32 x, f32 y, f32 z) { setScale(glm::vec3(x, y, z)); }
 
 	/**
+	 * @brief Sets the scale of the object.
+	 *
+	 * @param scale The new scale in all directions direction.
+	 */
+	inline void setScale(f32 scale) { setScale(glm::vec3(scale, scale, scale)); }
+
+	/**
 	 * @brief Returns the rotation of the object as a quaternion.
 	 *
 	 * @return The rotation of the object as a glm::quat.
@@ -110,7 +117,6 @@ public:
 	 * @param rotation The rotation vector around the three axes.
 	 */
 	inline void rotate(glm::vec3 rotation) { m_Rotation *= glm::quat(rotation); m_ShouldUpdate = true; }
-
 
 	/**
 	 * @brief Rotates the object by the specified angles around the x, y, and z axes, respectively.

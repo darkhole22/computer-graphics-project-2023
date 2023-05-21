@@ -141,6 +141,14 @@ private:
 		Input::setAction("MOVE_DOWN", downAction);
 
 		/**********************************************
+		 *                  ACTIONS                   *
+		 **********************************************/
+		InputAction fireAction{};
+		fireAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_SPACE}} };
+		Input::setAction("FIRE", fireAction);
+
+		/**********************************************
 		 *                  CAMERA                    *
 		 **********************************************/
 
@@ -175,24 +183,6 @@ private:
 		rotateDownAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, GAMEPAD_AXIS_POS}}} };
 		Input::setAction("ROTATE_DOWN", rotateDownAction);
-
-		InputAction rollLeftAction{};
-		rollLeftAction.keyboardBindings = {
-				KeyboardBinding{{GLFW_KEY_Q}},
-		};
-		rollLeftAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_LEFT_THUMB}}
-		};
-		Input::setAction("ROLL_LEFT", rollLeftAction);
-
-		InputAction rollRightAction{};
-		rollRightAction.keyboardBindings = {
-				KeyboardBinding{{GLFW_KEY_E}},
-		};
-		rollRightAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_RIGHT_THUMB}}
-		};
-		Input::setAction("ROLL_RIGHT", rollRightAction);
 
 		/**********************************************
 		 *                  DEBUG                     *
