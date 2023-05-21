@@ -40,7 +40,8 @@ public:
 		 * VOLCANO *
 		 ***********/
 		auto volcano = makeRef<GameObject>("vulture");
-		volcano->setPosition(-5.0f, 0.0f, -5.0f);
+
+		volcano->transform.setPosition(-5.0f, 0.0f, -5.0f);
 		scene->addObject(volcano);
 
 		Ref<Tween> tween = scene->makeTween();
@@ -48,7 +49,7 @@ public:
 		tween->addIntervalTweener(0.5f);
 
 		std::function<void(float)> scaleCallback = [volcano](float size) {
-			volcano->setScale(size, size, size);
+			volcano->transform.setScale(size, size, size);
 		};
 
 		tween->addMethodTweener(scaleCallback, 3.0f, 6.0f, 2.0f);
@@ -63,6 +64,15 @@ public:
 		std::function<void(float)> lightRotation = [this](float angle) {
 			scene->getWorld()->directLight.direction = glm::vec3(sin(angle), 0.0f, cos(angle));
 		};
+
+		tween->addMethodTweener(scaleCallback, 3.0f, 6.0f, 2.0f);
+		tween->addMethodTweener(scaleCallback, 6.0f, 3.0f, 2.0f);
+
+		/*********
+		 * LIGHT *
+		 *********/
+		scene->getWorld()->directLight.color = glm::vec4(1.0f);
+		scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
 
 		auto lightTween = scene->makeTween();
 		lightTween->loop();
@@ -106,8 +116,13 @@ public:
 		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
 		{
 			static bool useSkybox = false;
-			scene->setSkybox(useSkybox ? skyboxName : "");
+			scene->setSkybox(useSkybox ? skyboxName : "rural");
 			useSkybox = !useSkybox;
+		}
+
+		if (Input::isKeyPressed(GLFW_KEY_H))
+		{
+			scene->getCamera()->lookAt(glm::vec3(-5.0f, 5.0f, -5.0f));
 		}
 
 		character->update(dt);
@@ -115,6 +130,9 @@ public:
 		for(const auto& enemy: enemies) enemy->update(dt);
 
 		ui->update(dt);
+
+		enemy->transform.translate(4.0f * dt, 0.0f, 0.0f);
+		enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
 	}
 
 private:
@@ -186,6 +204,24 @@ private:
 		rotateDownAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, GAMEPAD_AXIS_POS}}} };
 		Input::setAction("ROTATE_DOWN", rotateDownAction);
+
+		InputAction rollLeftAction{};
+		rollLeftAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_Q}},
+		};
+		rollLeftAction.gamepadButtonBindings = {
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_LEFT_THUMB}}
+		};
+		Input::setAction("ROLL_LEFT", rollLeftAction);
+
+		InputAction rollRightAction{};
+		rollRightAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_E}},
+		};
+		rollRightAction.gamepadButtonBindings = {
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_RIGHT_THUMB}}
+		};
+		Input::setAction("ROLL_RIGHT", rollRightAction);
 
 		/**********************************************
 		 *                  DEBUG                     *

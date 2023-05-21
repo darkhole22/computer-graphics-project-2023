@@ -18,11 +18,16 @@ private:
 	const float c_RotSpeed = 4.0f;
 
 	Camera* m_Camera;
+
+	glm::vec3 m_Position;
+
+	float c_CameraHeight = 1.5f;
 public:
 	explicit Character()
 	{
 		m_Camera = Application::getScene()->getCamera();
-		m_Camera->position = glm::vec3(0.0f, 1.5f, 5.0f);
+		m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
+		m_Camera->position = m_Position + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 	}
 
 	void update(float dt);

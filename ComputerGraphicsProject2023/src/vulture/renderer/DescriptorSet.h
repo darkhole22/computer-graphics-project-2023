@@ -189,7 +189,7 @@ private:
 
 	bool create();
 	void cleanup();
-	void recreate(bool clean = true);
+	void recreate();
 
 	std::vector<VkDescriptorSet> m_Handles;
 	DescriptorPool* m_Pool;

@@ -1,5 +1,6 @@
 #include "DescriptorSet.h"
 
+#define VU_LOGGER_DISABLE_INFO
 #include "vulture/core/Logger.h"
 #include "VulkanContext.h"
 
@@ -114,6 +115,13 @@ bool DescriptorSet::create()
 		vkUpdateDescriptorSets(vulkanData.device, static_cast<u32>(writes.size()), writes.data(), 0, nullptr);
 	}
 
+#ifdef VU_LOGGER_INFO_ENABLED
+	for (u64 i = 0; i < m_Handles.size(); i++)
+	{
+		VUINFO("Descriptor set [%p] created from the pool [%p]", m_Handles[i], m_Pool->getHandle());
+	}
+#endif
+
 	return true;
 }
 
@@ -122,11 +130,8 @@ void DescriptorSet::cleanup()
 	vkFreeDescriptorSets(vulkanData.device, m_Pool->getHandle(), static_cast<u32>(m_Handles.size()), m_Handles.data());
 }
 
-void DescriptorSet::recreate(bool clean)
+void DescriptorSet::recreate()
 {
-	if (clean)
-		cleanup();
-
 	m_Handles.resize(0);
 	create();
 }
@@ -190,7 +195,6 @@ Ref<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSetLayout& l
 		if (it->use_count() <= 1)
 		{
 			it = m_Sets.erase(it);
-			m_Size--;
 		}
 		else
 			it++;
@@ -241,6 +245,7 @@ void DescriptorPool::cleanup()
 bool DescriptorPool::recreate()
 {
 	cleanup();
+	vkQueueWaitIdle(vulkanData.graphicsQueue);
 	std::vector<VkDescriptorPoolSize> poolSizes{};
 	poolSizes.reserve(m_TypeInfos.size());
 
@@ -264,7 +269,7 @@ bool DescriptorPool::recreate()
 	{
 		if (set.use_count() > 1)
 		{
-			set->recreate(false);
+			set->recreate();
 		}
 	}
 
