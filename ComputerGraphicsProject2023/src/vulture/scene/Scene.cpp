@@ -146,7 +146,7 @@ void Scene::addObject(Ref<GameObject> obj)
 {
 	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 
-	p.addObject(obj->m_Handle, RenderableObject(obj->m_Model, m_DescriptorsPool.getDescriptorSet(*m_GameObjectDSL.get(), { obj->m_Uniform, *obj->m_TextureSampler })));
+	p.addObject(obj->m_Handle, RenderableObject(obj->m_Model, m_DescriptorsPool.getDescriptorSet(m_GameObjectDSL, { obj->m_Uniform, *obj->m_TextureSampler })));
 	m_GameObjects[obj->m_Handle] = obj;
 
 	setModified();

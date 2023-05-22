@@ -83,8 +83,8 @@ void DescriptorWrite::map(u32 index) const
 	}
 }
 
-DescriptorSet::DescriptorSet(DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites)
-	: m_Pool(&pool), m_Layout(&layout), m_DescriptorWrites(descriptorWrites)
+DescriptorSet::DescriptorSet(DescriptorPool& pool, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites)
+	: m_Pool(&pool), m_Layout(layout), m_DescriptorWrites(descriptorWrites)
 {
 	create();
 }
@@ -165,11 +165,11 @@ void DescriptorPool::setFrameCount(u32 frameCount)
 	recreate();
 }
 
-void DescriptorPool::reserveSpace(u32 count, const DescriptorSetLayout& layout)
+void DescriptorPool::reserveSpace(u32 count, Ref<DescriptorSetLayout> layout)
 {
 	m_Size += count;
 
-	auto& layoutBindings = layout.getBindings();
+	auto& layoutBindings = layout->getBindings();
 	for (auto& binding : layoutBindings)
 	{
 		auto it = m_TypeInfos.find(binding.descriptorType);
@@ -187,7 +187,7 @@ void DescriptorPool::reserveSpace(u32 count, const DescriptorSetLayout& layout)
 	recreate();
 }
 
-Ref<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites)
+Ref<DescriptorSet> DescriptorPool::getDescriptorSet(Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites)
 {
 	bool shouldRecreate = false;
 	for (auto it = m_Sets.begin(); it != m_Sets.end();)
@@ -205,7 +205,7 @@ Ref<DescriptorSet> DescriptorPool::getDescriptorSet(const DescriptorSetLayout& l
 		m_Size++;
 	}
 
-	auto& layoutBindings = layout.getBindings();
+	auto& layoutBindings = layout->getBindings();
 	for (auto& binding : layoutBindings)
 	{
 		auto it = m_TypeInfos.find(binding.descriptorType);

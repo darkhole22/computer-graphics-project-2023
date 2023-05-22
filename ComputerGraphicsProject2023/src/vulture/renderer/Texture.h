@@ -4,33 +4,29 @@
 
 namespace vulture {
 
-constexpr const String DEFAULT_TEXTURE_NAME = "__default__texture2D__";
-
 enum class TextureType
 {
 	TEXTURE_2D,
 	CUBE_MAP
 };
 
-struct NoiseConfig
-{};
-
 class Texture
 {
 public:
 	NO_COPY(Texture)
+public:
 
-		/**
-		* @brief Returns a referance to the specified texture or to the default texture if `name` is invalid.
-		*
-		* @param name: the texture unique identifier (not the file name).
-		*
-		* @return a referance to the texture.
-		*/
-		static Ref<Texture> get(const String& name);
+	/**
+	* @brief Returns a referance to the specified texture or to the default texture if `name` is invalid.
+	*
+	* @param name: the texture unique identifier (not the file name).
+	*
+	* @return a referance to the texture.
+	*/
+	static Ref<Texture> get(const String& name);
 	static Ref<Texture> getCubemap(const String& name);
 
-	static Ref<Texture> getNoise(u32 width, u32 height, i32 seed, const NoiseConfig& config);
+	static Ref<Texture> make(u32 width, u32 height, glm::vec2 position, glm::vec2 dimension, std::function<glm::vec4(f32, f32)> generator);
 
 	static void getAsync(const String& name, std::function<void(Ref<Texture>)> callback);
 	static void getCubemapAsync(const String& name, std::function<void(Ref<Texture>)> callback);
@@ -45,6 +41,7 @@ public:
 private:
 	Texture(const String& path);
 	Texture(u32 width, u32 heigth, u8* pixels, bool isCubeMap = false);
+	Texture(u32 width, u32 heigth, f32* pixels);
 
 	void loadFromPixelArray(u32 width, u32 heigth, u8* pixels, bool isCubeMap = false);
 
@@ -93,8 +90,9 @@ class TextureSampler
 {
 public:
 	NO_COPY(TextureSampler)
+public:
 
-		TextureSampler(const Texture& texture, const TextureSamplerConfig& config = TextureSamplerConfig::defaultConfig);
+	TextureSampler(const Texture& texture, const TextureSamplerConfig& config = TextureSamplerConfig::defaultConfig);
 
 	inline VkSampler getHandle() const { return m_Handle; };
 	inline VkImageView getView() const { return m_View; }

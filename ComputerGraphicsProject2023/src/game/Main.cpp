@@ -19,6 +19,8 @@ public:
 	Ref<UI> ui = nullptr;
 	Ref<Character> character = nullptr;
 
+	Ref<GameObject> enemy;
+
 #if 1
 	String skyboxName = "desert";
 #else
@@ -38,13 +40,13 @@ public:
 		 * VOLCANO *
 		 ***********/
 		auto volcano = makeRef<GameObject>("vulture");
-		volcano->setPosition(-5.0f, 0.0f, -5.0f);
+		volcano->transform.setPosition(-5.0f, 0.0f, -5.0f);
 		scene->addObject(volcano);
 
 		auto tween = scene->makeTween()->loop();
 
 		std::function<void(float)> scaleCallback = [volcano](float size) {
-			volcano->setScale(size, size, size);
+			volcano->transform.setScale(size, size, size);
 		};
 
 		tween->addMethodTweener(scaleCallback, 1.0f, 3.0f, 2.0f);
@@ -57,8 +59,15 @@ public:
 		scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
 
 		scene->makeTween()->loop()->addMethodTweener<float>([this](float angle) {
-			scene->getWorld()->directLight.direction = glm::vec3(sin(angle), 0.0f, cos(angle));
+			constexpr float hAngle = glm::radians(10.0f);
+			scene->getWorld()->directLight.direction = glm::vec3(sin(angle) * cos(hAngle), sin(hAngle), cos(angle) * cos(hAngle));
 		}, 0.0f, glm::radians(360.0f), 10.0f);
+
+		enemy = makeRef<GameObject>("character");
+		enemy->transform.setPosition(10.0f, 0.0f, 10.f);
+		enemy->transform.setScale(3.0f, 3.0f, 3.0f);
+		enemy->transform.setRotation(0.0f, glm::radians(25.0f), 0.0f);
+		scene->addObject(enemy);
 
 		/***********
 		 * TERRAIN *
@@ -71,7 +80,7 @@ public:
 		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
 		{
 			static bool useSkybox = false;
-			scene->setSkybox(useSkybox ? skyboxName : "");
+			scene->setSkybox(useSkybox ? skyboxName : "rural");
 			useSkybox = !useSkybox;
 		}
 
@@ -82,6 +91,11 @@ public:
 
 		character->update(dt);
 		ui->update(dt);
+
+		enemy->transform.translate(4.0f * dt, 0.0f, 0.0f);
+		enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
+
+		terrain->update(dt);
 	}
 
 private:
@@ -193,6 +207,22 @@ private:
 				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_Y}}
 		};
 		Input::setAction("TOGGLE_SKYBOX", toggleSkyboxAction);
+
+		/**********************************************
+		 *                 TERRAIN                    *
+		 **********************************************/
+
+		InputAction terrainDownAction{};
+		terrainDownAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_K}},
+		};
+		Input::setAction("TERRAIN_DOWN", terrainDownAction);
+
+		InputAction terrainUpAction{};
+		terrainUpAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_L}},
+		};
+		Input::setAction("TERRAIN_UP", terrainUpAction);
 	}
 };
 

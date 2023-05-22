@@ -6,7 +6,6 @@
 #include "vulture/core/Job.h"
 
 #include "stb_image.h"
-#include "stb_perlin.h"
 
 #include <cmath> // std::floor, std::log2, std::max
 #include <cstring> // std::memcpy
@@ -93,33 +92,30 @@ Ref<Texture> Texture::getCubemap(const String& name)
 	return result;
 }
 
-Ref<Texture> Texture::getNoise(u32 width, u32 height, i32 seed, const NoiseConfig& config)
+Ref<Texture> Texture::make(u32 width, u32 height, glm::vec2 position, glm::vec2 dimension, std::function<glm::vec4(f32, f32)> generator)
 {
 	Ref<Texture> result;
-	u8* pixels = new u8[width * 4LL * height];
+	f32* pixels = new f32[width * 4LL * height];
 
-	float dim = static_cast<float>(std::min(width, height));
-	const float scale = 8;
+	f32 minSide = static_cast<f32>(std::min(width, height));
 
 	for (u64 y = 0; y < height; y++)
 	{
 		for (u64 x = 0; x < width; x++)
 		{
-			float noiseX = scale * static_cast<float>(x) / dim;
-			float noiseY = scale * static_cast<float>(y) / dim;
+			f32 noiseX = dimension.x * static_cast<f32>(x) / minSide;
+			f32 noiseY = dimension.y * static_cast<f32>(y) / minSide;
 
-			float noise = stb_perlin_noise3_seed(noiseX, noiseY, 0, 0, 0, 0, seed) + 1.0;
-			u8 pixelColor = static_cast<u8>(noise * 128.0f);
-			pixels[(y + x * height) * 4 + 0] = pixelColor; // r
-			pixels[(y + x * height) * 4 + 1] = pixelColor; // g
-			pixels[(y + x * height) * 4 + 2] = pixelColor; // b
+			auto color = generator(position.x + noiseX, position.y + noiseY);
 
-
-			pixels[(y + x * height) * 4 + 3] = pixelColor; // a
+			pixels[(y + x * height) * 4 + 3] = color.a; // a
+			pixels[(y + x * height) * 4 + 2] = color.r; // r
+			pixels[(y + x * height) * 4 + 1] = color.g; // g
+			pixels[(y + x * height) * 4 + 0] = color.b; // b
 		}
 	}
 
-	result = Ref<Texture>(new Texture(width, height, pixels, false));
+	result = Ref<Texture>(new Texture(width, height, pixels));
 	delete[] pixels;
 	return result;
 }
@@ -267,6 +263,28 @@ Texture::Texture(u32 width, u32 heigth, u8* pixels, bool isCubeMap)
 	loadFromPixelArray(width, heigth, pixels, isCubeMap);
 }
 
+Texture::Texture(u32 width, u32 heigth, f32* pixels)
+{
+	VkDeviceSize imageSize = width * 4LL * heigth * sizeof(f32);
+	m_MipLevels = static_cast<u32>(std::floor(std::log2(std::max(width, heigth)))) + 1;
+
+	Buffer stagingBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	stagingBuffer.map(pixels);
+
+	ImageCreationInfo info{};
+	info.mipLevels = m_MipLevels;
+	info.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+
+	m_Image = Image(width, heigth,
+					VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+					info);
+
+	m_Image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, info);
+
+	m_Image.copyFromBuffer(stagingBuffer, info);
+	m_Image.generateMipmaps(m_MipLevels);
+}
+
 Texture::~Texture() = default;
 
 std::unordered_map<String, WRef<Texture>> Texture::s_Textures = {};
@@ -289,17 +307,17 @@ void Texture::makeDefaultTexture2D()
 			if (((x / box) + (y / box)) % 2)
 			{
 				// purple
-				pixels[(y + x * height) * 4 + 0] = static_cast<u8>(0xff); // r
+				pixels[(y + x * height) * 4 + 0] = static_cast<u8>(0xff); // b
 				pixels[(y + x * height) * 4 + 1] = static_cast<u8>(0x00); // g
-				pixels[(y + x * height) * 4 + 2] = static_cast<u8>(0xff); // b
+				pixels[(y + x * height) * 4 + 2] = static_cast<u8>(0xff); // r
 				pixels[(y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
 			}
 			else
 			{
 				// green
-				pixels[(y + x * height) * 4 + 0] = static_cast<u8>(0x00); // r
+				pixels[(y + x * height) * 4 + 0] = static_cast<u8>(0x00); // b
 				pixels[(y + x * height) * 4 + 1] = static_cast<u8>(0xff); // g
-				pixels[(y + x * height) * 4 + 2] = static_cast<u8>(0x00); // b
+				pixels[(y + x * height) * 4 + 2] = static_cast<u8>(0x00); // r
 				pixels[(y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
 			}
 		}
@@ -326,17 +344,17 @@ void Texture::makeDefaultCubemap()
 				if (((x / box) + (y / box)) % 2)
 				{
 					// purple
-					pixels[imgOffset * n + (y + x * height) * 4 + 0] = static_cast<u8>(0xff); // r
+					pixels[imgOffset * n + (y + x * height) * 4 + 0] = static_cast<u8>(0xff); // b
 					pixels[imgOffset * n + (y + x * height) * 4 + 1] = static_cast<u8>(0x00); // g
-					pixels[imgOffset * n + (y + x * height) * 4 + 2] = static_cast<u8>(0xff); // b
+					pixels[imgOffset * n + (y + x * height) * 4 + 2] = static_cast<u8>(0xff); // r
 					pixels[imgOffset * n + (y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
 				}
 				else
 				{
 					// green
-					pixels[imgOffset * n + (y + x * height) * 4 + 0] = static_cast<u8>(0x00); // r
+					pixels[imgOffset * n + (y + x * height) * 4 + 0] = static_cast<u8>(0x00); // b
 					pixels[imgOffset * n + (y + x * height) * 4 + 1] = static_cast<u8>(0xff); // g
-					pixels[imgOffset * n + (y + x * height) * 4 + 2] = static_cast<u8>(0x00); // b
+					pixels[imgOffset * n + (y + x * height) * 4 + 2] = static_cast<u8>(0x00); // r
 					pixels[imgOffset * n + (y + x * height) * 4 + 3] = static_cast<u8>(0xff); // a
 				}
 			}
@@ -398,6 +416,7 @@ TextureSampler::~TextureSampler()
 {
 	if (m_Handle != VK_NULL_HANDLE)
 	{
+		vkDeviceWaitIdle(vulkanData.device);
 		vkDestroySampler(vulkanData.device, m_Handle, vulkanData.allocator);
 	}
 }

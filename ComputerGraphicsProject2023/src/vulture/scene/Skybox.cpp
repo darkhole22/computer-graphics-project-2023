@@ -85,7 +85,8 @@ void Skybox::set(const String& name)
 			Texture::getCubemapAsync(name, [this](Ref<Texture> texture) {
 				m_Texture = texture;
 				m_TextureSampler = makeRef<TextureSampler>(*m_Texture);
-				m_DescriptorSet = m_DescriptorPool->getDescriptorSet(*m_DSLayout, { m_Uniform, *m_TextureSampler });
+				m_DescriptorSet.reset();
+				m_DescriptorSet = m_DescriptorPool->getDescriptorSet(m_DSLayout, { m_Uniform, *m_TextureSampler });
 				emit(SkyboxRecreated{});
 			});
 		}
