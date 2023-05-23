@@ -70,6 +70,23 @@ public:
 
 	Ref<Tween> makeTween();
 
+	std::vector<Ref<GameObject>> getCollidingObjects(Transform& transform, const String& tag)
+	{
+		std::vector<Ref<GameObject>> collidingObjects;
+
+		for (auto obj: m_GameObjects)
+		{
+			if (obj.second->tag == tag &&
+				glm::distance(obj.second->transform.getPosition(), transform.getPosition()) < 1.0f)
+			{
+				
+				collidingObjects.push_back(obj.second);
+			}
+		}
+
+		return collidingObjects;
+	}
+
 	~Scene() = default;
 private:
 	DescriptorPool m_DescriptorsPool;

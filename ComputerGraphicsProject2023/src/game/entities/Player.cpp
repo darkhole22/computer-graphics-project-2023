@@ -32,6 +32,7 @@ void Player::update(f32 dt)
 	if (Input::isActionJustPressed("FIRE"))
 	{
 		auto bullet = m_BulletFactory->get();
+		bullet->m_GameObject->tag = "PLAYER_BULLET";
 
 		bullet->setup(transform.getPosition(), m_Camera->direction);
 	}

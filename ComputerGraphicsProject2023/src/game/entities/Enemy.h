@@ -24,9 +24,8 @@ public:
 
 	EntityStatus update(float dt)
 	{
-		m_Lifetime += dt;
-
-		if (m_Lifetime >= 7.0f)
+		auto collidingBullets = Application::getScene()->getCollidingObjects(m_GameObject->transform, "PLAYER_BULLET");
+		if (!collidingBullets.empty())
 		{
 			return EntityStatus::DEAD;
 		}
@@ -41,8 +40,6 @@ public:
 	}
 private:
 	const float c_Speed = 4.0f;
-
-	float m_Lifetime = 0.0f;
 
 	Ref<Player> m_Player;
 };
