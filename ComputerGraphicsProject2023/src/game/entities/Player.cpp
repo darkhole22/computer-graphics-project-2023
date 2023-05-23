@@ -1,9 +1,11 @@
 #include "Player.h"
-#include "vulture/core/Application.h"
 
 using namespace vulture;
 
 namespace game {
+
+const String& Bullet::s_ModelName = "character";
+const String& Bullet::s_TextureName = "character";
 
 void Player::update(f32 dt)
 {
@@ -24,13 +26,12 @@ void Player::update(f32 dt)
 
 	if (Input::isActionJustPressed("FIRE"))
 	{
-		auto b = Bullet();
-		b.setup(transform.getPosition(), m_Camera->direction);
-		m_Bullets.push_back(b);
-		Application::getScene()->addObject(b.m_GameObject);
+		auto bullet = m_BulletFactory->get();
+
+		bullet->setup(transform.getPosition(), m_Camera->direction);
 	}
 
-	for (auto b : m_Bullets) { b.update(dt); }
+	m_BulletFactory->update(dt);
 }
 
 } // namespace game

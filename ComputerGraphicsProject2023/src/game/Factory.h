@@ -1,6 +1,11 @@
 #pragma once
 
+#include <unordered_set>
+
 #include "vulture/util/GameObjectPool.h"
+#include "vulture/core/Core.h"
+
+using namespace vulture;
 
 namespace game {
 

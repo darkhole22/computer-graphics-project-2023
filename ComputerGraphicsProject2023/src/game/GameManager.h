@@ -2,8 +2,8 @@
 
 #include <random>
 
-#include "Enemy.h"
-#include "Player.h"
+#include "game/entities/Enemy.h"
+#include "game/entities/Player.h"
 #include "Factory.h"
 #include "vulture/core/Core.h"
 
@@ -50,9 +50,9 @@ private:
 	Scene* m_Scene = nullptr;
 
 	Ref<Player> m_Player = nullptr;
-	std::vector<Ref<Enemy>> m_Enemies;
 
 	Factory<Enemy>* m_EnemyFactory;
+
 };
 
 } // namespace game

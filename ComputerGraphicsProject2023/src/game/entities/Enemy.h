@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Player.h"
-#include "Factory.h"
+#include "game/Factory.h"
 
 namespace game {
 
