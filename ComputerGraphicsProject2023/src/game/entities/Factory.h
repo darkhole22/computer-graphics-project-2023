@@ -2,8 +2,8 @@
 
 #include <unordered_set>
 
-#include "vulture/util/GameObjectPool.h"
-#include "vulture/core/Core.h"
+#include "../../vulture/util/GameObjectPool.h"
+#include "../../vulture/core/Core.h"
 
 using namespace vulture;
 

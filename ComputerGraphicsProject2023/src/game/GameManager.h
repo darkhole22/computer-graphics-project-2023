@@ -4,7 +4,7 @@
 
 #include "game/entities/Enemy.h"
 #include "game/entities/Player.h"
-#include "Factory.h"
+#include "game/entities/Factory.h"
 #include "vulture/core/Core.h"
 
 namespace game {

@@ -4,8 +4,13 @@ using namespace vulture;
 
 namespace game {
 
-const String& Bullet::s_ModelName = "character";
-const String& Bullet::s_TextureName = "character";
+Player::Player()
+{
+	m_Camera = Application::getScene()->getCamera();
+	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+
+	m_BulletFactory = new Factory<Bullet>(40);
+}
 
 void Player::update(f32 dt)
 {

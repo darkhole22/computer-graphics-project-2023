@@ -5,6 +5,9 @@
 
 #include "Types.h"
 
+#include "vulture/core/Application.h"
+#include "vulture/scene/GameObject.h"
+
 namespace vulture {
 
 class GameObjectPool
