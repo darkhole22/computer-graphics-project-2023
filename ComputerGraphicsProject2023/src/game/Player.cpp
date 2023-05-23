@@ -5,7 +5,7 @@ using namespace vulture;
 
 namespace game {
 
-void Player::update(float dt)
+void Player::update(f32 dt)
 {
 	auto rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
 			* c_RotSpeed * dt;
@@ -18,9 +18,9 @@ void Player::update(float dt)
 
 	// Move the camera
 	m_Camera->rotate(-rotation.x, rotation.y, 0.0f);
-	m_Camera->translate(movement.x, 0.0f, movement.y);
+	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
-	std::cout << glm::to_string(transform.getPosition()) << " ; " << glm::to_string(m_Camera->position) << std::endl;
+	// std::cout << glm::to_string(transform.getPosition()) << "; " << glm::to_string(m_Camera->position) << std::endl;
 
 	if (Input::isActionJustPressed("FIRE"))
 	{

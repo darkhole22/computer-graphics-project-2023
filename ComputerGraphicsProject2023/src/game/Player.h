@@ -15,6 +15,9 @@ class Bullet
 {
 private:
 	const float c_Speed = 30.0f;
+	const float c_Range = 60.0f;
+
+	glm::vec3 m_StartingPosition = glm::vec3(0.0f);
 	glm::vec3 m_Direction = glm::vec3(1.0f, 0.0f, 0.0f);
 
 public:
@@ -28,13 +31,19 @@ public:
 
 	inline void setup(glm::vec3 startingPosition, glm::vec3 direction)
 	{
-		m_GameObject->transform.setPosition(startingPosition + glm::vec3(0.0f, 0.8f, 0.0f));
+		m_StartingPosition = startingPosition + glm::vec3(0.0f, 0.8f, 0.0f);
+		m_GameObject->transform.setPosition(m_StartingPosition);
 		m_Direction = direction;
 	}
 
 	inline void update(float dt)
 	{
 		m_GameObject->transform.translate(m_Direction * c_Speed * dt);
+
+		if (glm::distance(m_StartingPosition, m_GameObject->transform.getPosition()) > c_Range)
+		{
+			Application::getScene()->removeObject(m_GameObject);
+		}
 	}
 
 };

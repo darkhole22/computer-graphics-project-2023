@@ -4,6 +4,7 @@
 
 #include "Enemy.h"
 #include "Player.h"
+#include "Factory.h"
 #include "vulture/core/Core.h"
 
 namespace game {
@@ -14,6 +15,8 @@ public:
 	GameManager()
 	{
 		m_Scene = Application::getScene();
+
+		m_EnemyFactory = new Factory<Enemy>(20);
 
 		m_Player = makeRef<Player>();
 
@@ -26,14 +29,13 @@ public:
 			std::uniform_int_distribution<int> uni(-30, 30); // Guaranteed unbiased
 
 			for(int i = 0; i <= 10; i++) {
-				auto randomLocation = m_Player->transform.getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
+				auto enemy = m_EnemyFactory->get();
+				auto startingLocation = m_Player->transform.getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
 
-				Ref<Enemy> enemy = makeRef<Enemy>(m_Player);
-				enemy->m_GameObject->transform.setPosition(randomLocation);
+				enemy->m_GameObject->transform.setPosition(startingLocation);
 				enemy->m_GameObject->transform.setScale(3.0f, 3.0f, 3.0f);
 
-				m_Enemies.push_back(enemy);
-				m_Scene->addObject(enemy->m_GameObject);
+				enemy->setup(m_Player);
 			}
 		});
 	}
@@ -41,14 +43,16 @@ public:
 	void update(float dt)
 	{
 		m_Player->update(dt);
-
-		for(const auto& e: m_Enemies) { e->update(dt); }
+		m_EnemyFactory->update(dt);
 	}
+
 private:
 	Scene* m_Scene = nullptr;
 
 	Ref<Player> m_Player = nullptr;
 	std::vector<Ref<Enemy>> m_Enemies;
+
+	Factory<Enemy>* m_EnemyFactory;
 };
 
 } // namespace game
