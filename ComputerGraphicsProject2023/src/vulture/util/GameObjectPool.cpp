@@ -1,5 +1,8 @@
 #include "GameObjectPool.h"
 
+#define VU_LOGGER_DISABLE_INFO
+#include "vulture/core/Logger.h"
+
 namespace vulture {
 
 GameObjectPool::GameObjectPool(u32 initialSize, const String& modelName, const String& textureName) :

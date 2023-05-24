@@ -37,13 +37,6 @@ void Camera::rotate(glm::vec3 rotation)
 	float pitch = std::asin(glm::dot(glm::cross(front, direction), right));
 	pitch = std::clamp(pitch + rotation.y, -maxVerticalAngle, maxVerticalAngle);
 
-	// glm::vec4 dir = glm::vec4(direction, 1.0f);
-
-	// direction = glm::vec3(
-	// 	glm::rotate(glm::mat4(1.0f), rotation.x, up) *
-	// 	glm::rotate(glm::mat4(1.0f), rotation.y, right) *
-	// 	glm::vec4(direction, 1.0f));
-
 	direction = glm::vec3(
 		glm::rotate(glm::mat4(1.0f), rotation.x, up) *
 		glm::rotate(glm::mat4(1.0f), pitch, right) *
