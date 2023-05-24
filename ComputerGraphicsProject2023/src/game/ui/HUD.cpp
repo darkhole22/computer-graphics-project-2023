@@ -11,7 +11,7 @@ HUD::HUD(Ref<Player> player)
 
 	m_HPText = m_UIHandler->makeText(stringFormat("HP: %d/%d", player->m_HP, player->m_MaxHP));
 	m_AmmoText = m_UIHandler->makeText("Ammo: ");
-	m_AmmoText->setPosition({20, 50});
+	m_AmmoText->setPosition({ 20, 50 });
 }
 
 void HUD::onHealthUpdated(HealthUpdated event)

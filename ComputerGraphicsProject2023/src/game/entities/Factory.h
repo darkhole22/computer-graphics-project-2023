@@ -2,14 +2,14 @@
 
 #include <unordered_set>
 
-#include "../../vulture/util/GameObjectPool.h"
-#include "../../vulture/core/Core.h"
+#include "vulture/util/GameObjectPool.h"
+#include "vulture/core/Core.h"
 
 using namespace vulture;
 
 namespace game {
 
-enum EntityStatus
+enum class EntityStatus
 {
 	ALIVE,
 	DEAD
@@ -22,33 +22,33 @@ enum EntityStatus
  *
  * It utilizes a GameObjectPool to efficiently manage object reuse and provides methods for creating, removing, and updating entities.
  *
- *@tparam T The type of entities to be managed by the factory.
+ * @tparam T The type of entities to be managed by the factory.
  */
 template<typename T>
 class Factory
 {
 public:
 	/**
-	 * @brief Constructs a Factory object with the specified initial size.
-     *
-     * This constructor creates a Factory object and initializes an associated GameObjectPool
-     * with the specified initial size, using the model name and texture name of type T.
-	 *
-	 * @param initialSize The initial size of the GameObjectPool.
-     */
+	* @brief Constructs a Factory object with the specified initial size.
+	*
+	* This constructor creates a Factory object and initializes an associated GameObjectPool
+	* with the specified initial size, using the model name and texture name of type T.
+	*
+	* @param initialSize The initial size of the GameObjectPool.
+	*/
 	explicit Factory<T>(int initialSize)
 	{
 		m_ObjectPool = makeRef<GameObjectPool>(initialSize, T::s_ModelName, T::s_TextureName);
 	}
 
 	/**
-	 *	@brief Retrieves a new entity from the factory.
+	 * @brief Retrieves a new entity from the factory.
 	 *
-	 *	This method retrieves a new entity from the factory by acquiring a GameObject instance
-	 *	from the object pool, adding it to the current scene, and creating an entity of type T
-	 *	using the acquired GameObject. The created entity is then stored in the active entity set.
+	 * This method retrieves a new entity from the factory by acquiring a GameObject instance
+	 * from the object pool, adding it to the current scene, and creating an entity of type T
+	 * using the acquired GameObject. The created entity is then stored in the active entity set.
 	 *
-	 *	@return A reference to the created entity of type T.
+	 * @return A reference to the created entity of type T.
 	 */
 	Ref<T> get()
 	{
@@ -87,17 +87,17 @@ public:
 	 */
 	void update(f32 dt)
 	{
-		std::vector<Ref<T>> toReturn;
+		std::vector<Ref<T>> toRemove;
 
-		for (auto t: m_ActiveEntities)
+		for (auto& t : m_ActiveEntities)
 		{
-			if (t->update(dt) == DEAD)
+			if (t->update(dt) == EntityStatus::DEAD)
 			{
-				toReturn.push_back(t);
+				toRemove.push_back(t);
 			}
 		}
 
-		for (auto t: toReturn)
+		for (auto& t : toRemove)
 		{
 			remove(t);
 		}
@@ -116,7 +116,6 @@ public:
 	inline auto end() { return m_ActiveEntities.end(); }
 
 	~Factory() = default;
-
 private:
 	Ref<GameObjectPool> m_ObjectPool;
 	std::unordered_set<Ref<T>> m_ActiveEntities;

@@ -7,7 +7,7 @@ const String& Bullet::s_TextureName = "character";
 
 Bullet::Bullet(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 {
-		m_GameObject->transform.setScale(0.7f);
+	m_GameObject->transform.setScale(0.7f);
 }
 
 void Bullet::setup(glm::vec3 startingPosition, glm::vec3 direction)
