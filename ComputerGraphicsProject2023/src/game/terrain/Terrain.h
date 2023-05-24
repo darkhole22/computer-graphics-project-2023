@@ -68,8 +68,6 @@ private:
 	std::vector<Ref<TerrainChunk>> m_Chunks;
 	glm::vec2 m_ReferencePosition = {0, 0 };
 
-	Ref<UIText> debugText;
-
 	void initializeRenderingComponents();
 	void initializeChunks();
 };
