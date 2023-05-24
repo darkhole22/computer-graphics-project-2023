@@ -1,9 +1,6 @@
 #pragma once
 
-#include <unordered_set>
 #include <queue>
-
-#include "Types.h"
 
 #include "vulture/core/Application.h"
 #include "vulture/scene/GameObject.h"
