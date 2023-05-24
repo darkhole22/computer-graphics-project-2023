@@ -7,7 +7,7 @@ const String& Enemy::s_TextureName = "character";
 
 Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject) {}
 
-void Enemy::setup(Ref<Player> player); { m_Player = player; }
+void Enemy::setup(Ref<Player> player) { m_Player = player; }
 
 EntityStatus Enemy::update(float dt)
 {
