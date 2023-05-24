@@ -25,7 +25,7 @@ public:
 	glm::vec3 position = glm::vec3(0, 0, 0);
 
 	/*
-	* @brief A vec3 that holds the current camera looking direction angles.
+	* @brief A vec3 that holds the current camera looking direction.
 	*/
 	glm::vec3 direction = glm::vec3(1.0f, 0.0f, 0.0f);
 
