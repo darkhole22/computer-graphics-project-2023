@@ -32,12 +32,21 @@ private:
 	ObjectHandle m_Object;
 };
 
+struct TerrainGenerationConfig
+{
+	f32 renderDistance = 200.0f;
+	f32 chunkSize = 100.0f;
+	static TerrainGenerationConfig defaultConfig;
+};
+
 class Terrain
 {
 public:
-	Terrain();
+	Terrain(const TerrainGenerationConfig& config = TerrainGenerationConfig::defaultConfig);
 
 	void update(f32 dt);
+
+	void setReferancePosition(glm::vec2 position);
 
 	friend class TerrainChunk;
 private:
@@ -47,9 +56,16 @@ private:
 	Ref<Model> m_Model;
 	Uniform<TerrainVertexBufferObject> m_VertexUniform;
 
-	Ref<TerrainChunk> chunk;
+	TerrainGenerationConfig m_Config;
+
+	u64 m_ChunksSideCount;
+	std::vector<Ref<TerrainChunk>> m_Chunks;
+	glm::vec2 m_ReferancePosition = { 0,0 };
+
 	Ref<UIText> debugText;
 
+	void initializeRenderingComponents();
+	void initializeChunks();
 };
 
 } // namespace game

@@ -127,6 +127,7 @@ ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<Des
 
 		p->second.addObject(handle, RenderableObject(model, descriptorSet));
 
+		setModified();
 		return handle;
 	}
 	VUWARN("Trying to add an object to an invalid pipeline (%li)!", pipeline);
@@ -139,6 +140,7 @@ void Scene::removeObject(PipelineHandle pipeline, ObjectHandle obj)
 	if (p != m_ObjectLists.end())
 	{
 		p->second.removeObject(obj);
+		setModified();
 	}
 }
 
@@ -160,6 +162,8 @@ void Scene::removeObject(Ref<GameObject> obj)
 
 	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 	p.removeObject(obj->m_Handle);
+
+	setModified();
 }
 
 void Scene::setSkybox(const String& name)

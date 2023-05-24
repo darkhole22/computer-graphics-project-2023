@@ -97,21 +97,19 @@ Ref<Texture> Texture::make(u32 width, u32 height, glm::vec2 position, glm::vec2 
 	Ref<Texture> result;
 	f32* pixels = new f32[width * 4LL * height];
 
-	f32 minSide = static_cast<f32>(std::min(width, height));
-
 	for (u64 y = 0; y < height; y++)
 	{
 		for (u64 x = 0; x < width; x++)
 		{
-			f32 noiseX = dimension.x * static_cast<f32>(x) / minSide;
-			f32 noiseY = dimension.y * static_cast<f32>(y) / minSide;
+			f32 noiseX = dimension.x * static_cast<f32>(x) / (width - 1);
+			f32 noiseY = dimension.y * static_cast<f32>(y) / (height - 1);
 
 			auto color = generator(position.x + noiseX, position.y + noiseY);
 
-			pixels[(y + x * height) * 4 + 3] = color.a; // a
-			pixels[(y + x * height) * 4 + 2] = color.r; // r
-			pixels[(y + x * height) * 4 + 1] = color.g; // g
-			pixels[(y + x * height) * 4 + 0] = color.b; // b
+			pixels[(y * width + x) * 4 + 3] = color.a; // a
+			pixels[(y * width + x) * 4 + 2] = color.r; // r
+			pixels[(y * width + x) * 4 + 1] = color.g; // g
+			pixels[(y * width + x) * 4 + 0] = color.b; // b
 		}
 	}
 

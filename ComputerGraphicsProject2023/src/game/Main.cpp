@@ -40,7 +40,7 @@ public:
 		 * VOLCANO *
 		 ***********/
 		auto volcano = makeRef<GameObject>("vulture");
-		volcano->transform.setPosition(-5.0f, 0.0f, -5.0f);
+		volcano->transform.setPosition(100.0f, 50.0f, 100.0f);
 		scene->addObject(volcano);
 
 		auto tween = scene->makeTween()->loop();
@@ -64,9 +64,9 @@ public:
 		}, 0.0f, glm::radians(360.0f), 10.0f);
 
 		enemy = makeRef<GameObject>("character");
-		enemy->transform.setPosition(10.0f, 0.0f, 10.f);
+		enemy->transform.setPosition(0.0f, 40.0f, 0.f);
 		enemy->transform.setScale(3.0f, 3.0f, 3.0f);
-		enemy->transform.setRotation(0.0f, glm::radians(25.0f), 0.0f);
+		// enemy->transform.setRotation(0.0f, glm::radians(25.0f), 0.0f);
 		scene->addObject(enemy);
 
 		/***********
@@ -84,17 +84,21 @@ public:
 			useSkybox = !useSkybox;
 		}
 
-		if (Input::isKeyPressed(GLFW_KEY_H))
-		{
-			scene->getCamera()->lookAt(glm::vec3(-5.0f, 5.0f, -5.0f));
-		}
 
 		character->update(dt);
 		ui->update(dt);
 
-		enemy->transform.translate(4.0f * dt, 0.0f, 0.0f);
-		enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
+		auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP");
 
+		enemy->transform.translate(glm::vec3(movement.y, 0.0f, movement.x) * 20.0f * dt);
+		if (Input::isKeyPressed(GLFW_KEY_H))
+		{
+			scene->getCamera()->lookAt(enemy->transform.getPosition());
+		}
+
+		auto playerPosition = scene->getCamera()->position;
+		terrain->setReferancePosition({ playerPosition.x, playerPosition.z });
+		// enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
 		terrain->update(dt);
 	}
 
