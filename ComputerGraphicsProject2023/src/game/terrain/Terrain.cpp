@@ -9,6 +9,7 @@ namespace game {
 
 using namespace vulture;
 
+f32 noiseFunction(f32 x, f32 y);
 glm::vec4 noise(f32 x, f32 y);
 
 struct NoiseConfig
@@ -41,7 +42,6 @@ void Terrain::setReferancePosition(glm::vec2 position)
 {
 	i64 oldX = static_cast<i64>(std::floor(m_ReferancePosition.x / m_Config.chunkSize));
 	i64 oldY = static_cast<i64>(std::floor(m_ReferancePosition.y / m_Config.chunkSize));
-
 
 	i64 targetX = static_cast<i64>(std::floor(position.x / m_Config.chunkSize));
 	i64 targetY = static_cast<i64>(std::floor(position.y / m_Config.chunkSize));
@@ -76,6 +76,13 @@ void Terrain::setReferancePosition(glm::vec2 position)
 		m_Chunks = newChunks;
 	}
 	m_ReferancePosition = position;
+}
+
+f32 Terrain::getHeightAt(glm::vec2 position) const
+{
+	auto chunkPosition = position * m_Config.noiseScale / m_Config.chunkSize;
+	f32 h = noiseFunction(chunkPosition.x, chunkPosition.y);
+	return std::clamp(h, m_VertexUniform->waterLevel, 1.0f) * m_VertexUniform->scale;
 }
 
 void Terrain::initializeRenderingComponents()
@@ -120,7 +127,7 @@ TerrainChunk::TerrainChunk(Terrain* terrain, glm::vec2 position) :
 {
 	m_Scene = terrain->m_Scene;
 
-	glm::vec2 noiseSize = { 8, 8 };
+	glm::vec2 noiseSize = glm::vec2(1, 1) * terrain->m_Config.noiseScale * terrain->m_Config.chunkSize / 100.0f;
 	m_NoiseTexture = Texture::make(128, 128, position * noiseSize, noiseSize, noise);
 	TextureSamplerConfig samplerConfig;
 	samplerConfig.setAddressMode(VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT);

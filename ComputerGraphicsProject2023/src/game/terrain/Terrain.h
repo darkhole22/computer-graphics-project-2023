@@ -36,6 +36,9 @@ struct TerrainGenerationConfig
 {
 	f32 renderDistance = 200.0f;
 	f32 chunkSize = 100.0f;
+	f32 noiseScale = 3.0f;
+
+
 	static TerrainGenerationConfig defaultConfig;
 };
 
@@ -47,6 +50,9 @@ public:
 	void update(f32 dt);
 
 	void setReferancePosition(glm::vec2 position);
+
+	f32 getHeightAt(glm::vec2 position) const;
+	f32 getHeightAt(f32 x, f32 y) const { return getHeightAt({ x, y }); }
 
 	friend class TerrainChunk;
 private:

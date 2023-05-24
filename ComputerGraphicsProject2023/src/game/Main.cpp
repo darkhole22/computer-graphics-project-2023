@@ -90,14 +90,18 @@ public:
 
 		auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP");
 
-		enemy->transform.translate(glm::vec3(movement.y, 0.0f, movement.x) * 20.0f * dt);
+		auto enemyPosition = enemy->transform.getPosition() + glm::vec3(movement.x, 0.0f, movement.y) * 30.0f * dt;
+		enemyPosition.y = terrain->getHeightAt(enemyPosition.x, enemyPosition.z);
+		enemy->transform.setPosition(enemyPosition);
+
 		if (Input::isKeyPressed(GLFW_KEY_H))
 		{
 			scene->getCamera()->lookAt(enemy->transform.getPosition());
 		}
 
-		auto playerPosition = scene->getCamera()->position;
-		terrain->setReferancePosition({ playerPosition.x, playerPosition.z });
+		// scene->getCamera()->position;
+		scene->getCamera()->translate(glm::vec3(movement.x, 0.0f, movement.y) * 30.0f * dt);
+		terrain->setReferancePosition({ enemyPosition.x, enemyPosition.z });
 		// enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
 		terrain->update(dt);
 	}
