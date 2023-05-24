@@ -20,6 +20,8 @@ class Model
 public:
 	static Ref<Model> get(const String& name);
 
+	static Ref<Model> getPlane(u32 hCount = 1, u32 vCount = 1);
+
 	inline const Buffer& getVertexBuffer() const { return m_VertexBuffer; }
 	inline const Buffer& getIndexBuffer() const { return m_IndexBuffer; }
 	inline u32 getIndexCount() const { return m_IndexCount; }

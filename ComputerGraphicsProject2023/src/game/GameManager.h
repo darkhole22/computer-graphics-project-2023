@@ -7,15 +7,17 @@
 #include "game/entities/Factory.h"
 #include "vulture/core/Core.h"
 #include "game/ui/HUD.h"
+#include "game/terrain/Terrain.h"
 
 namespace game {
 
 class GameManager
 {
 public:
-	GameManager()
+	GameManager(Ref<Terrain> terrain)
 	{
 		m_Scene = Application::getScene();
+		m_Terrain = terrain;
 
 		m_EnemyFactory = new Factory<Enemy>(20);
 
@@ -46,11 +48,22 @@ public:
 	void update(float dt)
 	{
 		m_EnemyFactory->update(dt);
+
+		for (auto e: *m_EnemyFactory)
+		{
+			auto pos = e->m_GameObject->transform.getPosition();
+			e->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+		}
+
 		m_Player->update(dt);
+
+		auto pos = m_Player->transform.getPosition();
+		m_Player->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
 	}
 
 private:
 	Scene* m_Scene = nullptr;
+	Ref<Terrain> m_Terrain = nullptr;
 
 	Ref<Player> m_Player = nullptr;
 

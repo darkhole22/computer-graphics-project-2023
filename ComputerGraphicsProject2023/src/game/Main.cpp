@@ -4,6 +4,7 @@
 #include "vulture/core/Application.h"
 #include "game/ui/DebugUI.h"
 #include "GameManager.h"
+#include "terrain/Terrain.h"
 
 using namespace vulture;
 
@@ -17,6 +18,7 @@ public:
 
 	Ref<DebugUI> ui = nullptr;
 	Ref<GameManager> gameManager = nullptr;
+	Ref<Terrain> terrain = nullptr;
 
 #if 1
 	String skyboxName = "desert";
@@ -44,19 +46,17 @@ public:
 		 * VOLCANO *
 		 ***********/
 		auto volcano = makeRef<GameObject>("vulture");
-		volcano->transform.setPosition(-5.0f, 0.0f, -5.0f);
+		volcano->transform.setPosition(100.0f, 50.0f, 100.0f);
 		scene->addObject(volcano);
 
-		Ref<Tween> tween = scene->makeTween();
-		tween->loop();
-		tween->addIntervalTweener(0.5f);
+		auto tween = scene->makeTween()->loop();
 
 		std::function<void(float)> scaleCallback = [volcano](float size) {
 			volcano->transform.setScale(size, size, size);
 		};
 
-		tween->addMethodTweener(scaleCallback, 3.0f, 6.0f, 2.0f);
-		tween->addMethodTweener(scaleCallback, 6.0f, 3.0f, 2.0f);
+		tween->addMethodTweener(scaleCallback, 1.0f, 3.0f, 2.0f);
+		tween->addMethodTweener(scaleCallback, 3.0f, 1.0f, 2.0f);
 
 		/*********
 		 * LIGHT *
@@ -64,27 +64,20 @@ public:
 		scene->getWorld()->directLight.color = glm::vec4(1.0f);
 		scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
 
-		std::function<void(float)> lightRotation = [this](float angle) {
-			scene->getWorld()->directLight.direction = glm::vec3(sin(angle), 0.0f, cos(angle));
-		};
+		scene->makeTween()->loop()->addMethodTweener<float>([this](float angle) {
+			constexpr float hAngle = glm::radians(10.0f);
+			scene->getWorld()->directLight.direction = glm::vec3(sin(angle) * cos(hAngle), sin(hAngle), cos(angle) * cos(hAngle));
+		}, 0.0f, glm::radians(360.0f), 10.0f);
 
-		auto lightTween = scene->makeTween();
-		lightTween->loop();
-		lightTween->addMethodTweener(lightRotation, 0.0f, glm::radians(360.0f), 10.0f);
-
-		/*********
-		 * FLOOR *
-		 *********/
-
-		auto f = makeRef<GameObject>("floor");
-		f->transform.setPosition(-50.0f, 0, -50.0f);
-		f->transform.setScale(100.0f, 1.0f, 100.0f);
-		scene->addObject(f);
+		/***********
+		 * TERRAIN *
+		 ***********/
+		terrain = makeRef<Terrain>();
 
 		/**************
 		 * GAME LOGIC *
 		 **************/
-		 gameManager = makeRef<GameManager>();
+		 gameManager = makeRef<GameManager>(terrain);
 	}
 
 	void update(float dt) override
@@ -96,14 +89,14 @@ public:
 			useSkybox = !useSkybox;
 		}
 
-		if (Input::isKeyPressed(GLFW_KEY_H))
-		{
-			scene->getCamera()->lookAt(glm::vec3(-5.0f, 5.0f, -5.0f));
-		}
-
 		gameManager->update(dt);
 
 		ui->update(dt);
+
+		auto cameraPos = scene->getCamera()->position;
+		terrain->setReferencePosition({cameraPos.x, cameraPos.z});
+
+		terrain->update(dt);
 	}
 
 private:
@@ -205,6 +198,22 @@ private:
 				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_Y}}
 		};
 		Input::setAction("TOGGLE_SKYBOX", toggleSkyboxAction);
+
+		/**********************************************
+		 *                 TERRAIN                    *
+		 **********************************************/
+
+		InputAction terrainDownAction{};
+		terrainDownAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_K}},
+		};
+		Input::setAction("TERRAIN_DOWN", terrainDownAction);
+
+		InputAction terrainUpAction{};
+		terrainUpAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_L}},
+		};
+		Input::setAction("TERRAIN_UP", terrainUpAction);
 	}
 };
 

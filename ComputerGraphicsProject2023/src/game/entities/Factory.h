@@ -61,6 +61,9 @@ public:
 		}
 	}
 
+	inline auto begin() { return m_ActiveEntities.begin(); }
+	inline auto end() { return m_ActiveEntities.end(); }
+
 	~Factory() = default;
 
 private:

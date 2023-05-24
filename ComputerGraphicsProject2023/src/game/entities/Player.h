@@ -10,6 +10,7 @@
 #include "vulture/scene/Camera.h"
 #include "Factory.h"
 #include "Bullet.h"
+#include "game/terrain/Terrain.h"
 
 using namespace vulture;
 

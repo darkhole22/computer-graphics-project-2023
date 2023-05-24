@@ -20,7 +20,7 @@ UIHandler::UIHandler(DescriptorPool &descriptorsPool)
 	m_ScreenDSLayout->create();
 
 	m_ScreenUniform = Renderer::makeUniform<ScreenBufferObject>();
-	m_ScreenDescriptorSet = m_DescriptorPool->getDescriptorSet(*m_ScreenDSLayout, {m_ScreenUniform});
+	m_ScreenDescriptorSet = m_DescriptorPool->getDescriptorSet(m_ScreenDSLayout, {m_ScreenUniform});
 
 		PipelineAdvancedConfig pipelineConfig{};
 		pipelineConfig.compareOperator = VK_COMPARE_OP_ALWAYS;
@@ -104,7 +104,7 @@ UIText::UIText(UITextHandle handle, DescriptorPool &descriptorPool,
 	m_VertexUniform = Renderer::makeUniform<TextVertexBufferObject>();
 	m_FragmentUniform = Renderer::makeUniform<TextFragmentBufferObject>();
 
-	m_DescriptorSet = descriptorPool.getDescriptorSet(*descriptorSetLayout,
+	m_DescriptorSet = descriptorPool.getDescriptorSet(descriptorSetLayout,
 		{ font->getTextureSampler(), m_VertexUniform, m_FragmentUniform });
 
 		m_VertexUniform->position = position;

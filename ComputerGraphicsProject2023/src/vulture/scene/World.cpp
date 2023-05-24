@@ -8,7 +8,7 @@ World::World(DescriptorPool& descriptorsPool)
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
 	m_DescriptorSetLayout->create();
 
-	m_DescriptorSet = descriptorsPool.getDescriptorSet(*m_DescriptorSetLayout.get(), {m_Uniform});
+	m_DescriptorSet = descriptorsPool.getDescriptorSet(m_DescriptorSetLayout, {m_Uniform});
 }
 
 void World::updateUniforms(FrameContext& target, const Camera& camera)
