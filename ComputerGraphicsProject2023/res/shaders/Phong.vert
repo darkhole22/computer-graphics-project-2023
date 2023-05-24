@@ -22,7 +22,7 @@ void main() {
 
     gl_Position = position;
 
-    fragNorm = inverse(transpose(mat3(mbo.model))) * inNorm;
+    fragNorm = normalize(inverse(transpose(mat3(mbo.model))) * inNorm);
     fragTexCoord = inTexCoord;
     fragPos = position.xyz;
 }
