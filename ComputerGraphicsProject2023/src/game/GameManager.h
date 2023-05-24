@@ -26,7 +26,7 @@ private:
 
 	Ref<HUD> m_HUD = nullptr;
 
-	Factory<Enemy>* m_EnemyFactory;
+	Ref<Factory<Enemy>> m_EnemyFactory;
 
 };
 

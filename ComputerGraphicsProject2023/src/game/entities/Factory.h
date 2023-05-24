@@ -38,7 +38,7 @@ public:
      */
 	explicit Factory<T>(int initialSize)
 	{
-		m_ObjectPool = new GameObjectPool(initialSize, T::s_ModelName, T::s_TextureName);
+		m_ObjectPool = makeRef<GameObjectPool>(initialSize, T::s_ModelName, T::s_TextureName);
 	}
 
 	/**
@@ -118,7 +118,7 @@ public:
 	~Factory() = default;
 
 private:
-	GameObjectPool* m_ObjectPool;
+	Ref<GameObjectPool> m_ObjectPool;
 	std::unordered_set<Ref<T>> m_ActiveEntities;
 };
 

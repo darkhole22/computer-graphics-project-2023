@@ -9,21 +9,21 @@ Player::Player()
 	m_Camera = Application::getScene()->getCamera();
 	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
-	m_BulletFactory = new Factory<Bullet>(40);
+	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 }
 
 void Player::update(f32 dt)
 {
-	static float invinc = 0.0f;
-	invinc += dt;
+	static float invincibility = 0.0f;
+	invincibility += dt;
 
-	if (invinc >= 1.0f) {
+	if (invincibility >= 1.0f) {
 		auto collidingObjects = Application::getScene()->getCollidingObjects(transform, "ENEMY");
 		if (!collidingObjects.empty()) {
 			m_HP = std::max(int(m_HP - collidingObjects.size()), 0);
 			emit(HealthUpdated{m_HP, m_MaxHP});
 
-			invinc = 0.0f;
+			invincibility = 0.0f;
 		}
 	}
 

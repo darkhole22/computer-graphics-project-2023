@@ -6,7 +6,7 @@ GameManager::GameManager(Ref<Terrain> terrain) {
 	m_Scene = Application::getScene();
 	m_Terrain = terrain;
 
-	m_EnemyFactory = new Factory<Enemy>(20);
+	m_EnemyFactory = makeRef<Factory<Enemy>>(20);
 
 	m_Player = makeRef<Player>();
 	m_HUD = makeRef<HUD>(m_Player);
@@ -36,10 +36,10 @@ void GameManager::update(f32 dt)
 {
 	m_EnemyFactory->update(dt);
 
-	for (auto e: *m_EnemyFactory)
+	for (auto enemy: *m_EnemyFactory)
 	{
-		auto pos = e->m_GameObject->transform.getPosition();
-		e->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+		auto pos = enemy->m_GameObject->transform.getPosition();
+		enemy->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
 	}
 
 	m_Player->update(dt);

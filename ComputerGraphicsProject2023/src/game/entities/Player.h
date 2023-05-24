@@ -40,7 +40,7 @@ private:
 	Camera* m_Camera;
 	float c_CameraHeight = 1.5f;
 
-	Factory<Bullet>* m_BulletFactory;
+	Ref<Factory<Bullet>> m_BulletFactory;
 
 public:
 	Transform transform;
