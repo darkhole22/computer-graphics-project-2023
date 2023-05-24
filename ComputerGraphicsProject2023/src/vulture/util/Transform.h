@@ -41,11 +41,10 @@ public:
 	 */
 	void translate(glm::vec3 translation) {
 		// m_Position += translation;
-		auto upDir = glm::vec3(0.0f, 1.0f, 0.0f);
-		auto frontDir = glm::normalize(m_Rotation * glm::vec3(1.0f, 0.0f, 0.0f));
-		auto rightDir = glm::normalize(glm::cross(frontDir, upDir));
+		auto frontDir = glm::normalize(m_Rotation * m_FacingDirection);
+		auto rightDir = glm::normalize(glm::cross(frontDir, m_UpDirection));
 
-		m_Position += frontDir * translation.x + upDir * translation.y + rightDir * translation.z;
+		m_Position += frontDir * translation.x + m_UpDirection * translation.y + rightDir * translation.z;
 		m_ShouldUpdate = true;
 	}
 
@@ -82,6 +81,13 @@ public:
 	inline void setScale(f32 x, f32 y, f32 z) { setScale(glm::vec3(x, y, z)); }
 
 	/**
+	 * @brief Sets the scale of the object.
+	 *
+	 * @param scale The new scale in all directions direction.
+	 */
+	inline void setScale(f32 scale) { setScale(glm::vec3(scale, scale, scale)); }
+
+	/**
 	 * @brief Returns the rotation of the object as a quaternion.
 	 *
 	 * @return The rotation of the object as a glm::quat.
@@ -110,7 +116,6 @@ public:
 	 * @param rotation The rotation vector around the three axes.
 	 */
 	inline void rotate(glm::vec3 rotation) { m_Rotation *= glm::quat(rotation); m_ShouldUpdate = true; }
-
 
 	/**
 	 * @brief Rotates the object by the specified angles around the x, y, and z axes, respectively.
@@ -148,7 +153,8 @@ private:
 
 	glm::mat4 m_WorldMatrix;
 
-	glm::vec3 facingDirection = glm::vec3(1.0f, 0.0f, 0.0f);
+	glm::vec3 m_FacingDirection = glm::vec3(1.0f, 0.0f, 0.0f);
+	glm::vec3 m_UpDirection = glm::vec3(0.0f, 1.0f, 0.0f);
 };
 
 } // namespace vulture

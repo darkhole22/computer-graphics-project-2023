@@ -83,13 +83,34 @@ void DescriptorWrite::map(u32 index) const
 	}
 }
 
+bool checkDescriptorSetCreation(VkResult result)
+{
+	switch (result)
+	{
+	case VK_ERROR_FRAGMENTED_POOL:
+	case VK_ERROR_OUT_OF_POOL_MEMORY:
+	{
+		throw std::exception();
+	}
+	case VK_SUCCESS:
+	break;
+	default:
+	{
+		VUERROR("Failed to reallocate Descriptor Set!");
+		return false;
+	}
+	}
+	return true;
+}
+
 DescriptorSet::DescriptorSet(DescriptorPool& pool, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites)
 	: m_Pool(&pool), m_Layout(layout), m_DescriptorWrites(descriptorWrites)
 {
-	create();
+	auto result = create();
+	checkDescriptorSetCreation(result);
 }
 
-bool DescriptorSet::create()
+VkResult DescriptorSet::create()
 {
 	std::vector<VkDescriptorSetLayout> layouts(m_Pool->getFrameCount(), m_Layout->getHandle());
 	VkDescriptorSetAllocateInfo allocInfo{};
@@ -99,8 +120,13 @@ bool DescriptorSet::create()
 	allocInfo.pSetLayouts = layouts.data();
 
 	m_Handles.resize(layouts.size());
-	ASSERT_VK_SUCCESS(vkAllocateDescriptorSets(vulkanData.device, &allocInfo, m_Handles.data()),
-		"Failed to allocate descriptor sets!");
+	auto result = vkAllocateDescriptorSets(vulkanData.device, &allocInfo, m_Handles.data());
+
+	if (result != VK_SUCCESS)
+	{
+		// VUERROR("Failed to allocate descriptor sets!");
+		return result;
+	};
 
 	for (u64 i = 0; i < m_Handles.size(); i++)
 	{
@@ -122,7 +148,7 @@ bool DescriptorSet::create()
 	}
 #endif
 
-	return true;
+	return VK_SUCCESS;
 }
 
 void DescriptorSet::cleanup()
@@ -130,10 +156,10 @@ void DescriptorSet::cleanup()
 	vkFreeDescriptorSets(vulkanData.device, m_Pool->getHandle(), static_cast<u32>(m_Handles.size()), m_Handles.data());
 }
 
-void DescriptorSet::recreate()
+VkResult DescriptorSet::recreate()
 {
 	m_Handles.resize(0);
-	create();
+	return create();
 }
 
 void DescriptorSet::map(u32 index) const
@@ -153,8 +179,7 @@ DescriptorSet::~DescriptorSet()
 
 DescriptorPool::DescriptorPool(u32 frameCount)
 	: m_FrameCount(frameCount)
-{
-}
+{}
 
 void DescriptorPool::setFrameCount(u32 frameCount)
 {
@@ -226,7 +251,20 @@ Ref<DescriptorSet> DescriptorPool::getDescriptorSet(Ref<DescriptorSetLayout> lay
 	if (shouldRecreate)
 		recreate();
 
-	Ref<DescriptorSet> descriprtorSet(new DescriptorSet(*this, layout, descriptorWrites));
+	Ref<DescriptorSet> descriprtorSet;
+
+	do
+	{
+		try
+		{
+			descriprtorSet = Ref<DescriptorSet>(new DescriptorSet(*this, layout, descriptorWrites));
+			break;
+		}
+		catch (const std::exception&)
+		{
+			recreate();
+		}
+	} while (true);
 
 	m_Sets.insert(descriprtorSet);
 
@@ -244,36 +282,48 @@ void DescriptorPool::cleanup()
 
 bool DescriptorPool::recreate()
 {
-	cleanup();
-	vkQueueWaitIdle(vulkanData.graphicsQueue);
-	std::vector<VkDescriptorPoolSize> poolSizes{};
-	poolSizes.reserve(m_TypeInfos.size());
-
-	for (auto& [type, info] : m_TypeInfos)
+	do
 	{
-		info.size = info.count;
-		poolSizes.push_back({ type, info.size * m_FrameCount });
-	}
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	poolInfo.poolSizeCount = static_cast<u32>(poolSizes.size());
-	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = m_Size * m_FrameCount;
-
-	ASSERT_VK_SUCCESS(vkCreateDescriptorPool(vulkanData.device, &poolInfo, vulkanData.allocator, &m_Handle),
-		"Failed to create descriptor pool!");
-
-	for (auto& set : m_Sets)
-	{
-		if (set.use_count() > 1)
+		try
 		{
-			set->recreate();
-		}
-	}
+			cleanup();
+			vkQueueWaitIdle(vulkanData.graphicsQueue);
+			std::vector<VkDescriptorPoolSize> poolSizes{};
+			poolSizes.reserve(m_TypeInfos.size());
 
-	return true;
+			for (auto& [type, info] : m_TypeInfos)
+			{
+				info.size = info.count;
+				poolSizes.push_back({ type, info.size * m_FrameCount });
+			}
+
+			VkDescriptorPoolCreateInfo poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+			poolInfo.poolSizeCount = static_cast<u32>(poolSizes.size());
+			poolInfo.pPoolSizes = poolSizes.data();
+			poolInfo.maxSets = m_Size * m_FrameCount;
+
+			ASSERT_VK_SUCCESS(vkCreateDescriptorPool(vulkanData.device, &poolInfo, vulkanData.allocator, &m_Handle),
+							  "Failed to create descriptor pool!");
+
+			for (auto& set : m_Sets)
+			{
+				if (set.use_count() > 1)
+				{
+					if (!checkDescriptorSetCreation(set->recreate()))
+					{
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+		catch (std::exception&)
+		{
+		}
+	} while (true);
 }
 
 DescriptorPool::~DescriptorPool()

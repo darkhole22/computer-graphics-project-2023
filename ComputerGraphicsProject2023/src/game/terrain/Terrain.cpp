@@ -21,12 +21,7 @@ Terrain::Terrain(const TerrainGenerationConfig& config) :
 	m_Config(config)
 {
 	initializeRenderingComponents();
-
 	initializeChunks();
-
-	debugText = m_Scene->getUIHandle()->makeText("Water Level: ");
-	debugText->setPosition({ 20, 150 });
-	debugText->setBorder(true);
 }
 
 void Terrain::update(f32 dt)
@@ -34,8 +29,6 @@ void Terrain::update(f32 dt)
 	f32 dh = Input::getAxis("TERRAIN_DOWN", "TERRAIN_UP") * dt;
 
 	m_VertexUniform->waterLevel = std::clamp(m_VertexUniform->waterLevel + dh, 0.0f, 1.0f);
-
-	debugText->setText(stringFormat("Water Level : %f", m_VertexUniform->waterLevel));
 }
 
 void Terrain::setReferencePosition(glm::vec2 position)

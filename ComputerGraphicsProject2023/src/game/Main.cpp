@@ -1,8 +1,9 @@
 #define VU_LOGGER_TRACE_ENABLED
+
 #include "vulture/core/Logger.h"
 #include "vulture/core/Application.h"
-#include "Character.h"
-#include "UI.h"
+#include "game/ui/DebugUI.h"
+#include "GameManager.h"
 #include "terrain/Terrain.h"
 
 using namespace vulture;
@@ -13,13 +14,11 @@ class TestGame : public Game
 {
 public:
 	Scene* scene = nullptr;
+	float c_CameraHeight = 1.5f;
 
+	Ref<DebugUI> ui = nullptr;
+	Ref<GameManager> gameManager = nullptr;
 	Ref<Terrain> terrain = nullptr;
-
-	Ref<UI> ui = nullptr;
-	Ref<Character> character = nullptr;
-
-	Ref<GameObject> enemy;
 
 #if 1
 	String skyboxName = "desert";
@@ -29,12 +28,19 @@ public:
 
 	void setup() override
 	{
-		setupInputActions();
 		scene = Application::getScene();
 
+		setupInputActions();
+
+		/**********
+		 * SKYBOX *
+		 **********/
 		scene->setSkybox(skyboxName);
-		ui = makeRef<UI>();
-		character = makeRef<Character>();
+
+		/**********
+		 *   UI   *
+		 **********/
+		ui = makeRef<DebugUI>();
 
 		/***********
 		 * VOLCANO *
@@ -63,16 +69,15 @@ public:
 			scene->getWorld()->directLight.direction = glm::vec3(sin(angle) * cos(hAngle), sin(hAngle), cos(angle) * cos(hAngle));
 		}, 0.0f, glm::radians(360.0f), 10.0f);
 
-		enemy = makeRef<GameObject>("character");
-		enemy->transform.setPosition(0.0f, 40.0f, 0.f);
-		enemy->transform.setScale(3.0f, 3.0f, 3.0f);
-		// enemy->transform.setRotation(0.0f, glm::radians(25.0f), 0.0f);
-		scene->addObject(enemy);
-
 		/***********
 		 * TERRAIN *
 		 ***********/
 		terrain = makeRef<Terrain>();
+
+		/**************
+		 * GAME LOGIC *
+		 **************/
+		 gameManager = makeRef<GameManager>(terrain);
 	}
 
 	void update(float dt) override
@@ -84,25 +89,13 @@ public:
 			useSkybox = !useSkybox;
 		}
 
+		gameManager->update(dt);
 
-		character->update(dt);
 		ui->update(dt);
 
-		auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP");
+		auto cameraPos = scene->getCamera()->position;
+		terrain->setReferencePosition({cameraPos.x, cameraPos.z});
 
-		auto enemyPosition = enemy->transform.getPosition() + glm::vec3(movement.x, 0.0f, movement.y) * 30.0f * dt;
-		enemyPosition.y = terrain->getHeightAt(enemyPosition.x, enemyPosition.z);
-		enemy->transform.setPosition(enemyPosition);
-
-		if (Input::isKeyPressed(GLFW_KEY_H))
-		{
-			scene->getCamera()->lookAt(enemy->transform.getPosition());
-		}
-
-		// scene->getCamera()->position;
-		scene->getCamera()->translate(glm::vec3(movement.x, 0.0f, movement.y) * 30.0f * dt);
-		terrain->setReferencePosition({enemyPosition.x, enemyPosition.z});
-		// enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
 		terrain->update(dt);
 	}
 
@@ -141,6 +134,14 @@ private:
 		Input::setAction("MOVE_DOWN", downAction);
 
 		/**********************************************
+		 *                  ACTIONS                   *
+		 **********************************************/
+		InputAction fireAction{};
+		fireAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_SPACE}} };
+		Input::setAction("FIRE", fireAction);
+
+		/**********************************************
 		 *                  CAMERA                    *
 		 **********************************************/
 
@@ -175,24 +176,6 @@ private:
 		rotateDownAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, GAMEPAD_AXIS_POS}}} };
 		Input::setAction("ROTATE_DOWN", rotateDownAction);
-
-		InputAction rollLeftAction{};
-		rollLeftAction.keyboardBindings = {
-				KeyboardBinding{{GLFW_KEY_Q}},
-		};
-		rollLeftAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_LEFT_THUMB}}
-		};
-		Input::setAction("ROLL_LEFT", rollLeftAction);
-
-		InputAction rollRightAction{};
-		rollRightAction.keyboardBindings = {
-				KeyboardBinding{{GLFW_KEY_E}},
-		};
-		rollRightAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_RIGHT_THUMB}}
-		};
-		Input::setAction("ROLL_RIGHT", rollRightAction);
 
 		/**********************************************
 		 *                  DEBUG                     *
