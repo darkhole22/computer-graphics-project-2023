@@ -9,12 +9,11 @@
 
 using namespace vulture;
 
-namespace game
-{
+namespace game {
 class Character
 {
 private:
-	const float c_Speed = 10;
+	const float c_Speed = 50;
 	const float c_RotSpeed = 4.0f;
 
 	Camera* m_Camera;
@@ -25,8 +24,9 @@ public:
 	explicit Character()
 	{
 		m_Camera = Application::getScene()->getCamera();
-		m_Position = glm::vec3(0.0f, 0.0f, 0.0f);
+		m_Position = glm::vec3(0.0f, 40.0f, 0.0f);
 		m_Camera->position = m_Position + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+		m_Camera->setFarPlane(190.0f);
 	}
 
 	void update(float dt);

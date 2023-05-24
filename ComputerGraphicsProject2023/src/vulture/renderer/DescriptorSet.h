@@ -146,9 +146,9 @@ public:
 
 	inline VkDescriptorPool getHandle() const { return m_Handle; }
 
-	void reserveSpace(u32 count, const DescriptorSetLayout& layout);
+	void reserveSpace(u32 count, Ref<DescriptorSetLayout> layout);
 
-	Ref<DescriptorSet> getDescriptorSet(const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
+	Ref<DescriptorSet> getDescriptorSet(Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
 	~DescriptorPool();
 
@@ -185,7 +185,7 @@ public:
 	~DescriptorSet();
 	friend class DescriptorPool;
 private:
-	DescriptorSet(DescriptorPool& pool, const DescriptorSetLayout& layout, const std::vector<DescriptorWrite>& descriptorWrites);
+	DescriptorSet(DescriptorPool& pool, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
 	bool create();
 	void cleanup();
@@ -193,7 +193,7 @@ private:
 
 	std::vector<VkDescriptorSet> m_Handles;
 	DescriptorPool* m_Pool;
-	DescriptorSetLayout const* m_Layout;
+	Ref<DescriptorSetLayout> m_Layout;
 	std::vector<DescriptorWrite> m_DescriptorWrites;
 };
 

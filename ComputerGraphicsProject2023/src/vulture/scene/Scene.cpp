@@ -7,14 +7,12 @@ namespace vulture {
 
 RenderableObject::RenderableObject(Ref<Model> model, Ref<DescriptorSet> descriptorSet) :
 	m_Model(model), m_DescriptorSet(descriptorSet)
-{
-}
+{}
 
 SceneObjectList::SceneObjectList(const String& vertexShader,
-	const String& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
+								 const String& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
 	m_Pipeline(new Pipeline(Renderer::getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
-{
-}
+{}
 
 void SceneObjectList::addObject(ObjectHandle handle, const RenderableObject& obj)
 {
@@ -69,7 +67,7 @@ void Scene::render(FrameContext target, float dt)
 	}
 
 	// Update all GameObjects in the scene.
-	for (const auto& it: m_GameObjects)
+	for (const auto& it : m_GameObjects)
 	{
 		it.second->update(dt);
 	}
@@ -110,7 +108,7 @@ PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fra
 {
 	PipelineHandle handle = m_NextPipelineHandle++;
 
-	std::vector<DescriptorSetLayout *> layouts{};
+	std::vector<DescriptorSetLayout*> layouts{};
 	layouts.push_back(descriptorSetLayout.get());
 	layouts.push_back(m_Camera.getDescriptorSetLayout());
 	layouts.push_back(m_World.getDescriptorSetLayout());
@@ -120,11 +118,37 @@ PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fra
 	return handle;
 }
 
+ObjectHandle Scene::addObject(PipelineHandle pipeline, Ref<Model> model, Ref<DescriptorSet> descriptorSet)
+{
+	auto p = m_ObjectLists.find(pipeline);
+	if(p != m_ObjectLists.end())
+	{
+		auto handle = GameObject::s_NextHandle++;
+
+		p->second.addObject(handle, RenderableObject(model, descriptorSet));
+
+		setModified();
+		return handle;
+	}
+	VUWARN("Trying to add an object to an invalid pipeline (%li)!", pipeline);
+	return 0;
+}
+
+void Scene::removeObject(PipelineHandle pipeline, ObjectHandle obj)
+{
+	auto p = m_ObjectLists.find(pipeline);
+	if (p != m_ObjectLists.end())
+	{
+		p->second.removeObject(obj);
+		setModified();
+	}
+}
+
 void Scene::addObject(Ref<GameObject> obj)
 {
 	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 
-	p.addObject(obj->m_Handle, RenderableObject(obj->m_Model, m_DescriptorsPool.getDescriptorSet(*m_GameObjectDSL.get(), {obj->m_Uniform, *obj->m_TextureSampler})));
+	p.addObject(obj->m_Handle, RenderableObject(obj->m_Model, m_DescriptorsPool.getDescriptorSet(m_GameObjectDSL, { obj->m_Uniform, *obj->m_TextureSampler })));
 	m_GameObjects[obj->m_Handle] = obj;
 
 	setModified();
@@ -138,6 +162,8 @@ void Scene::removeObject(Ref<GameObject> obj)
 
 	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 	p.removeObject(obj->m_Handle);
+
+	setModified();
 }
 
 void Scene::setSkybox(const String& name)

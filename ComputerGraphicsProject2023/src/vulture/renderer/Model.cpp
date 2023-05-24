@@ -61,6 +61,40 @@ Ref<Model> Model::get(const String& name)
 	return result;
 }
 
+Ref<Model> Model::getPlane(u32 hCount, u32 vCount)
+{
+	if (hCount == 0) hCount = 1;
+	if (vCount == 0) vCount = 1;
+
+	std::vector<Vertex> vertices{};
+	std::vector<u32> indices{};
+
+	for (u32 z = 0; z < vCount + 1; z++)
+	{
+		for (u32 x = 0; x < hCount + 1; x++)
+		{
+			f32 xPos = static_cast<f32>(x) / hCount;
+			f32 zPos = static_cast<f32>(z) / vCount;
+
+			vertices.push_back({ {xPos, 0, zPos}, {0, 1, 0}, {xPos, zPos} });
+			if (x > 0 && z > 0)
+			{
+				u32 offset = static_cast<u32>(vertices.size()) - 1;
+
+				indices.push_back(offset);
+				indices.push_back(offset - (hCount + 1));
+				indices.push_back(offset - (hCount + 2));
+
+				indices.push_back(offset);
+				indices.push_back(offset - (hCount + 2));
+				indices.push_back(offset - 1);
+			}
+		}
+	}
+
+	return Ref<Model>(new Model(vertices, indices));
+}
+
 static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indices, const String& path)
 {
 	tinyobj::attrib_t attrib;
@@ -70,20 +104,23 @@ static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& in
 
 	String fileName = path + ".obj";
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, fileName.cString())) {
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, fileName.cString()))
+	{
 		VUERROR("Failed to load model at %s!", fileName.cString());
 		return false;
 	}
 
-	std::unordered_map <Vertex, u32, VertexHash, decltype([](const Vertex& v1, const Vertex& v2) -> bool {
+	std::unordered_map < Vertex, u32, VertexHash, decltype([](const Vertex& v1, const Vertex& v2) -> bool {
 		return v1.pos == v2.pos && v1.norm == v2.norm && v1.texCoord == v2.texCoord;
-	})> uniqueVertices{};
+	}) > uniqueVertices{};
 
 #ifdef VU_LOGGER_INFO_ENABLED
 	u32 totalVertexCount = 0;
 #endif
-	for (const auto& shape : shapes) {
-		for (const auto& index : shape.mesh.indices) {
+	for (const auto& shape : shapes)
+	{
+		for (const auto& index : shape.mesh.indices)
+		{
 			Vertex vertex{
 				{
 					attrib.vertices[3 * index.vertex_index + 0],

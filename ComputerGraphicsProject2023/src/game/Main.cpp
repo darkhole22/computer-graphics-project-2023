@@ -3,6 +3,7 @@
 #include "vulture/core/Application.h"
 #include "Character.h"
 #include "UI.h"
+#include "terrain/Terrain.h"
 
 using namespace vulture;
 
@@ -12,6 +13,8 @@ class TestGame : public Game
 {
 public:
 	Scene* scene = nullptr;
+
+	Ref<Terrain> terrain = nullptr;
 
 	Ref<UI> ui = nullptr;
 	Ref<Character> character = nullptr;
@@ -37,23 +40,17 @@ public:
 		 * VOLCANO *
 		 ***********/
 		auto volcano = makeRef<GameObject>("vulture");
-		volcano->transform.setPosition(-5.0f, 0.0f, -5.0f);
+		volcano->transform.setPosition(100.0f, 50.0f, 100.0f);
 		scene->addObject(volcano);
 
-		Ref<Tween> tween = scene->makeTween();
-		tween->loop();
-		tween->addIntervalTweener(0.5f);
+		auto tween = scene->makeTween()->loop();
 
 		std::function<void(float)> scaleCallback = [volcano](float size) {
 			volcano->transform.setScale(size, size, size);
 		};
 
-		std::function<void(float)> lightRotation = [this](float angle) {
-			scene->getWorld()->directLight.direction = glm::vec3(sin(angle), 0.0f, cos(angle));
-		};
-
-		tween->addMethodTweener(scaleCallback, 3.0f, 6.0f, 2.0f);
-		tween->addMethodTweener(scaleCallback, 6.0f, 3.0f, 2.0f);
+		tween->addMethodTweener(scaleCallback, 1.0f, 3.0f, 2.0f);
+		tween->addMethodTweener(scaleCallback, 3.0f, 1.0f, 2.0f);
 
 		/*********
 		 * LIGHT *
@@ -61,25 +58,21 @@ public:
 		scene->getWorld()->directLight.color = glm::vec4(1.0f);
 		scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
 
-		auto lightTween = scene->makeTween();
-		lightTween->loop();
-		lightTween->addMethodTweener(lightRotation, 0.0f, glm::radians(360.0f), 10.0f);
-
-		/*********
-		 * FLOOR *
-		 *********/
-
-		auto f = makeRef<GameObject>("floor");
-		f->transform.setPosition(-50.0f, 0, -50.0f);
-		f->transform.setScale(100.0f, 1.0f, 100.0f);
-		scene->addObject(f);
-
+		scene->makeTween()->loop()->addMethodTweener<float>([this](float angle) {
+			constexpr float hAngle = glm::radians(10.0f);
+			scene->getWorld()->directLight.direction = glm::vec3(sin(angle) * cos(hAngle), sin(hAngle), cos(angle) * cos(hAngle));
+		}, 0.0f, glm::radians(360.0f), 10.0f);
 
 		enemy = makeRef<GameObject>("character");
-		enemy->transform.setPosition(10.0f, 0.0f, 10.f);
+		enemy->transform.setPosition(0.0f, 40.0f, 0.f);
 		enemy->transform.setScale(3.0f, 3.0f, 3.0f);
-		enemy->transform.setRotation(0.0f, glm::radians(25.0f), 0.0f);
+		// enemy->transform.setRotation(0.0f, glm::radians(25.0f), 0.0f);
 		scene->addObject(enemy);
+
+		/***********
+		 * TERRAIN *
+		 ***********/
+		terrain = makeRef<Terrain>();
 	}
 
 	void update(float dt) override
@@ -91,16 +84,26 @@ public:
 			useSkybox = !useSkybox;
 		}
 
-		if (Input::isKeyPressed(GLFW_KEY_H))
-		{
-			scene->getCamera()->lookAt(glm::vec3(-5.0f, 5.0f, -5.0f));
-		}
 
 		character->update(dt);
 		ui->update(dt);
 
-		enemy->transform.translate(4.0f * dt, 0.0f, 0.0f);
-		enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
+		auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP");
+
+		auto enemyPosition = enemy->transform.getPosition() + glm::vec3(movement.x, 0.0f, movement.y) * 30.0f * dt;
+		enemyPosition.y = terrain->getHeightAt(enemyPosition.x, enemyPosition.z);
+		enemy->transform.setPosition(enemyPosition);
+
+		if (Input::isKeyPressed(GLFW_KEY_H))
+		{
+			scene->getCamera()->lookAt(enemy->transform.getPosition());
+		}
+
+		// scene->getCamera()->position;
+		scene->getCamera()->translate(glm::vec3(movement.x, 0.0f, movement.y) * 30.0f * dt);
+		terrain->setReferencePosition({enemyPosition.x, enemyPosition.z});
+		// enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
+		terrain->update(dt);
 	}
 
 private:
@@ -212,6 +215,22 @@ private:
 				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_Y}}
 		};
 		Input::setAction("TOGGLE_SKYBOX", toggleSkyboxAction);
+
+		/**********************************************
+		 *                 TERRAIN                    *
+		 **********************************************/
+
+		InputAction terrainDownAction{};
+		terrainDownAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_K}},
+		};
+		Input::setAction("TERRAIN_DOWN", terrainDownAction);
+
+		InputAction terrainUpAction{};
+		terrainUpAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_L}},
+		};
+		Input::setAction("TERRAIN_UP", terrainUpAction);
 	}
 };
 
