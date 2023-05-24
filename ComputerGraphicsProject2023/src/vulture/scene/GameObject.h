@@ -2,9 +2,7 @@
 
 #include <string>
 #include "vulture/renderer/Renderer.h"
-#include "vulture/core/Logger.h"
 #include "vulture/util/Transform.h"
-
 
 namespace vulture{
 

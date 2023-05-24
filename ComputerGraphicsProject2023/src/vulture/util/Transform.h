@@ -39,7 +39,8 @@ public:
 	 *
 	 * @param translation The amount to translate the object by as a glm::vec3.
 	 */
-	void translate(glm::vec3 translation) {
+	void translate(glm::vec3 translation)
+	{
 		// m_Position += translation;
 		auto frontDir = glm::normalize(m_Rotation * m_FacingDirection);
 		auto rightDir = glm::normalize(glm::cross(frontDir, m_UpDirection));
@@ -136,8 +137,8 @@ public:
 		if (m_ShouldUpdate)
 		{
 			m_WorldMatrix = glm::translate(glm::mat4(1.0f), m_Position) *
-							glm::mat4(m_Rotation) *
-							glm::scale(glm::mat4(1.0f), m_Scale);
+				glm::mat4(m_Rotation) *
+				glm::scale(glm::mat4(1.0f), m_Scale);
 
 			m_ShouldUpdate = false;
 		}

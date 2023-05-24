@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vulture/renderer/Renderer.h"
-#include "vulture/core/Logger.h"
 
 namespace vulture {
 
