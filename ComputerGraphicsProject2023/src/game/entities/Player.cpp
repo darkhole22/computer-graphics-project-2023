@@ -27,8 +27,6 @@ void Player::update(f32 dt)
 		}
 	}
 
-
-
 	auto rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
 			* c_RotSpeed * dt;
 	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
