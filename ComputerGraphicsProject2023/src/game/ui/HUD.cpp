@@ -2,8 +2,7 @@
 
 namespace game {
 
-HUD::HUD()
-{
+HUD::HUD() {
 	m_UIHandler = Application::getScene()->getUIHandle();
 
 	EventBus::addCallback([this](HealthUpdated e) { onHealthUpdated(e); });

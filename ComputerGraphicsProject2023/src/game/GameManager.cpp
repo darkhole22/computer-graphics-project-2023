@@ -2,7 +2,8 @@
 
 namespace game {
 
-GameManager::GameManager(Ref<Terrain> terrain) {
+GameManager::GameManager(Ref<Terrain> terrain)
+{
 	m_Scene = Application::getScene();
 	m_Terrain = terrain;
 
@@ -18,7 +19,8 @@ GameManager::GameManager(Ref<Terrain> terrain) {
 		std::mt19937 rng(rd());    // Random-number engine used (Mersenne-Twister in this case)
 		std::uniform_int_distribution<int> uni(-30, 30); // Guaranteed unbiased
 
-		for (int i = 0; i <= 10; i++) {
+		for (int i = 0; i <= 10; i++)
+		{
 			auto enemy = m_EnemyFactory->get();
 			enemy->m_GameObject->tag = "ENEMY";
 			auto startingLocation = m_Player->transform.getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
@@ -35,7 +37,7 @@ void GameManager::update(f32 dt)
 {
 	m_EnemyFactory->update(dt);
 
-	for (auto enemy: *m_EnemyFactory)
+	for (auto& enemy : *m_EnemyFactory)
 	{
 		auto pos = enemy->m_GameObject->transform.getPosition();
 		enemy->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);

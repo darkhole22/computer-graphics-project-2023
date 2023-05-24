@@ -8,6 +8,8 @@
 #include "vulture/core/Application.h"
 #include "vulture/scene/GameObject.h"
 
+#include <queue>
+
 namespace vulture {
 
 /**
@@ -26,7 +28,7 @@ public:
 	 * @param modelName The name of the model that the GameObjects will use.
 	 * @param textureName The name of the texture that the GameObjects will use.
 	 */
-	GameObjectPool(int initialSize, const String& modelName, const String& textureName);
+	GameObjectPool(u32 initialSize, const String& modelName, const String& textureName);
 
 	/**
 	 * @brief Retrieves a GameObject instance from the pool.

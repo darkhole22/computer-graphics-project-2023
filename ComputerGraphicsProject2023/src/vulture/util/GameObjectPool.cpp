@@ -2,12 +2,10 @@
 
 namespace vulture {
 
-GameObjectPool::GameObjectPool(int initialSize, const String& modelName, const String& textureName)
+GameObjectPool::GameObjectPool(u32 initialSize, const String& modelName, const String& textureName) :
+	m_ModelName(modelName), m_TextureName(textureName)
 {
-	m_ModelName = modelName;
-	m_TextureName = textureName;
-
-	for(int i = 0; i < initialSize; i++)
+	for (u32 i = 0; i < initialSize; i++)
 	{
 		m_ObjectQueue.push(makeRef<GameObject>(m_ModelName, m_TextureName));
 	}
@@ -16,14 +14,14 @@ GameObjectPool::GameObjectPool(int initialSize, const String& modelName, const S
 Ref<GameObject> GameObjectPool::get()
 {
 	Ref<GameObject> obj;
-	if(m_ObjectQueue.empty())
+	if (m_ObjectQueue.empty())
 	{
 		obj = makeRef<GameObject>(m_ModelName, m_TextureName);
 	}
 	else
 	{
-	obj = m_ObjectQueue.front();
-	m_ObjectQueue.pop();
+		obj = m_ObjectQueue.front();
+		m_ObjectQueue.pop();
 	}
 
 	VUINFO("GameObjectPool size after get(): %d", m_ObjectQueue.size());

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "game/EventBus.h"
-#include "game/entities/Player.h"
 #include "vulture/core/Application.h"
 
 using namespace vulture;
