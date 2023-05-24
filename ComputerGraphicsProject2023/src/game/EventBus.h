@@ -1,22 +1,24 @@
 #pragma once
 
 #include "game/events/PlayerEvents.h"
-
 #include "vulture/core/Core.h"
 
 using namespace vulture;
 
 namespace game {
 
+/**
+ * @brief A singleton Event Bus for all events related to game logic.
+ */
 class EventBus
 {
 	PLAYER_EVENTS
 
 public:
+	NO_COPY(EventBus)
+
 	static void init();
 	static void cleanup();
-
-	inline static Ref<EventBus> getInstance() { return s_Instance; }
 
 	~EventBus() = default;
 private:

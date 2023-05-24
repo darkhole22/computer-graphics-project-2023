@@ -30,9 +30,11 @@ public:
 
 	void setup() override
 	{
+		/**********
+		 *  SETUP *
+		 **********/
 		scene = Application::getScene();
 		EventBus::init();
-
 		setupInputActions();
 
 		/**********
