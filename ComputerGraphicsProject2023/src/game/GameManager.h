@@ -23,9 +23,6 @@ private:
 	Ref<Terrain> m_Terrain = nullptr;
 
 	Ref<Player> m_Player = nullptr;
-
-	Ref<HUD> m_HUD = nullptr;
-
 	Ref<Factory<Enemy>> m_EnemyFactory;
 
 };

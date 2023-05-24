@@ -10,6 +10,8 @@ Player::Player()
 	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
+
+	EventBus::emit(HealthUpdated{m_HP, m_MaxHP});
 }
 
 void Player::update(f32 dt)
@@ -21,7 +23,7 @@ void Player::update(f32 dt)
 		auto collidingObjects = Application::getScene()->getCollidingObjects(transform, "ENEMY");
 		if (!collidingObjects.empty()) {
 			m_HP = std::max(int(m_HP - collidingObjects.size()), 0);
-			emit(HealthUpdated{m_HP, m_MaxHP});
+			EventBus::emit(HealthUpdated{m_HP, m_MaxHP});
 
 			invincibility = 0.0f;
 		}
@@ -49,7 +51,7 @@ void Player::update(f32 dt)
 
 		bullet->setup(transform.getPosition(), m_Camera->direction);
 
-		emit(AmmoUpdated{10, 20});
+		EventBus::emit(AmmoUpdated{10, 20});
 	}
 
 	m_BulletFactory->update(dt);

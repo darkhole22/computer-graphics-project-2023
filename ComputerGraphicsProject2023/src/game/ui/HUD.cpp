@@ -2,14 +2,13 @@
 
 namespace game {
 
-HUD::HUD(Ref<Player> player)
+HUD::HUD()
 {
 	m_UIHandler = Application::getScene()->getUIHandle();
 
-	m_Player = player;
-	m_Player->addCallback([this](HealthUpdated e) { onHealthUpdated(e); });
+	EventBus::addCallback([this](HealthUpdated e) { onHealthUpdated(e); });
 
-	m_HPText = m_UIHandler->makeText(stringFormat("HP: %d/%d", player->m_HP, player->m_MaxHP));
+	m_HPText = m_UIHandler->makeText("HP: ");
 	m_AmmoText = m_UIHandler->makeText("Ammo: ");
 	m_AmmoText->setPosition({20, 50});
 }
