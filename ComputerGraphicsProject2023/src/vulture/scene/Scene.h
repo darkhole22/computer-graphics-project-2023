@@ -79,7 +79,6 @@ public:
 			if (obj.second->tag == tag &&
 				glm::distance(obj.second->transform.getPosition(), transform.getPosition()) < 1.0f)
 			{
-				
 				collidingObjects.push_back(obj.second);
 			}
 		}

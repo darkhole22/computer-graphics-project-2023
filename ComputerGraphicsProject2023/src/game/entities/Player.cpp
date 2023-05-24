@@ -14,6 +14,21 @@ Player::Player()
 
 void Player::update(f32 dt)
 {
+	static float invinc = 0.0f;
+	invinc += dt;
+
+	if (invinc >= 1.0f) {
+		auto collidingObjects = Application::getScene()->getCollidingObjects(transform, "ENEMY");
+		if (!collidingObjects.empty()) {
+			m_HP = std::max(int(m_HP - collidingObjects.size()), 0);
+			emit(HealthUpdated{m_HP, m_MaxHP});
+
+			invinc = 0.0f;
+		}
+	}
+
+
+
 	auto rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
 			* c_RotSpeed * dt;
 	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
@@ -35,6 +50,8 @@ void Player::update(f32 dt)
 		bullet->m_GameObject->tag = "PLAYER_BULLET";
 
 		bullet->setup(transform.getPosition(), m_Camera->direction);
+
+		emit(AmmoUpdated{10, 20});
 	}
 
 	m_BulletFactory->update(dt);

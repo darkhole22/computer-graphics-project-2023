@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Factory.h"
+#include "vulture/core/Application.h"
 
 namespace game {
 
@@ -17,7 +18,6 @@ public:
 	static const String& s_TextureName;
 
 	Ref<GameObject> m_GameObject;
-
 
 	explicit Bullet(Ref<GameObject> gameObject);
 

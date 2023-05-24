@@ -138,6 +138,8 @@ void Scene::removeObject(Ref<GameObject> obj)
 
 	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 	p.removeObject(obj->m_Handle);
+
+	setModified();
 }
 
 void Scene::setSkybox(const String& name)

@@ -2,7 +2,7 @@
 
 #include "vulture/core/Logger.h"
 #include "vulture/core/Application.h"
-#include "UI.h"
+#include "game/ui/DebugUI.h"
 #include "GameManager.h"
 
 using namespace vulture;
@@ -15,7 +15,7 @@ public:
 	Scene* scene = nullptr;
 	float c_CameraHeight = 1.5f;
 
-	Ref<UI> ui = nullptr;
+	Ref<DebugUI> ui = nullptr;
 	Ref<GameManager> gameManager = nullptr;
 
 #if 1
@@ -38,7 +38,7 @@ public:
 		/**********
 		 *   UI   *
 		 **********/
-		ui = makeRef<UI>();
+		ui = makeRef<DebugUI>();
 
 		/***********
 		 * VOLCANO *

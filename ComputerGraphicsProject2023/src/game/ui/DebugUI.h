@@ -1,14 +1,14 @@
 #pragma once
 
-#include "vulture/scene/ui/UIHandler.h"
-#include "vulture/core/Application.h"
-#include "vulture/core/Input.h"
+#include "../../vulture/scene/ui/UIHandler.h"
+#include "../../vulture/core/Application.h"
+#include "../../vulture/core/Input.h"
 
 using namespace vulture;
 
 namespace game {
 
-class UI
+class DebugUI
 {
 private:
 	UIHandler *m_HandlerUI = nullptr;
@@ -16,7 +16,7 @@ private:
 	Ref<UIText> m_FPSText;
 	Ref<UIText> m_FrameTimeText;
 public:
-	UI()
+	DebugUI()
 	{
 		m_HandlerUI = Application::getScene()->getUIHandle();
 
