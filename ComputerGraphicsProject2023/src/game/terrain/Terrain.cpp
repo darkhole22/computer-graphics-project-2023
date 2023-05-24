@@ -38,10 +38,10 @@ void Terrain::update(f32 dt)
 	debugText->setText(stringFormat("Water Level : %f", m_VertexUniform->waterLevel));
 }
 
-void Terrain::setReferancePosition(glm::vec2 position)
+void Terrain::setReferencePosition(glm::vec2 position)
 {
-	i64 oldX = static_cast<i64>(std::floor(m_ReferancePosition.x / m_Config.chunkSize));
-	i64 oldY = static_cast<i64>(std::floor(m_ReferancePosition.y / m_Config.chunkSize));
+	i64 oldX = static_cast<i64>(std::floor(m_ReferencePosition.x / m_Config.chunkSize));
+	i64 oldY = static_cast<i64>(std::floor(m_ReferencePosition.y / m_Config.chunkSize));
 
 	i64 targetX = static_cast<i64>(std::floor(position.x / m_Config.chunkSize));
 	i64 targetY = static_cast<i64>(std::floor(position.y / m_Config.chunkSize));
@@ -75,7 +75,7 @@ void Terrain::setReferancePosition(glm::vec2 position)
 
 		m_Chunks = newChunks;
 	}
-	m_ReferancePosition = position;
+	m_ReferencePosition = position;
 }
 
 f32 Terrain::getHeightAt(glm::vec2 position) const

@@ -17,11 +17,11 @@ public:
 public:
 
 	/**
-	* @brief Returns a referance to the specified texture or to the default texture if `name` is invalid.
+	* @brief Returns a reference to the specified texture or to the default texture if `name` is invalid.
 	*
 	* @param name: the texture unique identifier (not the file name).
 	*
-	* @return a referance to the texture.
+	* @return a reference to the texture.
 	*/
 	static Ref<Texture> get(const String& name);
 	static Ref<Texture> getCubemap(const String& name);

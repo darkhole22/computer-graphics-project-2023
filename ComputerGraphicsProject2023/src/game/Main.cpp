@@ -101,7 +101,7 @@ public:
 
 		// scene->getCamera()->position;
 		scene->getCamera()->translate(glm::vec3(movement.x, 0.0f, movement.y) * 30.0f * dt);
-		terrain->setReferancePosition({ enemyPosition.x, enemyPosition.z });
+		terrain->setReferencePosition({enemyPosition.x, enemyPosition.z});
 		// enemy->transform.rotate(0.0f, glm::radians(2.0f) * dt, glm::radians(5.0f) * dt);
 		terrain->update(dt);
 	}

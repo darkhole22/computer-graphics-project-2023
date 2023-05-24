@@ -38,6 +38,32 @@ vec3 BRDF(vec3 V, vec3 N, vec3 L, vec3 Md, vec3 Ms) {
     return lambert_diffuse + phong_specular;
 }
 
+vec3 OrenNayar(vec3 V, vec3 N, vec3 L, vec3 Md, float sigma) {
+    //vec3 V  - direction of the viewer
+    //vec3 N  - normal vector to the surface
+    //vec3 L  - light vector (from the light model)
+    //vec3 Md - main color of the surface
+    //float sigma - Roughness of the model
+    float A = 1 - 0.5 * pow(sigma, 2) / (pow(sigma, 2) + 0.33);
+    float B = 0.45 * pow(sigma, 2) / (pow(sigma, 2) + 0.09);
+
+    float theta_i = acos(dot(L, N));
+    float theta_r = acos(dot(V, N));
+
+    float alpha = max(theta_i, theta_r);
+    float beta = min(theta_i, theta_r);
+
+    vec3 v_i = normalize(L - dot(L, N) * N);
+    vec3 v_r = normalize(V - dot(V, N) * N);
+    float G = max(0, dot(v_i, v_r));
+
+    vec3 l = Md * clamp(dot(L, N), 0.0f, 1.0f);
+
+    vec3 oren_nayar_diffuse = l * (A + B * G * sin(alpha) * tan(beta));
+
+    return oren_nayar_diffuse; // Oren-Nayar is used for materials that don't show specular reflections.
+}
+
 const float sandWidth = 0.05;
 
 void main() {
@@ -51,8 +77,10 @@ void main() {
     vec3 norm = fragNorm;
     vec3 lightDir = wubo.lightDirection.xyz;
     
-    vec3 diffSpec = BRDF(cameraDir, norm, lightDir, color, vec3(1.0));
+    //vec3 diffSpec = BRDF(cameraDir, norm, lightDir, color, vec3(1.0));
+    vec3 diff = OrenNayar(cameraDir, norm, lightDir, color, 0.4);
+
     vec3 ambient = color * 0.05;
     
-    outColor = vec4(clamp(0.95 * diffSpec * wubo.lightColor.rgb + ambient, 0.0, 1.0), 1.0);
+    outColor = vec4(clamp(0.95 * diff * wubo.lightColor.rgb + ambient, 0.0, 1.0), 1.0);
 }

@@ -45,11 +45,11 @@ struct TerrainGenerationConfig
 class Terrain
 {
 public:
-	Terrain(const TerrainGenerationConfig& config = TerrainGenerationConfig::defaultConfig);
+	explicit Terrain(const TerrainGenerationConfig& config = TerrainGenerationConfig::defaultConfig);
 
 	void update(f32 dt);
 
-	void setReferancePosition(glm::vec2 position);
+	void setReferencePosition(glm::vec2 position);
 
 	f32 getHeightAt(glm::vec2 position) const;
 	f32 getHeightAt(f32 x, f32 y) const { return getHeightAt({ x, y }); }
@@ -66,7 +66,7 @@ private:
 
 	u64 m_ChunksSideCount;
 	std::vector<Ref<TerrainChunk>> m_Chunks;
-	glm::vec2 m_ReferancePosition = { 0,0 };
+	glm::vec2 m_ReferencePosition = {0, 0 };
 
 	Ref<UIText> debugText;
 
