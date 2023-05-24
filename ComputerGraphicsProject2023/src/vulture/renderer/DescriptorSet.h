@@ -187,9 +187,9 @@ public:
 private:
 	DescriptorSet(DescriptorPool& pool, Ref<DescriptorSetLayout> layout, const std::vector<DescriptorWrite>& descriptorWrites);
 
-	bool create();
+	VkResult create();
 	void cleanup();
-	void recreate();
+	VkResult recreate();
 
 	std::vector<VkDescriptorSet> m_Handles;
 	DescriptorPool* m_Pool;
