@@ -10,23 +10,17 @@ namespace game {
 
 class EventBus
 {
-PLAYER_EVENTS
+	PLAYER_EVENTS
 
 public:
-	inline static Ref<EventBus> getInstance()
-	{
-		if (s_Instance.expired())
-		{
-			s_Instance = Ref<EventBus>(new EventBus());
-		}
+	static void init();
+	static void cleanup();
 
-		return s_Instance.lock();
-	}
+	inline static Ref<EventBus> getInstance() { return s_Instance; }
 
 	~EventBus() = default;
-
 private:
-	static WRef<EventBus> s_Instance;
+	static Ref<EventBus> s_Instance;
 
 	EventBus() = default;
 };

@@ -31,6 +31,7 @@ public:
 	void setup() override
 	{
 		scene = Application::getScene();
+		EventBus::init();
 
 		setupInputActions();
 
@@ -80,7 +81,7 @@ public:
 		/**************
 		 * GAME LOGIC *
 		 **************/
-		 gameManager = makeRef<GameManager>(terrain);
+		gameManager = makeRef<GameManager>(terrain);
 	}
 
 	void update(float dt) override
@@ -97,11 +98,15 @@ public:
 		m_DebugUI->update(dt);
 
 		auto cameraPos = scene->getCamera()->position;
-		terrain->setReferencePosition({cameraPos.x, cameraPos.z});
+		terrain->setReferencePosition({ cameraPos.x, cameraPos.z });
 
 		terrain->update(dt);
 	}
 
+	~TestGame()
+	{
+		EventBus::cleanup();
+	}
 private:
 	static void setupInputActions()
 	{
