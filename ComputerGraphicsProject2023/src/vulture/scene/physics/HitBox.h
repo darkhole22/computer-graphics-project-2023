@@ -10,6 +10,14 @@
 namespace vulture {
 
 #define BIT(n) (1uLL << n)
+
+/**
+ * @brief Represents bitmask values used for layer and collision masks.
+ *
+ * The MaskBit enum provides a set of bitmask values that can be used for defining
+ * layers and collision masks in the collision system. Each bit in the bitmask
+ * corresponds to a specific layer or collision group.
+ */
 enum MaskBit : u64
 {
 	NOME = 0,
@@ -42,21 +50,67 @@ struct HitBoxExited
 	void* data;
 };
 
+/**
+ * @brief Represents a hit box for collision detection and response.
+ *
+ * The HitBox class provides functionality for defining and managing collision shapes
+ * associated with a specific object or entity. It allows you to detect when other objects
+ * enter or exit the hit box, and provides access to the collision shapes contained within.
+ */
 class HitBox
 {
+	// Event triggered when another object enters the hit box.
 	EVENT(HitBoxEntered)
+	// Event triggered when another object exits the hit box.
 	EVENT(HitBoxExited)
 public:
+
+	/**
+	 * @brief Bitmask representing the layers this hit box belongs to.
+	 */
 	u64 layerMask = MaskBit::NOME;
+
+	/**
+	 * @brief Bitmask representing the layers this hit box can collide with.
+	 */
 	u64 collisionMask = MaskBit::NOME;
+
+	/**
+	 * @brief Optional user data associated with the hit box.
+	 */
 	void* data = nullptr;
+
+	/**
+	 * @brief Transform of the hit box.
+	 */
 	Transform transform;
 
+	/**
+	 * @brief Constructs a HitBox object with the specified collision shape.
+	 *
+	 * @param shape The collision shape to associate with the hit box.
+	 */
 	explicit HitBox(Ref<CollisionShape> shape);
 
+	/**
+	 * @brief Adds a collision shape to the hit box.
+	 *
+	 * @param shape The collision shape to add.
+	 */
 	void addCollisionShape(Ref<CollisionShape> shape);
 
+	/**
+	 * @brief Returns an iterator to the beginning of the collision shapes container.
+	 *
+	 * @return An iterator to the beginning of the collision shapes container.
+	 */
 	auto begin() { return m_Shapes.begin(); }
+
+	/**
+	 * @brief Returns an iterator to the end of the collision shapes container.
+	 *
+	 * @return An iterator to the end of the collision shapes container.
+	 */
 	auto end() { return m_Shapes.end(); }
 private:
 	using HitBoxsSet = std::unordered_set<Ref<HitBox>>;
