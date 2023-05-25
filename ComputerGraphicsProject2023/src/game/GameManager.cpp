@@ -12,7 +12,7 @@ GameManager::GameManager(Ref<Terrain> terrain)
 	m_Player = makeRef<Player>();
 
 	auto waveTween = m_Scene->makeTween();
-	// waveTween->loop();
+	waveTween->loop();
 	waveTween->addIntervalTweener(10.0f);
 	waveTween->addCallbackTweener([this]() {
 		std::random_device rd;     // Only used once to initialise (seed) engine
