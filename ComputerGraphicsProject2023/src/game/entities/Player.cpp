@@ -6,8 +6,31 @@ namespace game {
 
 Player::Player()
 {
-	m_Camera = Application::getScene()->getCamera();
+	auto scene = Application::getScene();
+	m_Camera = scene->getCamera();
 	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+
+	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, c_CameraHeight));
+	
+	m_Hitbox->layerMask = PLAYER_MASK;
+	m_Hitbox->collisionMask = ENEMY_MASK;
+
+	m_Hitbox->transform = transform;
+	scene->addHitbox(m_Hitbox);
+
+	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
+		if (m_Invincible) return;
+
+		m_HP = std::max(static_cast<i32>(m_HP) - 1, 0);
+		EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
+
+		m_Invincible = true;
+		auto invincibilityTween = Application::getScene()->makeTween();
+		invincibilityTween->addIntervalTweener(m_InvincibilityDuration);
+		invincibilityTween->addCallbackTweener([this]() {
+			m_Invincible = false;
+		});
+	});
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 
@@ -16,23 +39,6 @@ Player::Player()
 
 void Player::update(f32 dt)
 {
-	if (!m_Invincible)
-	{
-		auto collidingObjects = Application::getScene()->getCollidingObjects(transform, "ENEMY");
-		if (!collidingObjects.empty())
-		{
-			m_HP = std::max(int(m_HP - collidingObjects.size()), 0);
-			EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
-
-			m_Invincible = true;
-			auto invincibilityTween = Application::getScene()->makeTween();
-			invincibilityTween->addIntervalTweener(m_InvincibilityDuration);
-			invincibilityTween->addCallbackTweener([this]() {
-				m_Invincible = false;
-			});
-		}
-	}
-
 	auto rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
 			* c_RotSpeed * dt;
 

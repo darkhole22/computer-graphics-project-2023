@@ -12,7 +12,7 @@ GameManager::GameManager(Ref<Terrain> terrain)
 	m_Player = makeRef<Player>();
 
 	auto waveTween = m_Scene->makeTween();
-	waveTween->loop();
+	// waveTween->loop();
 	waveTween->addIntervalTweener(10.0f);
 	waveTween->addCallbackTweener([this]() {
 		std::random_device rd;     // Only used once to initialise (seed) engine
@@ -41,12 +41,16 @@ void GameManager::update(f32 dt)
 	{
 		auto pos = enemy->m_GameObject->transform.getPosition();
 		enemy->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+		enemy->m_Hitbox->transform = enemy->m_GameObject->transform;
+		enemy->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
 	}
 
 	m_Player->update(dt);
 
 	auto pos = m_Player->transform.getPosition();
 	m_Player->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+	m_Player->m_Hitbox->transform = m_Player->transform;
+	m_Player->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
 }
 
 } // namespace game
