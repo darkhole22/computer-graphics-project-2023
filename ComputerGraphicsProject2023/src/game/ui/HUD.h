@@ -18,7 +18,12 @@ private:
 	Ref<UIText> m_HPText;
 	Ref<UIText> m_AmmoText;
 
+	Ref<UIText> m_PauseScreenTitleText;
+	Ref<UIText> m_PauseScreenSubtitleText;
+
 	void onHealthUpdated(HealthUpdated event);
+
+	void onGameStateChanged(GameStateChanged event);
 };
 
 }
