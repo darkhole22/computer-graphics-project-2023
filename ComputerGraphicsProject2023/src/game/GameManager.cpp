@@ -10,7 +10,6 @@ GameManager::GameManager(Ref<Terrain> terrain)
 	m_EnemyFactory = makeRef<Factory<Enemy>>(20);
 
 	m_Player = makeRef<Player>();
-	m_HUD = makeRef<HUD>(m_Player);
 
 	auto waveTween = m_Scene->makeTween();
 	waveTween->loop();

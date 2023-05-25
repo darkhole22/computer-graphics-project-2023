@@ -16,7 +16,9 @@ public:
 	Scene* scene = nullptr;
 	float c_CameraHeight = 1.5f;
 
-	Ref<DebugUI> ui = nullptr;
+	Ref<DebugUI> m_DebugUI = nullptr;
+	Ref<HUD> m_HUD = nullptr;
+
 	Ref<GameManager> gameManager = nullptr;
 	Ref<Terrain> terrain = nullptr;
 
@@ -28,8 +30,11 @@ public:
 
 	void setup() override
 	{
+		/**********
+		 *  SETUP *
+		 **********/
 		scene = Application::getScene();
-
+		EventBus::init();
 		setupInputActions();
 
 		/**********
@@ -40,7 +45,8 @@ public:
 		/**********
 		 *   UI   *
 		 **********/
-		ui = makeRef<DebugUI>();
+		m_DebugUI = makeRef<DebugUI>();
+		m_HUD = makeRef<HUD>();
 
 		/***********
 		 * VOLCANO *
@@ -77,7 +83,7 @@ public:
 		/**************
 		 * GAME LOGIC *
 		 **************/
-		 gameManager = makeRef<GameManager>(terrain);
+		gameManager = makeRef<GameManager>(terrain);
 	}
 
 	void update(float dt) override
@@ -91,14 +97,18 @@ public:
 
 		gameManager->update(dt);
 
-		ui->update(dt);
+		m_DebugUI->update(dt);
 
 		auto cameraPos = scene->getCamera()->position;
-		terrain->setReferencePosition({cameraPos.x, cameraPos.z});
+		terrain->setReferencePosition({ cameraPos.x, cameraPos.z });
 
 		terrain->update(dt);
 	}
 
+	~TestGame()
+	{
+		EventBus::cleanup();
+	}
 private:
 	static void setupInputActions()
 	{

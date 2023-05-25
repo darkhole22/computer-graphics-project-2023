@@ -1,5 +1,7 @@
 #pragma once
 
+#include <queue>
+
 #include "vulture/core/Application.h"
 #include "vulture/scene/GameObject.h"
 

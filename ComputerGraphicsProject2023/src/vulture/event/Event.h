@@ -36,4 +36,11 @@ private:
     public:                                                                         \
     inline void addCallback(EventHandler<E>::Callback cb) { m_EventHandler_##E .addCallback(cb); }
 
+#define STATIC_EVENT(E)                                                                    					\
+    private:                                                                        						\
+	EventHandler<E> m_EventHandler_##E;                                     				 				\
+    public:                                                                                 				\
+	inline static void emit(const E& e) { s_Instance->m_EventHandler_##E .emit(e); }                   	\
+	inline static void addCallback(EventHandler<E>::Callback cb) { s_Instance->m_EventHandler_##E .addCallback(cb); }
+
 } // namespace vulture

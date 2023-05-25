@@ -9,7 +9,7 @@ using namespace vulture;
 
 namespace game {
 
-enum class EntityStatus
+enum EntityStatus
 {
 	ALIVE,
 	DEAD
@@ -116,6 +116,7 @@ public:
 	inline auto end() { return m_ActiveEntities.end(); }
 
 	~Factory() = default;
+
 private:
 	Ref<GameObjectPool> m_ObjectPool;
 	std::unordered_set<Ref<T>> m_ActiveEntities;
