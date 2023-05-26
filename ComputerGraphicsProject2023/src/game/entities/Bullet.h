@@ -2,6 +2,7 @@
 
 #include "Factory.h"
 #include "vulture/core/Application.h"
+#include "CollisionMask.h"
 
 namespace game {
 
@@ -12,6 +13,7 @@ public:
 	static const String& s_TextureName;
 
 	Ref<GameObject> m_GameObject;
+	Ref<HitBox> m_Hitbox;
 
 	explicit Bullet(Ref<GameObject> gameObject);
 
