@@ -150,20 +150,23 @@ public:
 	 * @brief Returns the strength of an input action with the given name.
 	 *
 	 * @param actionName The name of the action to check.
-	 * @return The strength of the action as a float value between 0 and 1.
+	 * @param limit Whether to limit the return value between 0 and 1 or allow greater values.
+	 * @return The strength of the action as a float.
 	 */
-	static float getActionStrength(const String& actionName);
+	static float getActionStrength(const String& actionName, bool limit = true);
 
 	/**
 	 * @brief Returns the value of a virtual input axis.
 	 *
 	 * @param negativeAction The name of the negative input action.
 	 * @param positiveAction The name of the positive input action.
-	 * @return The value of the input axis as a float value between -1 and 1.
+	 * @param limit Whether to limit the return value between -1 and 1.
+	 * @return The value of the input axis as a float value.
 	 */
-	inline static float getAxis(const String& negativeAction, const String& positiveAction)
+	inline static float getAxis(const String& negativeAction, const String& positiveAction, bool limit = true)
 	{
-		return getActionStrength(positiveAction) - getActionStrength(negativeAction);
+		auto str = getActionStrength(positiveAction, limit) - getActionStrength(negativeAction, limit);
+		return limit ? std::min(str, 1.0f) : str;
 	}
 
 	/**
@@ -173,9 +176,10 @@ public:
 	 * @param positiveX The name of the positive X-axis input action.
 	 * @param negativeY The name of the negative Y-axis input action.
 	 * @param positiveY The name of the positive Y-axis input action.
+	 * @param normalize Whether to normalize the return vector.
 	 * @return The input vector as a glm::vec2.
 	 */
-	static glm::vec2 getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY);
+	static glm::vec2 getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY, bool normalize = true);
 
 	static glm::vec2 getMouseVector();
 
@@ -218,7 +222,7 @@ private:
 	inline static f64 s_MouseYPosition = 0;
 	inline static f64 s_MouseXOldPosition = 0;
 	inline static f64 s_MouseYOldPosition = 0;
-	inline static glm::vec2 s_MouseSensitivity = {0.5, 0.5};
+	inline static glm::vec2 s_MouseSensitivity = {0.05, 0.05};
 
 	inline static Window const* s_Window;
 	inline static std::unordered_map<String, InputAction> s_Actions;
@@ -253,7 +257,6 @@ private:
 	// we need to manually collect it each frame.
 	static void getGamepadInputStatus();
 
-
 	// detectActionReleased checks if an action bound to the given input binding could be released in the current frame.
 	// It returns 1 if, according to the given bindings, it is released.
 	// It returns 0 if, according to the given bindings, they're not active, but they weren't released this frame.
@@ -273,9 +276,11 @@ private:
 	static bool detectActionJustPressed(const std::vector<int>& bindings, int baseIndex);
 
 	// This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
-	static float getActionAxisStrength(const std::vector<std::pair<int, int>>& bindings);
+	static float getActionGamepadAxisStrength(const std::vector<std::pair<int, int>>& bindings);
 
 	static float getActionMouseAxisStrength(const std::vector<Axis>& bindings);
+
+	static float getMouseAxisRawMovement(Axis axis);
 
 	static float getAxisSensitivity(Axis axis);
 

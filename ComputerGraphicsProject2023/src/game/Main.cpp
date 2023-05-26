@@ -183,7 +183,7 @@ private:
 		lookLeftAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, AXIS_NEG}}} };
 		lookLeftAction.mouseAxisBindings = {
-				MouseAxisBinding{{Axis::POSITIVE_X}} };
+				MouseAxisBinding{{Axis::NEGATIVE_X}} };
 		Input::setAction("LOOK_LEFT", lookLeftAction);
 
 		InputAction lookRightAction{};
@@ -193,7 +193,7 @@ private:
 		lookRightAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, AXIS_POS}}} };
 		lookRightAction.mouseAxisBindings = {
-				MouseAxisBinding{{Axis::NEGATIVE_X}} };
+				MouseAxisBinding{{Axis::POSITIVE_X}} };
 		Input::setAction("LOOK_RIGHT", lookRightAction);
 
 		InputAction lookUpAction{};
@@ -203,7 +203,7 @@ private:
 		lookUpAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, AXIS_NEG}}} };
 		lookUpAction.mouseAxisBindings = {
-				MouseAxisBinding{{Axis::POSITIVE_Y}} };
+				MouseAxisBinding{{Axis::NEGATIVE_Y}} };
 		Input::setAction("LOOK_UP", lookUpAction);
 
 		InputAction lookDownAction{};
@@ -213,7 +213,7 @@ private:
 		lookDownAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, AXIS_POS}}} };
 		lookDownAction.mouseAxisBindings = {
-				MouseAxisBinding{{Axis::NEGATIVE_Y}} };
+				MouseAxisBinding{{Axis::POSITIVE_Y}} };
 		Input::setAction("LOOK_DOWN", lookDownAction);
 
 		/**********************************************

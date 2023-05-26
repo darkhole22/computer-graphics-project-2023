@@ -158,7 +158,7 @@ bool Input::isActionReleased(const String& actionName)
 	return mayRelease;
 }
 
-float Input::getActionStrength(const String& actionName)
+float Input::getActionStrength(const String& actionName, bool limit)
 {
 	auto it = s_Actions.find(actionName);
 	if (it == s_Actions.end())
@@ -178,31 +178,31 @@ float Input::getActionStrength(const String& actionName)
 		if (detectActionPressed(mouseBinding.buttons, MOUSE_BTN_IDX(0))) return 1.0f;
 	}
 
+	for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
+	{
+		if (detectActionPressed(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0))) return 1.0f;
+	}
+
 	float maxStrength = 0.0f;
+	for (const auto& gamepadAxisBinding : action.gamepadAxisBindings)
+	{
+		float str = getActionGamepadAxisStrength(gamepadAxisBinding.axes);
+		if (str > maxStrength) maxStrength = str;
+	}
+
 	for (const auto& mouseAxisBinding : action.mouseAxisBindings)
 	{
 		float str = getActionMouseAxisStrength(mouseAxisBinding.axes);
 		if (str > maxStrength) maxStrength = str;
 	}
 
-	for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
-	{
-		if (detectActionPressed(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0))) return 1.0f;
-	}
-
-	for (const auto& gamepadAxisBinding : action.gamepadAxisBindings)
-	{
-		float str = getActionAxisStrength(gamepadAxisBinding.axes);
-		if (str > maxStrength) maxStrength = str;
-	}
-
-	return maxStrength;
+	return limit ? std::min(maxStrength, 1.0f) : maxStrength;
 }
 
-glm::vec2 Input::getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY)
+glm::vec2 Input::getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY, bool normalize)
 {
-	glm::vec2 v(getAxis(negativeX, positiveX), getAxis(negativeY, positiveY));
-	if (glm::length(v) > 1.0f)
+	glm::vec2 v(getAxis(negativeX, positiveX, normalize), getAxis(negativeY, positiveY, normalize));
+	if (normalize && glm::length(v) > 1.0f)
 	{
 		v = glm::normalize(v);
 	}
@@ -212,7 +212,7 @@ glm::vec2 Input::getVector(const String& negativeX, const String& positiveX, con
 
 glm::vec2 Input::getMouseVector()
 {
-	return glm::vec2(s_MouseXPosition - s_MouseXOldPosition, s_MouseYPosition - s_MouseYOldPosition);
+	return glm::vec2(s_MouseXPosition - s_MouseXOldPosition, s_MouseYOldPosition - s_MouseYPosition) * s_MouseSensitivity;
 }
 
 bool Input::isKeyPressed(int keyCode)
@@ -478,7 +478,7 @@ bool Input::detectMouseAxisActionReleased(const std::vector<Axis>& bindings)
 
 bool Input::detectGamepadAxisActionReleased(const std::vector<std::pair<int, int>>& bindings)
 {
-	float strength = getActionAxisStrength(bindings);
+	float strength = getActionGamepadAxisStrength(bindings);
 	if (strength > 0) return false;
 
 	for (auto& binding : bindings)
@@ -503,22 +503,51 @@ bool Input::detectActionPressed(const std::vector<int>& bindings, int baseIndex)
 
 float Input::getActionMouseAxisStrength(const std::vector<Axis>& bindings)
 {
-	float minStrength = 1.0f;
+	float minStrength;
 
+	bool firstBinding = true;
 	for (auto& binding : bindings)
 	{
-		auto status = s_InputStatuses[MOUSE_AXIS_IDX(binding)];
-		if (!status->isPressed || status->strength <= 0) return 0.0f;
-
-		auto strength = std::abs(status->strength) * getAxisSensitivity(binding);
-		if (strength < minStrength) minStrength = strength;
+		auto movement = getMouseAxisRawMovement(binding) * getAxisSensitivity(binding);
+		if (firstBinding)
+		{
+			minStrength = movement;
+			firstBinding = false;
+		}
+		else if (movement < minStrength)
+		{
+			minStrength = movement;
+		}
 	}
 
 	return minStrength;
 }
 
+float Input::getMouseAxisRawMovement(Axis axis)
+{
+	f64 movement = 0.0f;
+
+	switch (axis)
+	{
+	case Axis::POSITIVE_X:
+		movement = s_MouseXPosition - s_MouseXOldPosition;
+		break;
+	case Axis::NEGATIVE_X:
+		movement = s_MouseXOldPosition - s_MouseXPosition;
+		break;
+	case Axis::POSITIVE_Y:
+		movement = s_MouseYPosition - s_MouseYOldPosition;
+		break;
+	case Axis::NEGATIVE_Y:
+		movement = s_MouseYOldPosition - s_MouseYPosition;
+		break;
+	}
+
+	return static_cast<f32>(movement);
+}
+
 // This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
-float Input::getActionAxisStrength(const std::vector<std::pair<int, int>>& bindings)
+float Input::getActionGamepadAxisStrength(const std::vector<std::pair<int, int>>& bindings)
 {
 	float minStrength = 1.0f;
 
