@@ -26,7 +26,9 @@ private:
 	Ref<Player> m_Player = nullptr;
 	Ref<Factory<Enemy>> m_EnemyFactory;
 
-	GameState m_GameState;
+	GameState m_GameState = GameState::PLAYING;
+
+	bool m_InputModeMouse = true;
 
 	void setGameState(GameState gameState);
 

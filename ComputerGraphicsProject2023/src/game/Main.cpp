@@ -35,6 +35,8 @@ public:
 		 *  SETUP *
 		 **********/
 		window = Application::getWindow();
+		window->setCursorMode(CursorMode::DISABLED);
+
 		scene = Application::getScene();
 		EventBus::init();
 		setupInputActions();
@@ -90,18 +92,6 @@ public:
 
 	void update(float dt) override
 	{
-		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
-		{
-			if (window->getCursorMode() == CursorMode::NORMAL)
-			{
-				window->setCursorMode(CursorMode::DISABLED);
-			}
-			else
-			{
-				window->setCursorMode(CursorMode::NORMAL);
-			}
-		}
-
 		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
 		{
 			static bool useSkybox = false;
@@ -176,6 +166,11 @@ private:
 		fireAction.mouseBindings = {
 				MouseBinding{{GLFW_MOUSE_BUTTON_1}} };
 		Input::setAction("FIRE", fireAction);
+
+		InputAction inputModeAction{};
+		inputModeAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_I}} };
+		Input::setAction("TOGGLE_INPUT_MODE", inputModeAction);
 
 		/**********************************************
 		 *                  CAMERA                    *
