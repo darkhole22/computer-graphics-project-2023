@@ -95,6 +95,8 @@ void Scene::render(FrameContext target, float dt)
 			++it;
 	}
 
+	m_CollisionEngine.update(dt);
+
 	if (m_FrameModified[index])
 	{
 		recordCommandBuffer(target);
