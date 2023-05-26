@@ -13,6 +13,7 @@ namespace game {
 class TestGame : public Game
 {
 public:
+	Window* window = nullptr;
 	Scene* scene = nullptr;
 	float c_CameraHeight = 1.5f;
 
@@ -33,6 +34,7 @@ public:
 		/**********
 		 *  SETUP *
 		 **********/
+		window = Application::getWindow();
 		scene = Application::getScene();
 		EventBus::init();
 		setupInputActions();
@@ -88,6 +90,18 @@ public:
 
 	void update(float dt) override
 	{
+		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
+		{
+			if (window->getCursorMode() == CursorMode::NORMAL)
+			{
+				window->setCursorMode(CursorMode::DISABLED);
+			}
+			else
+			{
+				window->setCursorMode(CursorMode::NORMAL);
+			}
+		}
+
 		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
 		{
 			static bool useSkybox = false;
@@ -112,6 +126,16 @@ public:
 private:
 	static void setupInputActions()
 	{
+		/**********************************************
+		 *                   UI                       *
+		 **********************************************/
+		InputAction pauseAction{};
+		pauseAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_ESCAPE}} };
+		pauseAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_START}} };
+		Input::setAction("TOGGLE_PAUSE", pauseAction);
+
 		/**********************************************
 		 *                MOVEMENT                    *
 		 **********************************************/
@@ -149,6 +173,8 @@ private:
 		InputAction fireAction{};
 		fireAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_SPACE}} };
+		fireAction.mouseBindings = {
+				MouseBinding{{GLFW_MOUSE_BUTTON_1}} };
 		Input::setAction("FIRE", fireAction);
 
 		/**********************************************

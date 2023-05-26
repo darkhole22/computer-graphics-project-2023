@@ -28,6 +28,7 @@ public:
 private:
 	const float c_Speed = 10;
 	const float c_RotSpeed = 4.0f;
+	const glm::vec2 c_MouseSensitivity = {0.7, -0.6};
 
 	int m_HP = 5;
 	int m_MaxHP = 5;
@@ -37,6 +38,9 @@ private:
 
 	Camera* m_Camera;
 	float c_CameraHeight = 1.5f;
+
+	Ref<Tween> m_FiringTween;
+	const f32 c_FireRatio = 0.3f;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
 };

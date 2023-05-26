@@ -1,5 +1,7 @@
 #include "Player.h"
 
+#include "vulture/core/Logger.h"
+
 using namespace vulture;
 
 namespace game {
@@ -10,6 +12,25 @@ Player::Player()
 	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
+
+	m_FiringTween = Application::getScene()->makeTween();
+	m_FiringTween->loop();
+	m_FiringTween->addCallbackTweener([this](){
+		auto bullet = m_BulletFactory->get();
+		bullet->m_GameObject->tag = "PLAYER_BULLET";
+
+		bullet->setup(transform.getPosition(), m_Camera->direction);
+
+		EventBus::emit(AmmoUpdated{ 10, 20 });
+	});
+	m_FiringTween->addIntervalTweener(c_FireRatio);
+	m_FiringTween->addCallbackTweener([this]() {
+		if (!Input::isActionPressed("FIRE"))
+		{
+			m_FiringTween->pause();
+		}
+	});
+	m_FiringTween->pause();
 
 	EventBus::emit(HealthUpdated{m_HP, m_MaxHP});
 }
@@ -33,8 +54,16 @@ void Player::update(f32 dt)
 		}
 	}
 
-	auto rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
+	glm::vec2 rotation;
+	if (Application::getWindow()->getCursorMode() == CursorMode::DISABLED)
+	{
+		rotation = Input::getMouseVector() * c_MouseSensitivity * c_RotSpeed * dt;
+	}
+	else
+	{
+		rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
 			* c_RotSpeed * dt;
+	}
 
 	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
 			* c_Speed * dt;
@@ -49,12 +78,7 @@ void Player::update(f32 dt)
 
 	if (Input::isActionJustPressed("FIRE"))
 	{
-		auto bullet = m_BulletFactory->get();
-		bullet->m_GameObject->tag = "PLAYER_BULLET";
-
-		bullet->setup(transform.getPosition(), m_Camera->direction);
-
-		EventBus::emit(AmmoUpdated{10, 20});
+		m_FiringTween->play();
 	}
 
 	m_BulletFactory->update(dt);

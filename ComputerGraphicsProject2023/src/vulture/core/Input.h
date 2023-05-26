@@ -10,6 +10,17 @@ namespace vulture {
 constexpr int GAMEPAD_AXIS_POS = 1;
 constexpr int GAMEPAD_AXIS_NEG = -1;
 
+constexpr int MOUSE_AXIS_POS_X = 1;
+constexpr int MOUSE_AXIS_NEG_X = -1;
+constexpr int MOUSE_AXIS_POS_Y = 1;
+constexpr int MOUSE_AXIS_NEG_Y = -1;
+
+enum class MouseAxix : i32
+{
+	POSITIVE_X, NEGATIVE_X,
+	POSITIVE_Y, NEGATIVE_Y
+};
+
 /**
  * InputStatus struct represents the current status of an input device such as keyboard, mouse, or gamepad button or gamepad axis.
  * The struct includes the following properties:
@@ -50,6 +61,16 @@ struct MouseBinding
 };
 
 /**
+ * @brief MouseAxisBinding struct represents a binding for one or more axes on the mouse.
+ * The struct includes the following property:
+ * - axes (std::vector<MouseAxix>): a vector of axis codes and direction values that are bound to this action.
+ */
+struct MouseAxisBinding
+{
+	std::vector<MouseAxix> axes;
+};
+
+/**
  * GamepadButtonBinding struct represents a binding for one or more buttons on the gamepad.
  * The struct includes the following property:
  * - buttons (vector<int>): a vector of button codes for the buttons that are bound to this action.
@@ -78,6 +99,7 @@ struct GamepadAxisBinding
  * The struct includes the following properties:
  * - keyboardBindings (vector<KeyboardBinding>): a vector of keyboard bindings for the action.
  * - mouseBindings (vector<MouseBinding>): a vector of mouse bindings for the action.
+ * - mouseAxisBindings (vector<MouseAxisBinding>): a vector of mouse axis bindings for the action.
  * - gamepadButtonBindings (vector<GamepadButtonBinding>): a vector of gamepad button bindings for the action.
  * - gamepadAxisBindings (vector<GamepadAxisBinding>): a vector of gamepad axis bindings for the action.
  */
@@ -85,6 +107,7 @@ struct InputAction
 {
 	std::vector<KeyboardBinding> keyboardBindings;
 	std::vector<MouseBinding> mouseBindings;
+	std::vector<MouseAxisBinding> mouseAxisBindings;
 	std::vector<GamepadButtonBinding> gamepadButtonBindings;
 	std::vector<GamepadAxisBinding> gamepadAxisBindings;
 };
@@ -99,7 +122,7 @@ class Input
 public:
 	/**
 	 * The default constructor is deleted to prevent creating instances of this class.
-     */
+	 */
 	Input() = delete;
 
 	static void setAction(const String& actionName, const InputAction& action);
@@ -159,6 +182,8 @@ public:
 	 */
 	static glm::vec2 getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY);
 
+	static glm::vec2 getMouseVector();
+
 	/**
 	 * @brief Checks whether a keyboard key with the given key code is currently being pressed.
 	 *
@@ -192,6 +217,10 @@ public:
 	static float getGamepadAxis(int axis);
 
 private:
+	inline static f64 s_MouseXPosition = 0;
+	inline static f64 s_MouseYPosition = 0;
+	inline static f64 s_MouseXOldPosition = 0;
+	inline static f64 s_MouseYOldPosition = 0;
 	inline static Window const* s_Window;
 	inline static std::unordered_map<String, InputAction> s_Actions;
 	inline static std::unordered_map<int, InputStatus*> s_InputStatuses;
@@ -211,16 +240,20 @@ private:
 	{
 		resetReleased();
 		getGamepadInputStatus();
+		getCursorPositionStatus();
 	}
 
 	static void onGlfwKey(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 	static void onGlfwMouseButton(GLFWwindow* window, int button, int action, int mods);
 
+	static void getCursorPositionStatus();
+
 	// getGamepadInputStatus collect the current status of all registered gamepad buttons bindings.
 	// This is necessary since GLFW does not provide any callback-based access to Gamepad events, so
 	// we need to manually collect it each frame.
 	static void getGamepadInputStatus();
+
 
 	// detectActionReleased checks if an action bound to the given input binding could be released in the current frame.
 	// It returns 1 if, according to the given bindings, it is released.
@@ -233,13 +266,17 @@ private:
 	// caused by the gamepads analog sticks quickly bouncing from one side to the other when quickly released.
 	static bool detectGamepadAxisActionReleased(const std::vector<std::pair<int, int>>& bindings);
 
+	static bool detectMouseAxisActionReleased(const std::vector<MouseAxix>& bindings);
+
 	// detectActionPressed checks if all the given bindings are pressed at the same time.
 	static bool detectActionPressed(const std::vector<int>& bindings, int baseIndex);
 
-	static bool detectActionJustPressed(const std::vector<int> &bindings, int baseIndex);
+	static bool detectActionJustPressed(const std::vector<int>& bindings, int baseIndex);
 
 	// This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
 	static float getActionAxisStrength(const std::vector<std::pair<int, int>>& bindings);
+
+	static float getActionMouseAxisStrength(const std::vector<MouseAxix>& bindings);
 
 	// resetReleased resets the `isJustReleased` status of every registered binding.
 	static void resetReleased();

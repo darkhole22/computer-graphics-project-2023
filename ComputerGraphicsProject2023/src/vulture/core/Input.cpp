@@ -6,36 +6,45 @@ namespace vulture {
 #define MOUSE_BTN_IDX(BTN) (BTN + GLFW_KEY_LAST + 1)
 #define GAMEPAD_BTN_IDX(BTN) (BTN + MOUSE_BTN_IDX(GLFW_MOUSE_BUTTON_LAST) + 1)
 #define GAMEPAD_AXIS_IDX(AXIS) (AXIS + GAMEPAD_BTN_IDX(GLFW_GAMEPAD_BUTTON_LAST) + 1)
+#define MOUSE_AXIS_IDX(AXIS) (static_cast<i32>(AXIS) + GAMEPAD_AXIS_IDX(GLFW_GAMEPAD_AXIS_LAST) + 1)
 
 void Input::setAction(const String& actionName, const InputAction& action)
 {
-	for (const auto& keyboardBinding: action.keyboardBindings)
+	for (const auto& keyboardBinding : action.keyboardBindings)
 	{
-		for (auto key: keyboardBinding.keys)
+		for (auto key : keyboardBinding.keys)
 		{
 			s_InputStatuses.try_emplace(KEY_IDX(key), new InputStatus{});
 		}
 	}
 
-	for (const auto& mouseButtonBinding: action.mouseBindings)
+	for (const auto& mouseButtonBinding : action.mouseBindings)
 	{
-		for (auto btn: mouseButtonBinding.buttons)
+		for (auto btn : mouseButtonBinding.buttons)
 		{
 			s_InputStatuses.try_emplace(MOUSE_BTN_IDX(btn), new InputStatus{});
 		}
 	}
 
-	for (const auto& gamepadButtonBinding: action.gamepadButtonBindings)
+	for (const auto& mouseButtonBinding : action.mouseAxisBindings)
 	{
-		for (auto btn: gamepadButtonBinding.buttons)
+		for (auto axis : mouseButtonBinding.axes)
+		{
+			s_InputStatuses.try_emplace(MOUSE_AXIS_IDX(axis), new InputStatus{});
+		}
+	}
+
+	for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
+	{
+		for (auto btn : gamepadButtonBinding.buttons)
 		{
 			s_InputStatuses.try_emplace(GAMEPAD_BTN_IDX(btn), new InputStatus{});
 		}
 	}
 
-	for (const auto& gamepadAxisBinding: action.gamepadAxisBindings)
+	for (const auto& gamepadAxisBinding : action.gamepadAxisBindings)
 	{
-		for (auto& axis: gamepadAxisBinding.axes)
+		for (auto& axis : gamepadAxisBinding.axes)
 		{
 			s_InputStatuses.try_emplace(GAMEPAD_AXIS_IDX(axis.first), new InputStatus{});
 		}
@@ -61,20 +70,32 @@ bool Input::isActionJustPressed(const String& actionName)
 		if (detectActionJustPressed(mouseBinding.buttons, MOUSE_BTN_IDX(0))) return true;
 	}
 
+	for (const auto& mouseAxisBinding : action.mouseAxisBindings)
+	{
+		bool isPressed = true;
+		bool wasPressed = true;
+		for (auto axes : mouseAxisBinding.axes)
+		{
+			if (s_InputStatuses[MOUSE_AXIS_IDX(axes)]->strength == 0.0f) isPressed = false;
+			if (s_InputStatuses[MOUSE_AXIS_IDX(axes)]->lastStrength == 0.0f) wasPressed = false;
+		}
+
+		if (isPressed && !wasPressed) return true;
+	}
 
 	for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
 	{
 		if (detectActionJustPressed(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0))) return true;
 	}
 
-	for (const auto& gamepadAxisBinding: action.gamepadAxisBindings)
+	for (const auto& gamepadAxisBinding : action.gamepadAxisBindings)
 	{
 		bool isPressed = true;
 		bool wasPressed = true;
-		for (auto axes: gamepadAxisBinding.axes)
+		for (auto axes : gamepadAxisBinding.axes)
 		{
 			if (s_InputStatuses[GAMEPAD_AXIS_IDX(axes.first)]->strength * axes.second <= 0.0f) isPressed = false;
-			if(s_InputStatuses[GAMEPAD_AXIS_IDX(axes.first)]->lastStrength == 0.0f) wasPressed = false;
+			if (s_InputStatuses[GAMEPAD_AXIS_IDX(axes.first)]->lastStrength == 0.0f) wasPressed = false;
 		}
 
 		if (isPressed && !wasPressed) return true;
@@ -83,13 +104,13 @@ bool Input::isActionJustPressed(const String& actionName)
 	return false;
 }
 
-bool Input::detectActionJustPressed(const std::vector<int> &bindings, int baseIndex)
+bool Input::detectActionJustPressed(const std::vector<int>& bindings, int baseIndex)
 {
 	bool wasPressed = true;
-	for (auto binding: bindings)
+	for (auto binding : bindings)
 	{
 		if (s_InputStatuses[baseIndex + binding]->strength == 0.0f) return false;
-		if(s_InputStatuses[baseIndex + binding]->lastStrength == 0.0f) wasPressed = false;
+		if (s_InputStatuses[baseIndex + binding]->lastStrength == 0.0f) wasPressed = false;
 	}
 
 	return !wasPressed;
@@ -98,7 +119,7 @@ bool Input::detectActionJustPressed(const std::vector<int> &bindings, int baseIn
 bool Input::isActionReleased(const String& actionName)
 {
 	auto it = s_Actions.find(actionName);
-	if(it == s_Actions.end()) return false;
+	if (it == s_Actions.end()) return false;
 
 	auto& action = it->second;
 	bool mayRelease = false;
@@ -115,6 +136,11 @@ bool Input::isActionReleased(const String& actionName)
 		int res = detectActionReleased(mouseBinding.buttons, MOUSE_BTN_IDX(0));
 		if (res == -1) return false;
 		if (res == 1) mayRelease = true;
+	}
+
+	for (const auto& mouseAxisBinding : action.mouseAxisBindings)
+	{
+		return detectMouseAxisActionReleased(mouseAxisBinding.axes);
 	}
 
 	for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
@@ -135,7 +161,8 @@ bool Input::isActionReleased(const String& actionName)
 float Input::getActionStrength(const String& actionName)
 {
 	auto it = s_Actions.find(actionName);
-	if(it == s_Actions.end()) {
+	if (it == s_Actions.end())
+	{
 		return false;
 	}
 
@@ -151,13 +178,19 @@ float Input::getActionStrength(const String& actionName)
 		if (detectActionPressed(mouseBinding.buttons, MOUSE_BTN_IDX(0))) return 1.0f;
 	}
 
+	float maxStrength = 0.0f;
+	for (const auto& mouseAxisBinding : action.mouseAxisBindings)
+	{
+		float str = getActionMouseAxisStrength(mouseAxisBinding.axes);
+		if (str > maxStrength) maxStrength = str;
+	}
+
 	for (const auto& gamepadButtonBinding : action.gamepadButtonBindings)
 	{
 		if (detectActionPressed(gamepadButtonBinding.buttons, GAMEPAD_BTN_IDX(0))) return 1.0f;
 	}
 
-	float maxStrength = 0.0f;
-	for (const auto& gamepadAxisBinding: action.gamepadAxisBindings)
+	for (const auto& gamepadAxisBinding : action.gamepadAxisBindings)
 	{
 		float str = getActionAxisStrength(gamepadAxisBinding.axes);
 		if (str > maxStrength) maxStrength = str;
@@ -169,11 +202,17 @@ float Input::getActionStrength(const String& actionName)
 glm::vec2 Input::getVector(const String& negativeX, const String& positiveX, const String& negativeY, const String& positiveY)
 {
 	glm::vec2 v(getAxis(negativeX, positiveX), getAxis(negativeY, positiveY));
-	if (glm::length(v) > 1.0f) {
+	if (glm::length(v) > 1.0f)
+	{
 		v = glm::normalize(v);
 	}
 
 	return v;
+}
+
+glm::vec2 Input::getMouseVector()
+{
+	return glm::vec2(s_MouseXPosition - s_MouseXOldPosition, s_MouseYPosition - s_MouseYOldPosition);
 }
 
 bool Input::isKeyPressed(int keyCode)
@@ -253,14 +292,137 @@ void Input::onGlfwMouseButton(GLFWwindow* window, int button, int action, int mo
 	it->second->isJustReleased = action == GLFW_RELEASE;
 }
 
-void Input::getGamepadInputStatus() {
+void Input::getCursorPositionStatus()
+{
+	f64 xpos, ypos;
+	glfwGetCursorPos(s_Window->getHandle(), &xpos, &ypos);
+	f32 dx = static_cast<f32>(s_MouseXPosition - xpos);
+	f32 dy = static_cast<f32>(s_MouseYPosition - ypos);
+
+	auto posX = s_InputStatuses.find(MOUSE_AXIS_IDX(MouseAxix::POSITIVE_X));
+	auto negX = s_InputStatuses.find(MOUSE_AXIS_IDX(MouseAxix::NEGATIVE_X));
+	auto posY = s_InputStatuses.find(MOUSE_AXIS_IDX(MouseAxix::POSITIVE_Y));
+	auto negY = s_InputStatuses.find(MOUSE_AXIS_IDX(MouseAxix::NEGATIVE_Y));
+
+	if (posX != s_InputStatuses.end())
+		posX->second->lastStrength = posX->second->strength;
+
+	if (negX != s_InputStatuses.end())
+		negX->second->lastStrength = negX->second->strength;
+
+	if (posY != s_InputStatuses.end())
+		posY->second->lastStrength = posY->second->strength;
+
+	if (negY != s_InputStatuses.end())
+		negY->second->lastStrength = negY->second->strength;
+
+	if (dx > 0.0)
+	{
+		if (posX != s_InputStatuses.end())
+		{
+			posX->second->strength = dx;
+			posX->second->isPressed = true;
+			posX->second->isJustReleased = false;
+		}
+		if (negX != s_InputStatuses.end())
+		{
+			negX->second->isJustReleased = negX->second->isPressed;
+			negX->second->strength = 0;
+			negX->second->isPressed = false;
+		}
+	}
+	if (dx < 0.0)
+	{
+		if (negX != s_InputStatuses.end())
+		{
+			negX->second->strength = -dx;
+			negX->second->isPressed = true;
+			negX->second->isJustReleased = false;
+		}
+		if (posX != s_InputStatuses.end())
+		{
+			posX->second->isJustReleased = posX->second->isPressed;
+			posX->second->strength = 0;
+			posX->second->isPressed = false;
+		}
+	}
+	if (dx == 0.0)
+	{
+		if (posX != s_InputStatuses.end())
+		{
+			posX->second->isJustReleased = posX->second->isPressed;
+			posX->second->strength = 0;
+			posX->second->isPressed = false;
+		}
+		if (negX != s_InputStatuses.end())
+		{
+			negX->second->isJustReleased = negX->second->isPressed;
+			negX->second->strength = 0;
+			negX->second->isPressed = false;
+		}
+	}
+
+	if (dy > 0.0)
+	{
+		if (posY != s_InputStatuses.end())
+		{
+			posY->second->strength = dy;
+			posY->second->isPressed = true;
+			posY->second->isJustReleased = false;
+		}
+		if (negY != s_InputStatuses.end())
+		{
+			negY->second->isJustReleased = negY->second->isPressed;
+			negY->second->strength = 0;
+			negY->second->isPressed = false;
+		}
+	}
+	if (dy < 0.0)
+	{
+		if (negY != s_InputStatuses.end())
+		{
+			negY->second->strength = -dy;
+			negY->second->isPressed = true;
+			negY->second->isJustReleased = false;
+		}
+		if (posY != s_InputStatuses.end())
+		{
+			posY->second->isJustReleased = posY->second->isPressed;
+			posY->second->strength = 0;
+			posY->second->isPressed = false;
+		}
+	}
+	if (dy == 0.0)
+	{
+		if (posY != s_InputStatuses.end())
+		{
+			posY->second->isJustReleased = posY->second->isPressed;
+			posY->second->strength = 0;
+			posY->second->isPressed = false;
+		}
+		if (negY != s_InputStatuses.end())
+		{
+			negY->second->isJustReleased = negY->second->isPressed;
+			negY->second->strength = 0;
+			negY->second->isPressed = false;
+		}
+	}
+
+	s_MouseXOldPosition = s_MouseXPosition;
+	s_MouseYOldPosition = s_MouseYPosition;
+	s_MouseXPosition = xpos;
+	s_MouseYPosition = ypos;
+}
+
+void Input::getGamepadInputStatus()
+{
 	GLFWgamepadstate state;
 	if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
 	{
 		for (int btn = 0; btn <= GLFW_GAMEPAD_BUTTON_LAST; btn++)
 		{
 			auto it = s_InputStatuses.find(GAMEPAD_BTN_IDX(btn));
-			if(it == s_InputStatuses.end()) continue;
+			if (it == s_InputStatuses.end()) continue;
 
 			it->second->isJustReleased = (it->second->isPressed && state.buttons[btn] == GLFW_RELEASE);
 			it->second->isPressed = (state.buttons[btn] == GLFW_PRESS);
@@ -300,12 +462,26 @@ int Input::detectActionReleased(const std::vector<int>& bindings, int baseIndex)
 	return 0;
 }
 
+bool Input::detectMouseAxisActionReleased(const std::vector<MouseAxix>& bindings)
+{
+	float strength = getActionMouseAxisStrength(bindings);
+	if (strength > 0) return false;
+
+	for (auto& binding : bindings)
+	{
+		auto status = s_InputStatuses[MOUSE_AXIS_IDX(binding)];
+		if (!status->isJustReleased || status->lastStrength <= 0) return false;
+	}
+
+	return true;
+}
+
 bool Input::detectGamepadAxisActionReleased(const std::vector<std::pair<int, int>>& bindings)
 {
 	float strength = getActionAxisStrength(bindings);
 	if (strength > 0) return false;
 
-	for (auto& binding: bindings)
+	for (auto& binding : bindings)
 	{
 		auto status = s_InputStatuses[GAMEPAD_AXIS_IDX(binding.first)];
 		if (!status->isJustReleased || status->lastStrength * binding.second <= 0) return false;
@@ -323,6 +499,22 @@ bool Input::detectActionPressed(const std::vector<int>& bindings, int baseIndex)
 	}
 
 	return true;
+}
+
+float Input::getActionMouseAxisStrength(const std::vector<MouseAxix>& bindings)
+{
+	float minStrength = 1.0f;
+
+	for (auto& binding : bindings)
+	{
+		auto status = s_InputStatuses[MOUSE_AXIS_IDX(binding)];
+		if (!status->isPressed ||
+			status->strength <= 0) return 0.0f;
+
+		if (std::abs(status->strength) < minStrength) minStrength = std::abs(status->strength);
+	}
+
+	return minStrength;
 }
 
 // This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
@@ -358,7 +550,7 @@ void Input::cleanup()
 
 	for (auto& status : s_InputStatuses)
 	{
-		free(status.second);
+		delete status.second;
 	}
 
 	s_InputStatuses.clear();
