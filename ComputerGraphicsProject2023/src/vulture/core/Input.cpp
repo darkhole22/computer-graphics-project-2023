@@ -299,10 +299,10 @@ void Input::getCursorPositionStatus()
 	f32 dx = static_cast<f32>(s_MouseXPosition - xpos);
 	f32 dy = static_cast<f32>(s_MouseYPosition - ypos);
 
-	auto posX = s_InputStatuses.find(MOUSE_AXIS_IDX(MouseAxix::POSITIVE_X));
-	auto negX = s_InputStatuses.find(MOUSE_AXIS_IDX(MouseAxix::NEGATIVE_X));
-	auto posY = s_InputStatuses.find(MOUSE_AXIS_IDX(MouseAxix::POSITIVE_Y));
-	auto negY = s_InputStatuses.find(MOUSE_AXIS_IDX(MouseAxix::NEGATIVE_Y));
+	auto posX = s_InputStatuses.find(MOUSE_AXIS_IDX(Axis::POSITIVE_X));
+	auto negX = s_InputStatuses.find(MOUSE_AXIS_IDX(Axis::NEGATIVE_X));
+	auto posY = s_InputStatuses.find(MOUSE_AXIS_IDX(Axis::POSITIVE_Y));
+	auto negY = s_InputStatuses.find(MOUSE_AXIS_IDX(Axis::NEGATIVE_Y));
 
 	if (posX != s_InputStatuses.end())
 		posX->second->lastStrength = posX->second->strength;
@@ -462,7 +462,7 @@ int Input::detectActionReleased(const std::vector<int>& bindings, int baseIndex)
 	return 0;
 }
 
-bool Input::detectMouseAxisActionReleased(const std::vector<MouseAxix>& bindings)
+bool Input::detectMouseAxisActionReleased(const std::vector<Axis>& bindings)
 {
 	float strength = getActionMouseAxisStrength(bindings);
 	if (strength > 0) return false;
@@ -501,17 +501,17 @@ bool Input::detectActionPressed(const std::vector<int>& bindings, int baseIndex)
 	return true;
 }
 
-float Input::getActionMouseAxisStrength(const std::vector<MouseAxix>& bindings)
+float Input::getActionMouseAxisStrength(const std::vector<Axis>& bindings)
 {
 	float minStrength = 1.0f;
 
 	for (auto& binding : bindings)
 	{
 		auto status = s_InputStatuses[MOUSE_AXIS_IDX(binding)];
-		if (!status->isPressed ||
-			status->strength <= 0) return 0.0f;
+		if (!status->isPressed || status->strength <= 0) return 0.0f;
 
-		if (std::abs(status->strength) < minStrength) minStrength = std::abs(status->strength);
+		auto strength = std::abs(status->strength) * getAxisSensitivity(binding);
+		if (strength < minStrength) minStrength = strength;
 	}
 
 	return minStrength;
@@ -533,6 +533,19 @@ float Input::getActionAxisStrength(const std::vector<std::pair<int, int>>& bindi
 
 	return minStrength;
 }
+
+float Input::getAxisSensitivity(Axis axis)
+{
+	switch (axis)
+	{
+		case Axis::NEGATIVE_X:
+		case Axis::POSITIVE_X:
+			return s_MouseSensitivity.x;
+		default:
+			return s_MouseSensitivity.y;
+	}
+}
+
 
 void Input::resetReleased()
 {

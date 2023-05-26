@@ -143,28 +143,28 @@ private:
 		leftAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_A}} };
 		leftAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_NEG}}} };
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, AXIS_NEG}}} };
 		Input::setAction("MOVE_LEFT", leftAction);
 
 		InputAction rightAction{};
 		rightAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_D}} };
 		rightAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_POS}}} };
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_X, AXIS_POS}}} };
 		Input::setAction("MOVE_RIGHT", rightAction);
 
 		InputAction upAction{};
 		upAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_W}} };
 		upAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_NEG}}} };
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, AXIS_NEG}}} };
 		Input::setAction("MOVE_UP", upAction);
 
 		InputAction downAction{};
 		downAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_S}} };
 		downAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_POS}}} };
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_LEFT_Y, AXIS_POS}}} };
 		Input::setAction("MOVE_DOWN", downAction);
 
 		/**********************************************
@@ -186,7 +186,9 @@ private:
 				KeyboardBinding{{GLFW_KEY_LEFT}},
 		};
 		rotateLeftAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, GAMEPAD_AXIS_NEG}}} };
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, AXIS_NEG}}} };
+		rotateLeftAction.mouseAxisBindings = {
+				MouseAxisBinding{{Axis::POSITIVE_X}} };
 		Input::setAction("ROTATE_LEFT", rotateLeftAction);
 
 		InputAction rotateRightAction{};
@@ -194,7 +196,9 @@ private:
 				KeyboardBinding{{GLFW_KEY_RIGHT}},
 		};
 		rotateRightAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, GAMEPAD_AXIS_POS}}} };
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, AXIS_POS}}} };
+		rotateRightAction.mouseAxisBindings = {
+				MouseAxisBinding{{Axis::NEGATIVE_X}} };
 		Input::setAction("ROTATE_RIGHT", rotateRightAction);
 
 		InputAction rotateUpAction{};
@@ -202,7 +206,9 @@ private:
 				KeyboardBinding{{GLFW_KEY_UP}},
 		};
 		rotateUpAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, GAMEPAD_AXIS_NEG}}} };
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, AXIS_NEG}}} };
+		rotateUpAction.mouseAxisBindings = {
+				MouseAxisBinding{{Axis::POSITIVE_Y}} };
 		Input::setAction("ROTATE_UP", rotateUpAction);
 
 		InputAction rotateDownAction{};
@@ -210,7 +216,9 @@ private:
 				KeyboardBinding{{GLFW_KEY_DOWN}},
 		};
 		rotateDownAction.gamepadAxisBindings = {
-				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, GAMEPAD_AXIS_POS}}} };
+				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, AXIS_POS}}} };
+		rotateDownAction.mouseAxisBindings = {
+				MouseAxisBinding{{Axis::NEGATIVE_Y}} };
 		Input::setAction("ROTATE_DOWN", rotateDownAction);
 
 		/**********************************************

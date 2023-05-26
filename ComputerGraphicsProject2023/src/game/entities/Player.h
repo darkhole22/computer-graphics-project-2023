@@ -28,7 +28,6 @@ public:
 private:
 	const float c_Speed = 10;
 	const float c_RotSpeed = 4.0f;
-	const glm::vec2 c_MouseSensitivity = {0.7, -0.6};
 
 	int m_HP = 5;
 	int m_MaxHP = 5;

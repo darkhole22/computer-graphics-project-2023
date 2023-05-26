@@ -7,15 +7,10 @@
 
 namespace vulture {
 
-constexpr int GAMEPAD_AXIS_POS = 1;
-constexpr int GAMEPAD_AXIS_NEG = -1;
+constexpr int AXIS_POS = 1;
+constexpr int AXIS_NEG = -1;
 
-constexpr int MOUSE_AXIS_POS_X = 1;
-constexpr int MOUSE_AXIS_NEG_X = -1;
-constexpr int MOUSE_AXIS_POS_Y = 1;
-constexpr int MOUSE_AXIS_NEG_Y = -1;
-
-enum class MouseAxix : i32
+enum class Axis : i32
 {
 	POSITIVE_X, NEGATIVE_X,
 	POSITIVE_Y, NEGATIVE_Y
@@ -67,7 +62,7 @@ struct MouseBinding
  */
 struct MouseAxisBinding
 {
-	std::vector<MouseAxix> axes;
+	std::vector<Axis> axes;
 };
 
 /**
@@ -216,11 +211,15 @@ public:
 	 */
 	static float getGamepadAxis(int axis);
 
+	inline static void setMouseSensitivity(f32 x, f32 y) { s_MouseSensitivity = {x, y}; }
+
 private:
 	inline static f64 s_MouseXPosition = 0;
 	inline static f64 s_MouseYPosition = 0;
 	inline static f64 s_MouseXOldPosition = 0;
 	inline static f64 s_MouseYOldPosition = 0;
+	inline static glm::vec2 s_MouseSensitivity = {0.5, 0.5};
+
 	inline static Window const* s_Window;
 	inline static std::unordered_map<String, InputAction> s_Actions;
 	inline static std::unordered_map<int, InputStatus*> s_InputStatuses;
@@ -266,7 +265,7 @@ private:
 	// caused by the gamepads analog sticks quickly bouncing from one side to the other when quickly released.
 	static bool detectGamepadAxisActionReleased(const std::vector<std::pair<int, int>>& bindings);
 
-	static bool detectMouseAxisActionReleased(const std::vector<MouseAxix>& bindings);
+	static bool detectMouseAxisActionReleased(const std::vector<Axis>& bindings);
 
 	// detectActionPressed checks if all the given bindings are pressed at the same time.
 	static bool detectActionPressed(const std::vector<int>& bindings, int baseIndex);
@@ -276,7 +275,9 @@ private:
 	// This is specific for gamepad axis, it is needed to discriminate positive and negative axis values for different actions.
 	static float getActionAxisStrength(const std::vector<std::pair<int, int>>& bindings);
 
-	static float getActionMouseAxisStrength(const std::vector<MouseAxix>& bindings);
+	static float getActionMouseAxisStrength(const std::vector<Axis>& bindings);
+
+	static float getAxisSensitivity(Axis axis);
 
 	// resetReleased resets the `isJustReleased` status of every registered binding.
 	static void resetReleased();

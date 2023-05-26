@@ -54,16 +54,8 @@ void Player::update(f32 dt)
 		}
 	}
 
-	glm::vec2 rotation;
-	if (Application::getWindow()->getCursorMode() == CursorMode::DISABLED)
-	{
-		rotation = Input::getMouseVector() * c_MouseSensitivity * c_RotSpeed * dt;
-	}
-	else
-	{
-		rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
+	auto rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
 			* c_RotSpeed * dt;
-	}
 
 	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
 			* c_Speed * dt;
