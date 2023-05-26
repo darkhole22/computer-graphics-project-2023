@@ -5,6 +5,10 @@ namespace vulture {
 void framebufferResizeCallback(GLFWwindow* window, i32 width, i32 height)
 {
 	auto app = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+	app->m_Width = width;
+	app->m_Height = height;
+	app->emit(WindowResizedEvent{app->m_Width, app->m_Height});
+
 	app->setFrameBufferResized(true);
 }
 
@@ -34,13 +38,14 @@ void onGlfwKeyEvent(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 m
 	}
 }
 
-Window::Window(const char* name, u32 width, u32 height) : c_Name(name)
+Window::Window(const char* name, u32 width, u32 height)
+	: c_Name(name), m_Width(width), m_Height(height)
 {
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	m_Handle = glfwCreateWindow(width, height, name, nullptr, nullptr);
+	m_Handle = glfwCreateWindow(m_Width, m_Height, name, nullptr, nullptr);
 	glfwSetWindowUserPointer(m_Handle, this);
 	glfwSetFramebufferSizeCallback(m_Handle, framebufferResizeCallback);
 

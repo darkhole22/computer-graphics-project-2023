@@ -35,6 +35,8 @@ public:
 		 *  SETUP *
 		 **********/
 		window = Application::getWindow();
+		window->setCursorMode(CursorMode::DISABLED);
+
 		scene = Application::getScene();
 		EventBus::init();
 		setupInputActions();
@@ -90,18 +92,6 @@ public:
 
 	void update(float dt) override
 	{
-		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
-		{
-			if (window->getCursorMode() == CursorMode::NORMAL)
-			{
-				window->setCursorMode(CursorMode::DISABLED);
-			}
-			else
-			{
-				window->setCursorMode(CursorMode::NORMAL);
-			}
-		}
-
 		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
 		{
 			static bool useSkybox = false;
@@ -177,49 +167,54 @@ private:
 				MouseBinding{{GLFW_MOUSE_BUTTON_1}} };
 		Input::setAction("FIRE", fireAction);
 
+		InputAction inputModeAction{};
+		inputModeAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_I}} };
+		Input::setAction("TOGGLE_INPUT_MODE", inputModeAction);
+
 		/**********************************************
 		 *                  CAMERA                    *
 		 **********************************************/
 
-		InputAction rotateLeftAction{};
-		rotateLeftAction.keyboardBindings = {
+		InputAction lookLeftAction{};
+		lookLeftAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_LEFT}},
 		};
-		rotateLeftAction.gamepadAxisBindings = {
+		lookLeftAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, AXIS_NEG}}} };
-		rotateLeftAction.mouseAxisBindings = {
+		lookLeftAction.mouseAxisBindings = {
 				MouseAxisBinding{{Axis::POSITIVE_X}} };
-		Input::setAction("ROTATE_LEFT", rotateLeftAction);
+		Input::setAction("LOOK_LEFT", lookLeftAction);
 
-		InputAction rotateRightAction{};
-		rotateRightAction.keyboardBindings = {
+		InputAction lookRightAction{};
+		lookRightAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_RIGHT}},
 		};
-		rotateRightAction.gamepadAxisBindings = {
+		lookRightAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_X, AXIS_POS}}} };
-		rotateRightAction.mouseAxisBindings = {
+		lookRightAction.mouseAxisBindings = {
 				MouseAxisBinding{{Axis::NEGATIVE_X}} };
-		Input::setAction("ROTATE_RIGHT", rotateRightAction);
+		Input::setAction("LOOK_RIGHT", lookRightAction);
 
-		InputAction rotateUpAction{};
-		rotateUpAction.keyboardBindings = {
+		InputAction lookUpAction{};
+		lookUpAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_UP}},
 		};
-		rotateUpAction.gamepadAxisBindings = {
+		lookUpAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, AXIS_NEG}}} };
-		rotateUpAction.mouseAxisBindings = {
+		lookUpAction.mouseAxisBindings = {
 				MouseAxisBinding{{Axis::POSITIVE_Y}} };
-		Input::setAction("ROTATE_UP", rotateUpAction);
+		Input::setAction("LOOK_UP", lookUpAction);
 
-		InputAction rotateDownAction{};
-		rotateDownAction.keyboardBindings = {
+		InputAction lookDownAction{};
+		lookDownAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_DOWN}},
 		};
-		rotateDownAction.gamepadAxisBindings = {
+		lookDownAction.gamepadAxisBindings = {
 				GamepadAxisBinding{{{GLFW_GAMEPAD_AXIS_RIGHT_Y, AXIS_POS}}} };
-		rotateDownAction.mouseAxisBindings = {
+		lookDownAction.mouseAxisBindings = {
 				MouseAxisBinding{{Axis::NEGATIVE_Y}} };
-		Input::setAction("ROTATE_DOWN", rotateDownAction);
+		Input::setAction("LOOK_DOWN", lookDownAction);
 
 		/**********************************************
 		 *                  DEBUG                     *

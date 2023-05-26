@@ -6,10 +6,10 @@ namespace game {
 
 DebugUI::DebugUI()
 {
-	m_HandlerUI = Application::getScene()->getUIHandle();
+	m_UIHandler = Application::getScene()->getUIHandle();
 
-	m_FPSText = m_HandlerUI->makeText("FPS");
-	m_FrameTimeText = m_HandlerUI->makeText("Frame Time");
+	m_FPSText = m_UIHandler->makeText("FPS");
+	m_FrameTimeText = m_UIHandler->makeText("Frame Time");
 	m_FrameTimeText->setPosition({ 20, 50 });
 
 	m_FPSText->setVisible(false);

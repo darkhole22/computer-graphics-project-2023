@@ -8,6 +8,7 @@
 #include "vulture/core/Core.h"
 #include "game/ui/HUD.h"
 #include "game/terrain/Terrain.h"
+#include "game/GameState.h"
 
 namespace game {
 
@@ -24,6 +25,12 @@ private:
 
 	Ref<Player> m_Player = nullptr;
 	Ref<Factory<Enemy>> m_EnemyFactory;
+
+	GameState m_GameState = GameState::PLAYING;
+
+	bool m_InputModeMouse = true;
+
+	void setGameState(GameState gameState);
 
 };
 

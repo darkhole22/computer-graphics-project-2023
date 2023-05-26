@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vulture/core/Core.h"
+#include "game/events/GameEvents.h"
 #include "game/events/PlayerEvents.h"
 
 using namespace vulture;
@@ -13,6 +14,7 @@ namespace game {
 class EventBus
 {
 	PLAYER_EVENTS
+	GAME_EVENTS
 
 public:
 	NO_COPY(EventBus)

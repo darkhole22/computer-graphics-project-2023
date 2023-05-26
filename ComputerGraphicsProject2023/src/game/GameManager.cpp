@@ -10,6 +10,11 @@ GameManager::GameManager(Ref<Terrain> terrain)
 	m_EnemyFactory = makeRef<Factory<Enemy>>(20);
 
 	m_Player = makeRef<Player>();
+	EventBus::addCallback([this](HealthUpdated event) {
+		if (event.hp != 0) return;
+		Application::getWindow()->setCursorMode(CursorMode::NORMAL);
+		setGameState(GameState::GAME_OVER);
+	});
 
 	auto waveTween = m_Scene->makeTween();
 	waveTween->loop();
@@ -35,22 +40,60 @@ GameManager::GameManager(Ref<Terrain> terrain)
 
 void GameManager::update(f32 dt)
 {
-	m_EnemyFactory->update(dt);
-
-	for (auto& enemy : *m_EnemyFactory)
+	switch (m_GameState)
 	{
-		auto pos = enemy->m_GameObject->transform.getPosition();
-		enemy->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
-		enemy->m_Hitbox->transform = enemy->m_GameObject->transform;
-		enemy->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
+	case GameState::PLAYING:
+	{
+		m_EnemyFactory->update(dt);
+
+		for (auto& enemy : *m_EnemyFactory)
+		{
+			auto pos = enemy->m_GameObject->transform.getPosition();
+			enemy->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+			enemy->m_Hitbox->transform = enemy->m_GameObject->transform;
+			enemy->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
+		}
+
+		m_Player->update(dt);
+
+		auto pos = m_Player->transform.getPosition();
+		m_Player->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+		m_Player->m_Hitbox->transform = m_Player->transform;
+		m_Player->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
+
+		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
+		{
+			setGameState(GameState::PAUSE);
+			Application::getWindow()->setCursorMode(CursorMode::NORMAL);
+		}
+
+		if (Input::isActionJustPressed("TOGGLE_INPUT_MODE"))
+		{
+			m_InputModeMouse = !m_InputModeMouse;
+			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+		}
+
+		break;
 	}
+	case GameState::PAUSE:
+	if (Input::isActionJustPressed("TOGGLE_PAUSE"))
+	{
+		setGameState(GameState::PLAYING);
+		Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+	}
+	break;
+	case GameState::GAME_OVER:
+	break;
+	}
+}
 
-	m_Player->update(dt);
-
-	auto pos = m_Player->transform.getPosition();
-	m_Player->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
-	m_Player->m_Hitbox->transform = m_Player->transform;
-	m_Player->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
+void GameManager::setGameState(GameState gameState)
+{
+	if (gameState != m_GameState)
+	{
+		m_GameState = gameState;
+		EventBus::emit(GameStateChanged{ m_GameState });
+	}
 }
 
 } // namespace game

@@ -16,4 +16,10 @@ struct KeyPressedEvent : public KeyEvent
 
 struct KeyReleasedEvent : public KeyEvent {};
 
+struct WindowResizedEvent
+{
+	u32 width;
+	u32 height;
+};
+
 } // namespace vulture

@@ -62,25 +62,19 @@ Player::Player()
 
 void Player::update(f32 dt)
 {
-	if (!m_Invincible)
+	glm::vec2 rotation;
+	rotation = Input::getVector("LOOK_LEFT", "LOOK_RIGHT", "LOOK_DOWN", "LOOK_UP")
+		* c_RotSpeed * dt;
+
+	if (Application::getWindow()->getCursorMode() == CursorMode::DISABLED)
 	{
-		auto collidingObjects = Application::getScene()->getCollidingObjects(transform, "ENEMY");
-		if (!collidingObjects.empty())
-		{
-			m_HP = std::max(int(m_HP - collidingObjects.size()), 0);
-			EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
-
-			m_Invincible = true;
-			auto invincibilityTween = Application::getScene()->makeTween();
-			invincibilityTween->addIntervalTweener(m_InvincibilityDuration);
-			invincibilityTween->addCallbackTweener([this]() {
-				m_Invincible = false;
-			});
-		}
+		rotation = Input::getMouseVector() * c_MouseSensitivity * c_RotSpeed * dt;
 	}
-
-	auto rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
+	else
+	{
+		rotation = Input::getVector("LOOK_LEFT", "LOOK_RIGHT", "LOOK_DOWN", "LOOK_UP")
 			* c_RotSpeed * dt;
+	}
 
 	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
 		* c_Speed * dt;
