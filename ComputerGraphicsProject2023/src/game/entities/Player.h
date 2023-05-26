@@ -8,35 +8,41 @@
 #include "vulture/core/Application.h"
 #include "vulture/event/Event.h"
 #include "vulture/scene/Camera.h"
+
+#include "CollisionMask.h"
 #include "Factory.h"
 #include "Bullet.h"
 #include "game/terrain/Terrain.h"
 #include "game/EventBus.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 class Player
 {
 public:
 	Transform transform;
+	Ref<HitBox> m_Hitbox;
 
 	Player();
 
-	void update(float dt);
+	void update(f32 dt);
 private:
 	const float c_Speed = 10;
 	const float c_RotSpeed = 4.0f;
 
-	int m_HP = 5;
-	int m_MaxHP = 5;
+	u32 m_HP = 5;
+	u32 m_MaxHP = 5;
 
 	bool m_Invincible = false;
 	f32 m_InvincibilityDuration = 1.0f;
 
 	Camera* m_Camera;
-	float c_CameraHeight = 1.5f;
+	f32 c_CameraHeight = 1.5f;
+
+	Ref<Tween> m_FiringTween;
+	const f32 c_FireRatio = 0.3f;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
 };

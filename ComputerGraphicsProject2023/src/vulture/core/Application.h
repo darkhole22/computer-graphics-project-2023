@@ -43,11 +43,9 @@ public:
     inline static Ref<Application> getInstance() { return s_Instance.lock(); }
 
     inline static Scene* getScene() { return getInstance()->m_Scene.get(); }
-    // inline static Ref<DescriptorSetLayout> makeDescriptorSetLayout() { return getInstance()->m_Renderer.makeDescriptorSetLayout(); }
-    // inline static Ref<Model> makeModel(const String& path) { return getInstance()->m_Renderer.makeBaseModel(path); }
-    // template <class T> inline static Uniform<T> makeUniform() { return getInstance()->m_Renderer.makeUniform<T>(); }
-    // inline static Ref<Texture> makeTexture(const String& path) { return getInstance()->m_Renderer.makeTexture(path); }
-    
+
+    inline static Window* getWindow() { return &getInstance()->m_Window; }
+
     ~Application();
 private:
     Application(Game& game, AppConfig config);

@@ -12,7 +12,7 @@ public:
 	 *
 	 * @return The position of the object as a glm::vec3.
 	 */
-	inline glm::vec3 getPosition() { return m_Position; }
+	inline glm::vec3 getPosition() const { return m_Position; }
 
 	/**
 	 * @brief Sets the position of the object.
@@ -63,7 +63,7 @@ public:
 	 *
 	 * @return The scale of the object as a glm::vec3.
 	 */
-	inline glm::vec3 getScale() { return m_Scale; }
+	inline glm::vec3 getScale() const { return m_Scale; }
 
 	/**
 	 * @brief Sets the scale of the object.
@@ -93,7 +93,7 @@ public:
 	 *
 	 * @return The rotation of the object as a glm::quat.
 	 */
-	inline glm::quat getRotation() { return m_Rotation; }
+	inline glm::quat getRotation() const { return m_Rotation; }
 
 	/**
 	 * @brief Sets the rotation of the object using a rotation vector.

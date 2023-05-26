@@ -1,19 +1,22 @@
 #pragma once
 
 #include "vulture/event/Event.h"
+#include "vulture/util/Types.h"
 
 namespace game {
 
+using namespace vulture;
+
 struct HealthUpdated
 {
-	int hp;
-	int maxHp;
+	u32 hp;
+	u32 maxHp;
 };
 
 struct AmmoUpdated
 {
-	int ammo;
-	int maxAmmo;
+	u32 ammo;
+	u32 maxAmmo;
 };
 
 #define PLAYER_EVENTS 	STATIC_EVENT(HealthUpdated) \
