@@ -7,6 +7,7 @@
 #include "vulture/scene/Camera.h"
 #include "vulture/scene/Skybox.h"
 #include "vulture/scene/ui/UIHandler.h"
+#include "vulture/scene/physics/CollisionEngine.h"
 #include "vulture/scene/Tween.h"
 #include "vulture/scene/GameObject.h"
 #include "vulture/scene/World.h"
@@ -76,21 +77,8 @@ public:
 
 	Ref<Tween> makeTween();
 
-	std::vector<Ref<GameObject>> getCollidingObjects(Transform& transform, const String& tag)
-	{
-		std::vector<Ref<GameObject>> collidingObjects;
-
-		for (auto obj: m_GameObjects)
-		{
-			if (obj.second->tag == tag &&
-				glm::distance(obj.second->transform.getPosition(), transform.getPosition()) < 1.0f)
-			{
-				collidingObjects.push_back(obj.second);
-			}
-		}
-
-		return collidingObjects;
-	}
+	inline void addHitbox(Ref<HitBox> hitbox) { m_CollisionEngine.addHitbox(hitbox); }
+	inline void removeHitbox(Ref<HitBox> hitbox) { m_CollisionEngine.removeHitbox(hitbox); }
 
 	~Scene() = default;
 private:
@@ -100,6 +88,7 @@ private:
 	Skybox m_Skybox;
 	World m_World;
 	UIHandler m_UIHandler;
+	CollisionEngine m_CollisionEngine;
 
 	std::vector<bool> m_FrameModified;
 	std::unordered_map<PipelineHandle, SceneObjectList> m_ObjectLists;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "game/events/PlayerEvents.h"
 #include "vulture/core/Core.h"
+#include "game/events/PlayerEvents.h"
 
 using namespace vulture;
 
