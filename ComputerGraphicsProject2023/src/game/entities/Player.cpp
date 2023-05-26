@@ -62,11 +62,8 @@ Player::Player()
 
 void Player::update(f32 dt)
 {
-	auto rotation = Input::getVector("LOOK_LEFT", "LOOK_RIGHT", "LOOK_DOWN", "LOOK_UP", false);
-
-	std::cout << rotation.x << "; " << rotation.y << std::endl;
-
-	rotation *= c_RotSpeed * dt;
+	auto rotation = Input::getVector("LOOK_LEFT", "LOOK_RIGHT", "LOOK_DOWN", "LOOK_UP", false)
+		* c_RotSpeed * dt;
 
 	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
 		* c_Speed * dt;
