@@ -62,23 +62,6 @@ Player::Player()
 
 void Player::update(f32 dt)
 {
-	if (!m_Invincible)
-	{
-		auto collidingObjects = Application::getScene()->getCollidingObjects(transform, "ENEMY");
-		if (!collidingObjects.empty())
-		{
-			m_HP = std::max(int(m_HP - collidingObjects.size()), 0);
-			EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
-
-			m_Invincible = true;
-			auto invincibilityTween = Application::getScene()->makeTween();
-			invincibilityTween->addIntervalTweener(m_InvincibilityDuration);
-			invincibilityTween->addCallbackTweener([this]() {
-				m_Invincible = false;
-			});
-		}
-	}
-
 	auto rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
 			* c_RotSpeed * dt;
 
