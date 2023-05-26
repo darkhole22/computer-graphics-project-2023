@@ -93,7 +93,7 @@ bool testCollisionCapsuleCapsule(const CapsuleCollisionShape* c0, const CapsuleC
 
 	glm::vec3 penetration_normal = bestC0 - bestC1;
 	f32 len = glm::length(penetration_normal);
-	// enetration_normal /= len;  // normalize
+	// penetration_normal /= len;  // normalize
 	f32 penetration_depth = c0->m_Radius + c1->m_Radius - len;
 	// bool intersects = penetration_depth > 0;
 

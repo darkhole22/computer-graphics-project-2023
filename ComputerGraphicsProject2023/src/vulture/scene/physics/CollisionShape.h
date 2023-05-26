@@ -15,7 +15,6 @@ namespace vulture {
  */
 enum class CollisionShapeType
 {
-	// AABB,
 	CAPSULE
 };
 
@@ -40,7 +39,7 @@ public:
 	 *
 	 * @param type The type of the collision shape.
 	 */
-	CollisionShape(CollisionShapeType type) : c_Type(type) {}
+	explicit CollisionShape(CollisionShapeType type) : c_Type(type) {}
 
 	/**
 	 * @brief Tests collision between this shape and another shape.

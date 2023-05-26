@@ -36,7 +36,7 @@ public:
 	 */
 	void removeHitbox(Ref<HitBox> hitbox);
 private:
-	std::unordered_set<Ref<HitBox>> m_HitBoxs;
+	std::unordered_set<Ref<HitBox>> m_HitBoxes;
 };
 
 } // namespace vulture

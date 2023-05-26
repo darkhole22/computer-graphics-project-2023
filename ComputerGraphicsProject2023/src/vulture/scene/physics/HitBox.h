@@ -18,7 +18,7 @@ namespace vulture {
  * layers and collision masks in the collision system. Each bit in the bitmask
  * corresponds to a specific layer or collision group.
  */
-enum MaskBit : u64
+enum BitMask : u64
 {
 	NOME = 0,
 	BIT0 = BIT(0), BIT1 = BIT(1), BIT2 = BIT(2), BIT3 = BIT(3),
@@ -68,12 +68,12 @@ public:
 	/**
 	 * @brief Bitmask representing the layers this hit box belongs to.
 	 */
-	u64 layerMask = MaskBit::NOME;
+	u64 layerMask = BitMask::NOME;
 
 	/**
 	 * @brief Bitmask representing the layers this hit box can collide with.
 	 */
-	u64 collisionMask = MaskBit::NOME;
+	u64 collisionMask = BitMask::NOME;
 
 	/**
 	 * @brief Optional user data associated with the hit box.
@@ -113,11 +113,11 @@ public:
 	 */
 	auto end() { return m_Shapes.end(); }
 private:
-	using HitBoxsSet = std::unordered_set<Ref<HitBox>>;
+	using HitBoxesSet = std::unordered_set<Ref<HitBox>>;
 
 	std::vector<Ref<CollisionShape>> m_Shapes;
-	HitBoxsSet m_PreviousCollidingHitBoxs;
-	HitBoxsSet m_CurrentCollidingHitBoxs;
+	HitBoxesSet m_PreviousCollidingHitBoxes;
+	HitBoxesSet m_CurrentCollidingHitBoxes;
 
 	void applyTransform();
 	void registerCollidingHitbox(Ref<HitBox> hitbox);

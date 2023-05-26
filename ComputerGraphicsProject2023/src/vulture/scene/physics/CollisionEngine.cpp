@@ -1,24 +1,22 @@
 #include "CollisionEngine.h"
 
-#include "vulture/core/Logger.h"
-
 namespace vulture {
 
 void CollisionEngine::update(f32 dt)
 {
-	for (auto& hitbox : m_HitBoxs)
+	for (auto& hitbox : m_HitBoxes)
 	{
 		hitbox->applyTransform();
 	}
 
-	auto outherIterator = m_HitBoxs.begin();
-	while (outherIterator != m_HitBoxs.end())
+	auto outerIt = m_HitBoxes.begin();
+	while (outerIt != m_HitBoxes.end())
 	{
-		auto& hitbox1 = *outherIterator;
-		auto innerIterator = ++outherIterator;
-		while (innerIterator != m_HitBoxs.end())
+		auto& hitbox1 = *outerIt;
+		auto innerIt = ++outerIt;
+		while (innerIt != m_HitBoxes.end())
 		{
-			auto& hitbox2 = *innerIterator;
+			auto& hitbox2 = *innerIt;
 
 			if ((hitbox1->collisionMask & hitbox2->layerMask) != 0 ||
 				(hitbox2->collisionMask & hitbox1->layerMask) != 0)
@@ -42,19 +40,19 @@ void CollisionEngine::update(f32 dt)
 				}
 			}
 			hitbox1->update();
-			innerIterator++;
+			innerIt++;
 		}
 	}
 }
 
 void CollisionEngine::addHitbox(Ref<HitBox> hitbox)
 {
-	m_HitBoxs.insert(hitbox);
+	m_HitBoxes.insert(hitbox);
 }
 
 void CollisionEngine::removeHitbox(Ref<HitBox> hitbox)
 {
-	m_HitBoxs.erase(hitbox);
+	m_HitBoxes.erase(hitbox);
 }
 
 } // namespace vulture
