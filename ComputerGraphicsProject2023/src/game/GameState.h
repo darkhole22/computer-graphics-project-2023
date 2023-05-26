@@ -2,7 +2,7 @@
 
 namespace game {
 
-enum GameState
+enum class GameState
 {
 	PLAYING,
 	PAUSE,
