@@ -1,5 +1,7 @@
 #include "Player.h"
 
+#include "vulture/core/Logger.h"
+
 using namespace vulture;
 
 namespace game {
@@ -10,8 +12,29 @@ Player::Player()
 	m_Camera = scene->getCamera();
 	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
+	m_BulletFactory = makeRef<Factory<Bullet>>(40);
+
+	m_FiringTween = Application::getScene()->makeTween();
+	m_FiringTween->loop();
+	m_FiringTween->addCallbackTweener([this]() {
+		auto bullet = m_BulletFactory->get();
+		bullet->m_GameObject->tag = "PLAYER_BULLET";
+
+		bullet->setup(transform.getPosition(), m_Camera->direction);
+
+		EventBus::emit(AmmoUpdated{ 10, 20 });
+	});
+	m_FiringTween->addIntervalTweener(c_FireRatio);
+	m_FiringTween->addCallbackTweener([this]() {
+		if (!Input::isActionPressed("FIRE"))
+		{
+			m_FiringTween->pause();
+		}
+	});
+	m_FiringTween->pause();
+
 	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, c_CameraHeight));
-	
+
 	m_Hitbox->layerMask = PLAYER_MASK;
 	m_Hitbox->collisionMask = ENEMY_MASK;
 
@@ -34,16 +57,33 @@ Player::Player()
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 
-	EventBus::emit(HealthUpdated{m_HP, m_MaxHP});
+	EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
 }
 
 void Player::update(f32 dt)
 {
+	if (!m_Invincible)
+	{
+		auto collidingObjects = Application::getScene()->getCollidingObjects(transform, "ENEMY");
+		if (!collidingObjects.empty())
+		{
+			m_HP = std::max(int(m_HP - collidingObjects.size()), 0);
+			EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
+
+			m_Invincible = true;
+			auto invincibilityTween = Application::getScene()->makeTween();
+			invincibilityTween->addIntervalTweener(m_InvincibilityDuration);
+			invincibilityTween->addCallbackTweener([this]() {
+				m_Invincible = false;
+			});
+		}
+	}
+
 	auto rotation = Input::getVector("ROTATE_LEFT", "ROTATE_RIGHT", "ROTATE_DOWN", "ROTATE_UP")
 			* c_RotSpeed * dt;
 
 	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
-			* c_Speed * dt;
+		* c_Speed * dt;
 
 	// Move the player
 	transform.rotate(0.0f, -rotation.x, 0.0f);
@@ -55,12 +95,7 @@ void Player::update(f32 dt)
 
 	if (Input::isActionJustPressed("FIRE"))
 	{
-		auto bullet = m_BulletFactory->get();
-		bullet->m_GameObject->tag = "PLAYER_BULLET";
-
-		bullet->setup(transform.getPosition(), m_Camera->direction);
-
-		EventBus::emit(AmmoUpdated{10, 20});
+		m_FiringTween->play();
 	}
 
 	m_BulletFactory->update(dt);

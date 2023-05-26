@@ -29,8 +29,8 @@ public:
 
 	void update(f32 dt);
 private:
-	const f32 c_Speed = 10;
-	const f32 c_RotSpeed = 4.0f;
+	const float c_Speed = 10;
+	const float c_RotSpeed = 4.0f;
 
 	u32 m_HP = 5;
 	u32 m_MaxHP = 5;
@@ -40,6 +40,9 @@ private:
 
 	Camera* m_Camera;
 	f32 c_CameraHeight = 1.5f;
+
+	Ref<Tween> m_FiringTween;
+	const f32 c_FireRatio = 0.3f;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
 };

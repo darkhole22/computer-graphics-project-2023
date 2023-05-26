@@ -12,13 +12,18 @@
 
 namespace vulture {
 
+enum class CursorMode
+{
+	NORMAL, HIDDEN, DISABLED
+};
+
 class Window
 {
 	EVENT(KeyPressedEvent)
 	EVENT(KeyReleasedEvent)
 
 public:
-	Window(const char* name, uint32_t width, uint32_t height);
+	Window(const char* name, u32 width, u32 height);
 
 	bool shouldClose() const;
 	void pollEvents();
@@ -28,12 +33,15 @@ public:
 
 	inline void setFrameBufferResized(bool value) { m_FramebufferResized = value; }
 
-	std::pair<int, int> getFramebufferSize() const;
+	std::pair<i32, i32> getFramebufferSize() const;
 	inline bool getFrameBufferResized() const { return m_FramebufferResized; }
+
+	void setCursorMode(CursorMode mode);
+	CursorMode getCursorMode();
 
 	~Window();
 
-	friend void onGlfwKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
+	friend void onGlfwKeyEvent(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods);
 private:
 	const String c_Name;
 	GLFWwindow* m_Handle;

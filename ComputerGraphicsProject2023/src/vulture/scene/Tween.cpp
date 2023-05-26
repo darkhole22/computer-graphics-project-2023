@@ -39,7 +39,7 @@ void Tween::stop()
 
 void Tween::reset(bool autoStart)
 {
-	m_Tweener.reset();
+	m_Tweener->reset();
 	autoStart ? play() : pause();
 }
 
