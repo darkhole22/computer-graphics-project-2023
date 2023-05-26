@@ -55,14 +55,14 @@ void GameManager::update(f32 dt)
 		m_Player->m_Hitbox->transform = m_Player->transform;
 		m_Player->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
 
-		if (Input::isKeyPressed(GLFW_KEY_P)) {
+		if (Input::isActionJustPressed("TOGGLE_PAUSE")) {
 			setGameState(GameState::PAUSE);
 		}
 
 		break;
 	}
 	case GameState::PAUSE:
-		if (Input::isKeyPressed(GLFW_KEY_ESCAPE))
+		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
 			setGameState(GameState::PLAYING);
 		}

@@ -22,6 +22,8 @@ class Window
 	EVENT(KeyPressedEvent)
 	EVENT(KeyReleasedEvent)
 
+	EVENT(WindowResizedEvent)
+
 public:
 	Window(const char* name, u32 width, u32 height);
 
@@ -39,13 +41,20 @@ public:
 	void setCursorMode(CursorMode mode);
 	CursorMode getCursorMode();
 
+	inline u32 getWidth() const { return m_Width; }
+	inline u32 getHeight() const { return m_Height; }
+
 	~Window();
 
 	friend void onGlfwKeyEvent(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods);
+	friend void framebufferResizeCallback(GLFWwindow* window, i32 width, i32 height);
 private:
 	const String c_Name;
 	GLFWwindow* m_Handle;
 	bool m_FramebufferResized = false;
+
+	u32 m_Width;
+	u32 m_Height;
 };
 
 } // namespace vulture

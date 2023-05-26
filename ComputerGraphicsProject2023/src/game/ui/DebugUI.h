@@ -15,7 +15,7 @@ public:
 
 	void update(float dt);
 private:
-	UIHandler* m_HandlerUI = nullptr;
+	UIHandler* m_UIHandler = nullptr;
 
 	Ref<UIText> m_FPSText;
 	Ref<UIText> m_FrameTimeText;
