@@ -9,6 +9,8 @@ namespace game {
 
 using namespace vulture;
 
+static constexpr f32 NOISE_SCALE_MULTIPLIER = 100.0f;
+
 f32 noiseFunction(f32 x, f32 y);
 glm::vec4 noise(f32 x, f32 y);
 
@@ -26,7 +28,7 @@ Terrain::Terrain(const TerrainGenerationConfig& config) :
 
 void Terrain::update(f32 dt)
 {
-	f32 dh = Input::getAxis("TERRAIN_DOWN", "TERRAIN_UP") * dt;
+	f32 dh = Input::getAxis("TERRAIN_DOWN", "TERRAIN_UP") * 0.2f * dt;
 
 	m_VertexUniform->waterLevel = std::clamp(m_VertexUniform->waterLevel + dh, 0.0f, 1.0f);
 }
@@ -87,7 +89,7 @@ void Terrain::setReferencePosition(glm::vec2 position)
 
 f32 Terrain::getHeightAt(glm::vec2 position) const
 {
-	auto chunkPosition = position * m_Config.noiseScale / m_Config.chunkSize;
+	auto chunkPosition = position * m_Config.noiseScale / NOISE_SCALE_MULTIPLIER;
 	f32 h = noiseFunction(chunkPosition.x, chunkPosition.y);
 	return std::clamp(h, m_VertexUniform->waterLevel, 1.0f) * m_VertexUniform->scale;
 }
@@ -134,7 +136,7 @@ TerrainChunk::TerrainChunk(Terrain* terrain, glm::vec2 position) :
 {
 	m_Scene = terrain->m_Scene;
 
-	glm::vec2 noiseSize = glm::vec2(1, 1) * terrain->m_Config.noiseScale * terrain->m_Config.chunkSize / 100.0f;
+	glm::vec2 noiseSize = glm::vec2(1, 1) * terrain->m_Config.noiseScale * terrain->m_Config.chunkSize / NOISE_SCALE_MULTIPLIER;
 	m_NoiseTexture = Texture::make(128, 128, position * noiseSize, noiseSize, noise);
 	TextureSamplerConfig samplerConfig;
 	samplerConfig.setAddressMode(VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT);
@@ -153,7 +155,7 @@ TerrainChunk::TerrainChunk(Terrain* terrain, glm::vec2 position) :
 
 void TerrainChunk::update(glm::vec2 position)
 {
-	glm::vec2 noiseSize = glm::vec2(1, 1) * m_Terrain->m_Config.noiseScale * m_Terrain->m_Config.chunkSize / 100.0f;
+	glm::vec2 noiseSize = glm::vec2(1, 1) * m_Terrain->m_Config.noiseScale * m_Terrain->m_Config.chunkSize / NOISE_SCALE_MULTIPLIER;
 	Texture::makeAsync(128, 128, position * noiseSize, noiseSize, noise, [this, position](Ref<Texture> texture) {
 		m_Scene->removeObject(m_Terrain->m_Pipeline, m_Object);
 
@@ -181,9 +183,18 @@ TerrainChunk::~TerrainChunk()
 
 f32 noiseFunction(f32 x, f32 y)
 {
-	f32 h = stb_perlin_noise3_seed(x, y, 0.0f, 0, 0, 0, 420) + 1.0f;
+	f32 h = stb_perlin_noise3_seed(x, y, 0.0f, 0, 0, 0, 420);
+	// h += stb_perlin_noise3_seed(x * 2, y * 2, 0.0f, 0, 0, 0, 420) * 0.5f;
+
+	h += stb_perlin_ridge_noise3(x, y, 0.0f, 2.0f, 0.5f, 1.0f, 4) * 0.5f;
+	// f32 h = stb_perlin_fbm_noise3(x, y, 0.0f, 2.0f, 0.5f, 3);
+	// f32 h = stb_perlin_turbulence_noise3(x, y, 0.0f, 2.0f, 0.5f, 3);
+	h /= 1.5f;
+
+	h += 1.0f;
 	h /= 2.0f;
-	return  h;
+	h = 0.5f - 4.0f * std::pow(0.5f - h, 3.0f);
+	return h * h;
 }
 
 glm::vec4 noise(f32 x, f32 y)

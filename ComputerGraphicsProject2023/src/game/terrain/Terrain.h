@@ -8,8 +8,9 @@ using namespace vulture;
 
 struct TerrainVertexBufferObject
 {
-	alignas(4) f32 scale = 35.0f;
-	alignas(4) f32 waterLevel = 0.35f;
+	alignas(4) f32 scale = 50.0f;
+	alignas(4) f32 waterLevel = 0.249f;
+	alignas(4) f32 sandWidth = 0.001f;
 };
 
 class Terrain;

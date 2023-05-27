@@ -11,6 +11,7 @@ layout(set = 2, binding = 0) uniform WorldBufferObject {
 layout(set = 0, binding = 2) uniform TerrainBufferObject {
     float scale;
     float waterLevel;
+    float sandWidth;
 } tbo;
 
 layout(location = 0) in vec3 fragNorm;
@@ -64,14 +65,12 @@ vec3 OrenNayar(vec3 V, vec3 N, vec3 L, vec3 Md, float sigma) {
     return oren_nayar_diffuse; // Oren-Nayar is used for materials that don't show specular reflections.
 }
 
-const float sandWidth = 0.05;
-
 void main() {
     vec4 noise = texture(texSampler, fragTexCoord);
 
     vec3 color = step(noise.r, tbo.waterLevel) * vec3(0.196, 0.219, 0.896) +
-                (1.0 - step(noise.r, tbo.waterLevel)) * step(noise.r, tbo.waterLevel + sandWidth) * vec3(0.796, 0.804, 0.4) +
-                (1.0 - step(noise.r, tbo.waterLevel + sandWidth)) * vec3(0.192, 0.404, 0.0);
+                (1.0 - step(noise.r, tbo.waterLevel)) * step(noise.r, tbo.waterLevel + tbo.sandWidth) * vec3(0.796, 0.804, 0.4) +
+                (1.0 - step(noise.r, tbo.waterLevel + tbo.sandWidth)) * vec3(0.192, 0.404, 0.0);
     
     vec3 cameraDir = normalize(wubo.cameraPosition.xyz - fragPos);
     vec3 norm = fragNorm;
