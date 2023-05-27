@@ -57,7 +57,21 @@ void Terrain::setReferencePosition(glm::vec2 position)
 						static_cast<f32>(targetX + x - count / 2),
 						static_cast<f32>(targetY + y - count / 2)
 					};
-					newChunks[y * count + x] = makeRef<TerrainChunk>(this, chunkPosition);
+					vectorCoordX %= count;
+					if (vectorCoordX < 0)
+					{
+						vectorCoordX += count;
+					}
+					vectorCoordY %= count;
+					if (vectorCoordY < 0)
+					{
+						vectorCoordY += count;
+					}
+
+					// newChunks[y * count + x] = makeRef<TerrainChunk>(this, chunkPosition);
+					auto& chunk = m_Chunks[vectorCoordY * count + vectorCoordX];
+					chunk->update(chunkPosition);
+					newChunks[y * count + x] = chunk;
 				}
 				else
 				{
@@ -135,6 +149,29 @@ TerrainChunk::TerrainChunk(Terrain* terrain, glm::vec2 position) :
 		terrain->m_DescriptorSetLayout,
 		{ m_Uniform, *m_NoiseSampler, terrain->m_VertexUniform });
 	m_Object = m_Scene->addObject(terrain->m_Pipeline, terrain->m_Model, m_DescriptorSet);
+}
+
+void TerrainChunk::update(glm::vec2 position)
+{
+	glm::vec2 noiseSize = glm::vec2(1, 1) * m_Terrain->m_Config.noiseScale * m_Terrain->m_Config.chunkSize / 100.0f;
+	Texture::makeAsync(128, 128, position * noiseSize, noiseSize, noise, [this, position](Ref<Texture> texture) {
+		m_Scene->removeObject(m_Terrain->m_Pipeline, m_Object);
+
+		m_NoiseTexture = texture;
+		TextureSamplerConfig samplerConfig;
+		samplerConfig.setAddressMode(VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT);
+		m_NoiseSampler = makeRef<TextureSampler>(*m_NoiseTexture, samplerConfig);
+
+		m_Uniform->model = glm::translate(glm::mat4(1), glm::vec3(position.x, 0, position.y) * m_Terrain->m_Config.chunkSize) *
+			glm::scale(glm::mat4(1), { m_Terrain->m_Config.chunkSize, 1, m_Terrain->m_Config.chunkSize });
+
+		m_DescriptorSet.reset();
+		m_DescriptorSet = m_Scene->getDescriptorPool()->getDescriptorSet(
+			m_Terrain->m_DescriptorSetLayout,
+			{ m_Uniform, *m_NoiseSampler, m_Terrain->m_VertexUniform });
+
+		m_Object = m_Scene->addObject(m_Terrain->m_Pipeline, m_Terrain->m_Model, m_DescriptorSet);
+	});
 }
 
 TerrainChunk::~TerrainChunk()

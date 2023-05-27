@@ -19,6 +19,8 @@ class TerrainChunk
 public:
 	TerrainChunk(Terrain* terrain, glm::vec2 position);
 
+	void update(glm::vec2 position);
+
 	~TerrainChunk();
 private:
 	Scene* m_Scene = nullptr;
@@ -35,9 +37,8 @@ private:
 struct TerrainGenerationConfig
 {
 	f32 renderDistance = 200.0f;
-	f32 chunkSize = 100.0f;
+	f32 chunkSize = 80.0f;
 	f32 noiseScale = 3.0f;
-
 
 	static TerrainGenerationConfig defaultConfig;
 };
