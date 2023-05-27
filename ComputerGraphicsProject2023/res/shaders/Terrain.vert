@@ -15,6 +15,7 @@ layout(set = 0, binding = 2) uniform TerrainBufferObject {
     float scale;
     float waterLevel;
     float sandWidth;
+    float rockLevel;
 } tbo;
 
 layout(location = 0) in vec3 inPosition;
