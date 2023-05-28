@@ -1,15 +1,24 @@
 #include "HUD.h"
 
+#include "vulture/core/Logger.h"
+
 namespace game {
 
-HUD::HUD() {
+void centerText(Window* window, Ref<UIText> text, f32 yOffset)
+{
+	text->setPosition((window->getWidth() - text->getWidth()) / 2.0f,
+					  (window->getHeight() - text->getHeight()) / 2.0f + yOffset);
+}
+
+HUD::HUD()
+{
 	m_UIHandler = Application::getScene()->getUIHandle();
 
 	m_Window = Application::getWindow();
 	m_Window->addCallback([this](WindowResizedEvent event) {
-		m_PauseScreenTitleText->setPosition({ m_Window->getWidth() / 2 - 40, m_Window->getHeight() / 2 - 20});
-		m_PauseScreenSubtitleText->setPosition({ m_Window->getWidth() / 2 - 140, m_Window->getHeight() / 2 });
-		m_GameOverText->setPosition({ m_Window->getWidth() / 2 - 50, m_Window->getHeight() / 2 - 20 });
+		centerText(m_Window, m_PauseScreenTitleText, 0);
+		centerText(m_Window, m_PauseScreenSubtitleText, m_PauseScreenTitleText->getHeight());
+		centerText(m_Window, m_GameOverText, 0);
 	});
 
 	EventBus::addCallback([this](HealthUpdated e) { onHealthUpdated(e); });
@@ -17,7 +26,7 @@ HUD::HUD() {
 
 	m_HPText = m_UIHandler->makeText("HP: ");
 	m_AmmoText = m_UIHandler->makeText("Ammo: ");
-	m_AmmoText->setPosition({20, 50});
+	m_AmmoText->setPosition({ 20, 50 });
 
 	/****************
 	 * PAUSE SCREEN *
@@ -25,18 +34,20 @@ HUD::HUD() {
 	m_PauseScreenTitleText = m_UIHandler->makeText("PAUSED");
 	m_PauseScreenSubtitleText = m_UIHandler->makeText("Press ESC to Resume.");
 
-	m_PauseScreenTitleText->setPosition({ m_Window->getWidth() / 2 - 40, m_Window->getHeight() / 2 - 20 });
-	m_PauseScreenSubtitleText->setPosition({ m_Window->getWidth() / 2 - 140, m_Window->getHeight() / 2 });
+	centerText(m_Window, m_PauseScreenTitleText, 0);
+	centerText(m_Window, m_PauseScreenSubtitleText, m_PauseScreenTitleText->getHeight());
 
+	m_PauseScreenTitleText->setStroke(0.6f);
 	m_PauseScreenTitleText->setVisible(false);
 	m_PauseScreenSubtitleText->setVisible(false);
 
 	/********************
 	 * GAME OVER SCREEN *
 	 ********************/
-	 m_GameOverText = m_UIHandler->makeText("GAME OVER");
-	 m_GameOverText->setPosition({ m_Window->getWidth() / 2 - 50, m_Window->getHeight() / 2 - 20 });
-	 m_GameOverText->setVisible(false);
+	m_GameOverText = m_UIHandler->makeText("GAME OVER");
+	centerText(m_Window, m_GameOverText, 0);
+	m_GameOverText->setStroke(0.6f);
+	m_GameOverText->setVisible(false);
 }
 
 void HUD::onHealthUpdated(HealthUpdated event)
