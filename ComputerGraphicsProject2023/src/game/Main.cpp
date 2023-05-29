@@ -83,7 +83,8 @@ public:
 		 * TERRAIN *
 		 ***********/
 		TerrainGenerationConfig terrainConfig{};
-		terrainConfig.noiseScale = 6;
+		terrainConfig.noiseScale = 2;
+		terrainConfig.heightScale = 250;
 		terrain = makeRef<Terrain>(terrainConfig);
 		
 		/**************

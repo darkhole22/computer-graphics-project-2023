@@ -10,8 +10,8 @@ struct TerrainVertexBufferObject
 {
 	alignas(4) f32 scale = 50.0f;
 	alignas(4) f32 waterLevel = 0.249f;
-	alignas(4) f32 sandWidth = 0.001f;
-	alignas(4) f32 rockLevel = 0.4f;
+	alignas(4) f32 sandWidth = 0.0005f;
+	alignas(4) f32 rockLevel = 0.33f;
 };
 
 class Terrain;
@@ -41,8 +41,9 @@ private:
 struct TerrainGenerationConfig
 {
 	f32 renderDistance = 200.0f;
-	f32 chunkSize = 40.0f;
+	f32 chunkSize = 100.0f;
 	f32 noiseScale = 3.0f;
+	f32 heightScale = 50.0f;
 
 	static TerrainGenerationConfig defaultConfig;
 };

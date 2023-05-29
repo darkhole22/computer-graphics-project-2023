@@ -14,9 +14,6 @@ static constexpr f32 NOISE_SCALE_MULTIPLIER = 100.0f;
 f32 noiseFunction(f32 x, f32 y);
 glm::vec4 noise(f32 x, f32 y);
 
-struct NoiseConfig
-{};
-
 TerrainGenerationConfig TerrainGenerationConfig::defaultConfig{};
 
 Terrain::Terrain(const TerrainGenerationConfig& config) :
@@ -112,6 +109,8 @@ void Terrain::initializeRenderingComponents()
 
 	m_Model = Model::getPlane(200, 200);
 	m_VertexUniform = Renderer::makeUniform<TerrainVertexBufferObject>();
+
+	m_VertexUniform->scale = m_Config.heightScale;
 
 	m_WaterTexture = Texture::get("water");
 	m_WaterSampler = makeRef<TextureSampler>(*m_WaterTexture);
