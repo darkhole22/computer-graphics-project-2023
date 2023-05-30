@@ -10,6 +10,11 @@ struct GameStateChanged
 	GameState gameState;
 };
 
-#define GAME_EVENTS 	STATIC_EVENT(GameStateChanged)
+struct GodmodeToggled
+{
+	bool godmodeOn;
+};
 
+#define GAME_EVENTS 	STATIC_EVENT(GameStateChanged) \
+						STATIC_EVENT(GodmodeToggled)
 } // namespace game

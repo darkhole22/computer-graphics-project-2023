@@ -13,14 +13,22 @@ DebugUI::DebugUI()
 		setTextPosition();
 	});
 
+	EventBus::addCallback([this](GodmodeToggled event) {
+		m_GodmodeText->setText(stringFormat("GOD: %s", event.godmodeOn ? "ON" : "OFF"));
+	});
+
 	m_FPSText = m_UIHandler->makeText("FPS");
 	m_FrameTimeText = m_UIHandler->makeText("FT");
+	m_GodmodeText = m_UIHandler->makeText("GOD: OFF");
 
 	m_FPSText->setColor(0.0f, 0.0f, 0.0f);
 	m_FrameTimeText->setColor(0.0f, 0.0f, 0.0f);
+	m_GodmodeText->setColor(0.0f, 0.0f, 0.0f);
 
-	m_FPSText->setVisible(false);
-	m_FrameTimeText->setVisible(false);
+	m_Visible = false;
+	m_FPSText->setVisible(m_Visible);
+	m_FrameTimeText->setVisible(m_Visible);
+	m_GodmodeText->setVisible(m_Visible);
 
 	setTextPosition();
 }
@@ -29,8 +37,10 @@ void DebugUI::update(float dt)
 {
 	if (Input::isActionJustPressed("TOGGLE_INFO"))
 	{
-		m_FPSText->setVisible(!m_FPSText->isVisible());
-		m_FrameTimeText->setVisible(!m_FrameTimeText->isVisible());
+		m_Visible = !m_Visible;
+		m_FPSText->setVisible(m_Visible);
+		m_FrameTimeText->setVisible(m_Visible);
+		m_GodmodeText->setVisible(m_Visible);
 	}
 
 	static float fps = 0.0f;
@@ -53,11 +63,12 @@ void DebugUI::update(float dt)
 
 void DebugUI::setTextPosition()
 {
-	f32 rightOffset = 250.0f;
+	f32 rightOffset = m_Window->getWidth() - 250.0f;
 	f32 topOffset = 20.0f;
 
-	m_FPSText->setPosition(m_Window->getWidth() - rightOffset, topOffset);
-	m_FrameTimeText->setPosition(m_Window->getWidth() - rightOffset,m_FPSText->getHeight() + topOffset);
+	m_FPSText->setPosition(rightOffset, topOffset);
+	m_FrameTimeText->setPosition(rightOffset,m_FPSText->getPosition().y + topOffset);
+	m_GodmodeText->setPosition(rightOffset, m_FrameTimeText->getPosition().y + topOffset);
 }
 
 } // namespace game
