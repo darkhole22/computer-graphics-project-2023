@@ -91,6 +91,10 @@ public:
 		 * GAME LOGIC *
 		 **************/
 		gameManager = makeRef<GameManager>(terrain);
+
+		scene->makeTimer(5)->addCallback([](const TimerTimeoutEvent&) {
+			VUINFO("Test Timer ended!");
+		});
 	}
 
 	void update(float dt) override

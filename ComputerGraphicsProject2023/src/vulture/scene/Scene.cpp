@@ -51,6 +51,24 @@ Scene::Scene() :
 	});
 }
 
+template<class T>
+void stepUtil(std::unordered_set<Ref<T>>& set, f32 dt)
+{
+	for (auto it = set.begin(); it != set.end();)
+	{
+		T* util = it->get();
+		util->step(dt);
+		if (!util->isRunning())
+		{
+			util->stop();
+			VUTRACE("\"%s\" removed from the scene!", typeid(T).name());
+			it = set.erase(it);
+		}
+		else
+			++it;
+	}
+}
+
 void Scene::render(FrameContext target, float dt)
 {
 	if (target.updated())
@@ -81,19 +99,8 @@ void Scene::render(FrameContext target, float dt)
 	m_UIHandler.m_ScreenUniform->height = static_cast<float>(height);
 	m_UIHandler.update(dt);
 
-	for (auto it = m_Tweens.begin(); it != m_Tweens.end();)
-	{
-		Tween* tween = it->get();
-		tween->step(dt);
-		if (!tween->isRunning())
-		{
-			tween->stop();
-			VUTRACE("Tween removed from the scene!");
-			it = m_Tweens.erase(it);
-		}
-		else
-			++it;
-	}
+	stepUtil(m_Tweens, dt);
+	stepUtil(m_Timerss, dt);
 
 	m_CollisionEngine.update(dt);
 
@@ -177,6 +184,13 @@ Ref<Tween> Scene::makeTween()
 {
 	auto tween = makeRef<Tween>();
 	m_Tweens.insert(tween);
+	return tween;
+}
+
+Ref<Timer> Scene::makeTimer(f32 waitTimer, bool oneShot)
+{
+	auto tween = makeRef<Timer>(waitTimer, oneShot);
+	m_Timerss.insert(tween);
 	return tween;
 }
 

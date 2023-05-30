@@ -8,7 +8,8 @@
 #include "vulture/scene/Skybox.h"
 #include "vulture/scene/ui/UIHandler.h"
 #include "vulture/scene/physics/CollisionEngine.h"
-#include "vulture/scene/Tween.h"
+#include "vulture/scene/tool/Tween.h"
+#include "vulture/scene/tool/Timer.h"
 #include "vulture/scene/GameObject.h"
 #include "vulture/scene/World.h"
 
@@ -28,7 +29,6 @@ private:
 	Ref<DescriptorSet> m_DescriptorSet;
 };
 
-
 class SceneObjectList
 {
 public:
@@ -45,7 +45,6 @@ private:
 	Ref<Pipeline> m_Pipeline;
 	std::unordered_map<ObjectHandle, RenderableObject> m_Objects;
 };
-
 
 class Scene
 {
@@ -76,6 +75,7 @@ public:
 	DescriptorPool* getDescriptorPool() { return &m_DescriptorsPool; }
 
 	Ref<Tween> makeTween();
+	Ref<Timer> makeTimer(f32 waitTimer, bool oneShot = true);
 
 	inline void addHitbox(Ref<HitBox> hitbox) { m_CollisionEngine.addHitbox(hitbox); }
 	inline void removeHitbox(Ref<HitBox> hitbox) { m_CollisionEngine.removeHitbox(hitbox); }
@@ -98,6 +98,7 @@ private:
 	PipelineHandle m_NextPipelineHandle = 0;
 
 	std::unordered_set<Ref<Tween>> m_Tweens;
+	std::unordered_set<Ref<Timer>> m_Timerss;
 
 	Ref<DescriptorSetLayout> m_GameObjectDSL;
 	PipelineHandle m_GameObjectPipeline;
