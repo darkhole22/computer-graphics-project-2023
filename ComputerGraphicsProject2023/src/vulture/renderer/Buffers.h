@@ -24,7 +24,7 @@ public:
 	CommandBuffer(const CommandBuffer& other) = delete;
 	CommandBuffer(CommandBuffer&& other) noexcept;
 	explicit CommandBuffer(bool singleTime);
-	
+
 	CommandBuffer operator=(const CommandBuffer& other) = delete;
 	CommandBuffer& operator=(CommandBuffer&& other) noexcept;
 
@@ -72,10 +72,12 @@ public:
 	Image(Image&& other) noexcept;
 	Image(VkImage image, VkFormat format);
 	Image(u32 width, u32 height, VkImageUsageFlags usage, const ImageCreationInfo& info = ImageCreationInfo::defaultImageCreateInfo);
-	
+
 	inline VkImage getHandle() const { return m_Handle; }
 	inline VkImageView getView() const { return m_View; }
 	inline VkFormat getFormat() const { return m_Format; }
+	inline u32 getWidth() const { return static_cast<u32>(m_Width < 0 ? 0 : m_Width); }
+	inline u32 getHeight() const { return static_cast<u32>(m_Height < 0 ? 0 : m_Height); }
 
 	void transitionLayout(VkImageLayout newLayout, const ImageCreationInfo& info = ImageCreationInfo::defaultImageCreateInfo, u32 baseArrayLayer = 0);
 	void copyFromBuffer(const Buffer& buffer, const ImageCreationInfo& info = ImageCreationInfo::defaultImageCreateInfo);

@@ -6,9 +6,7 @@
 
 namespace vulture {
 
-using UITextHandle = i64;
-
-struct TextVertexBufferObject
+struct UITextVertexBufferObject
 {
 	alignas(8) glm::vec2 position = { 0, 0 };
 	alignas(8) f32 scale = 1.0f;
@@ -32,9 +30,8 @@ class UIText
 	EVENT(UITextRecreated)
 
 public:
-	UIText(UITextHandle handle, DescriptorPool& descriptorPool,
-		   Ref<DescriptorSetLayout> descriptorSetLayout, Ref<Font> font,
-		   const String& text, glm::vec2 position, f32 scale);
+	UIText(DescriptorPool& descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout, 
+		   Ref<Font> font, const String& text, glm::vec2 position, f32 scale);
 
 	void setText(const String& text);
 	void setPosition(glm::vec2 position) { m_VertexUniform->position = position; } // TODO boundary check
@@ -71,7 +68,6 @@ public:
 
 	friend class UIHandler;
 private:
-	const UITextHandle m_Handle;
 	Ref<Font> m_Font;
 
 	String m_Text;
@@ -89,7 +85,7 @@ private:
 	Buffer m_IndexBuffer;
 	u64 m_IndexCount = 0;
 
-	Uniform<TextVertexBufferObject> m_VertexUniform;
+	Uniform<UITextVertexBufferObject> m_VertexUniform;
 	Uniform<TextFragmentBufferObject> m_FragmentUniform;
 
 	Ref<DescriptorSet> m_DescriptorSet;

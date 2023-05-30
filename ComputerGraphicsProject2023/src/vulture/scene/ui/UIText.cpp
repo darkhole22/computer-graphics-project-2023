@@ -5,16 +5,16 @@
 
 namespace vulture {
 
-UIText::UIText(UITextHandle handle, DescriptorPool& descriptorPool,
-			   Ref<DescriptorSetLayout> descriptorSetLayout,
+UIText::UIText(DescriptorPool& descriptorPool, Ref<DescriptorSetLayout> descriptorSetLayout,
 			   Ref<Font> font, const String& text, glm::vec2 position, f32 scale) :
-	m_Handle(handle), m_Font(font), m_Text(text)
+	m_Font(font), m_Text(text)
 {
-	m_VertexUniform = Renderer::makeUniform<TextVertexBufferObject>();
+	m_VertexUniform = Renderer::makeUniform<UITextVertexBufferObject>();
 	m_FragmentUniform = Renderer::makeUniform<TextFragmentBufferObject>();
 
-	m_DescriptorSet = descriptorPool.getDescriptorSet(descriptorSetLayout,
-													  { font->getTextureSampler(), m_VertexUniform, m_FragmentUniform });
+	m_DescriptorSet = descriptorPool.getDescriptorSet(
+		descriptorSetLayout,
+		{ font->getTextureSampler(), m_VertexUniform, m_FragmentUniform });
 
 	m_VertexUniform->position = position;
 	m_VertexUniform->scale = scale;

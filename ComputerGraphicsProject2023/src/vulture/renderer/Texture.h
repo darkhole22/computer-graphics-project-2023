@@ -35,6 +35,9 @@ public:
 	inline u32 getMipLevels() const { return m_MipLevels; };
 	inline VkImageLayout getLayout() const { return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
 
+	inline u32 getWidth() const { return m_Image.getWidth(); }
+	inline u32 getHeight() const { return m_Image.getHeight(); }
+
 	~Texture();
 
 	friend class Renderer;

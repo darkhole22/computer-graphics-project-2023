@@ -12,12 +12,15 @@ class HUD
 public:
 	HUD();
 
+	void update(f32 dt);
 private:
 	UIHandler* m_UIHandler;
 	Window* m_Window;
 
 	Ref<UIText> m_HPText;
 	Ref<UIText> m_AmmoText;
+
+	Ref<UIImage> m_Crosshair;
 
 	Ref<UIText> m_PauseScreenTitleText;
 	Ref<UIText> m_PauseScreenSubtitleText;

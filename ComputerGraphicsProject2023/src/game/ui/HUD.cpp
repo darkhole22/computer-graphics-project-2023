@@ -28,6 +28,9 @@ HUD::HUD()
 	m_AmmoText = m_UIHandler->makeText("Ammo: ");
 	m_AmmoText->setPosition({ 20, 50 });
 
+	m_Crosshair = m_UIHandler->makeImage("crosshair");
+	m_Crosshair->setWidth(50);
+
 	/****************
 	 * PAUSE SCREEN *
 	 ****************/
@@ -48,6 +51,11 @@ HUD::HUD()
 	centerText(m_Window, m_GameOverText, 0);
 	m_GameOverText->setStroke(0.6f);
 	m_GameOverText->setVisible(false);
+}
+
+void HUD::update(f32 dt)
+{
+	m_UIHandler->centerElement(m_Crosshair);
 }
 
 void HUD::onHealthUpdated(HealthUpdated event)

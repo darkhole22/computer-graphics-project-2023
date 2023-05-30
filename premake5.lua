@@ -50,6 +50,8 @@ project "ComputerGraphicsProject2023"
         "glslc %{prj.location}/res/shaders/Phong.frag -o %{prj.location}/res/shaders/Phong_frag.spv",
         "glslc %{prj.location}/res/shaders/UItextSDF.vert -o %{prj.location}/res/shaders/UItextSDF_vert.spv",
         "glslc %{prj.location}/res/shaders/UItextSDF.frag -o %{prj.location}/res/shaders/UItextSDF_frag.spv",
+        "glslc %{prj.location}/res/shaders/UIImage.vert -o %{prj.location}/res/shaders/UIImage_vert.spv",
+        "glslc %{prj.location}/res/shaders/UIImage.frag -o %{prj.location}/res/shaders/UIImage_frag.spv",
         "glslc %{prj.location}/res/shaders/Skybox.vert -o %{prj.location}/res/shaders/Skybox_vert.spv",
         "glslc %{prj.location}/res/shaders/Skybox.frag -o %{prj.location}/res/shaders/Skybox_frag.spv",
         "glslc %{prj.location}/res/shaders/Terrain.vert -o %{prj.location}/res/shaders/Terrain_vert.spv",

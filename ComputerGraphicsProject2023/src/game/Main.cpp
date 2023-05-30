@@ -102,6 +102,7 @@ public:
 		gameManager->update(dt);
 
 		m_DebugUI->update(dt);
+		m_HUD->update(dt);
 
 		auto cameraPos = scene->getCamera()->position;
 		terrain->setReferencePosition({ cameraPos.x, cameraPos.z });
