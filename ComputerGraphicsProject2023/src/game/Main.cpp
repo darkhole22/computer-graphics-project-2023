@@ -129,6 +129,13 @@ private:
 				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_START}} };
 		Input::setAction("TOGGLE_PAUSE", pauseAction);
 
+		InputAction restartAction{};
+		restartAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_R}} };
+		restartAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_START}} };
+		Input::setAction("RESTART", restartAction);
+
 		/**********************************************
 		 *                MOVEMENT                    *
 		 **********************************************/

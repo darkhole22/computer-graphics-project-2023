@@ -12,7 +12,8 @@ HUD::HUD()
 	m_Window->addCallback([this](WindowResizedEvent event) {
 		centerElement(m_PauseScreenTitleText);
 		centerElement(m_PauseScreenSubtitleText, 0.0f, m_PauseScreenTitleText->getHeight());
-		centerElement(m_GameOverText);
+		centerElement(m_GameOverTitleText);
+		centerElement(m_GameOverSubtitleText, 0.0f, m_GameOverTitleText->getHeight());
 
 		centerElement(m_Crosshair);
 	});
@@ -34,8 +35,8 @@ HUD::HUD()
 	m_PauseScreenTitleText = m_UIHandler->makeText("PAUSED");
 	m_PauseScreenSubtitleText = m_UIHandler->makeText("Press ESC to Resume.");
 
-	centerElement(m_PauseScreenTitleText, 0);
-	centerElement(m_PauseScreenSubtitleText, m_PauseScreenTitleText->getHeight());
+	centerElement(m_PauseScreenTitleText);
+	centerElement(m_PauseScreenSubtitleText, 0.0f, m_PauseScreenTitleText->getHeight());
 
 	m_PauseScreenTitleText->setStroke(0.6f);
 	m_PauseScreenTitleText->setVisible(false);
@@ -44,10 +45,15 @@ HUD::HUD()
 	/********************
 	 * GAME OVER SCREEN *
 	 ********************/
-	m_GameOverText = m_UIHandler->makeText("GAME OVER");
-	centerElement(m_GameOverText, 0);
-	m_GameOverText->setStroke(0.6f);
-	m_GameOverText->setVisible(false);
+	m_GameOverTitleText = m_UIHandler->makeText("GAME OVER");
+	m_GameOverSubtitleText = m_UIHandler->makeText("Press R to Restart");
+
+	centerElement(m_GameOverTitleText);
+	centerElement(m_GameOverSubtitleText, 0.0f, m_GameOverTitleText->getHeight());
+
+	m_GameOverTitleText->setStroke(0.6f);
+	m_GameOverTitleText->setVisible(false);
+	m_GameOverSubtitleText->setVisible(false);
 }
 
 void HUD::onHealthUpdated(HealthUpdated event)
@@ -60,7 +66,8 @@ void HUD::onGameStateChanged(GameStateChanged event)
 	m_PauseScreenTitleText->setVisible(event.gameState == GameState::PAUSE);
 	m_PauseScreenSubtitleText->setVisible(event.gameState == GameState::PAUSE);
 
-	m_GameOverText->setVisible(event.gameState == GameState::GAME_OVER);
+	m_GameOverTitleText->setVisible(event.gameState == GameState::GAME_OVER);
+	m_GameOverSubtitleText->setVisible(event.gameState == GameState::GAME_OVER);
 }
 
 } // namespace game

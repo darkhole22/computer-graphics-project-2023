@@ -21,22 +21,22 @@ public:
 	/*
 	* @brief A vec3 that holds the current camera position.
 	*/
-	glm::vec3 position = glm::vec3(0, 0, 0);
+	glm::vec3 position;
 
 	/*
 	* @brief A vec3 that holds the current camera looking direction.
 	*/
-	glm::vec3 direction = glm::vec3(1.0f, 0.0f, 0.0f);
+	glm::vec3 direction;
 
 	/*
 	* @brief A vec3 that holds the up direction.
 	*/
-	glm::vec3 up = glm::vec3(0, 1, 0);
+	glm::vec3 up;
 
 	/*
 	* @brief A float that holds the roll rotation.
 	*/
-	float roll = 0.0f;
+	float roll;
 
 	/*
 	* @brief Maximum vertical angle the camera can be rotated by.
@@ -175,6 +175,11 @@ public:
 
 	inline glm::mat4 getViewMatrix() const { return m_Uniform->view; }
 
+	/*
+	* @brief Resets the camera transform to its initial state.
+	*/
+	void reset();
+
 	friend class Scene;
 private:
 	Uniform<CameraBufferObject> m_Uniform;
@@ -190,6 +195,12 @@ private:
 	float m_NearPlane = 0.05f;
 	float m_FarPlane = 50.0f;
 	float m_AspectRatio = 1.0f;
+
+	// Initial Transform
+	const glm::vec3 c_InitialPosition = { 0.0f, 0.0f, 0.0f };
+	const glm::vec3 c_InitialDirection = { 1.0f, 0.0f, 0.0f };
+	const glm::vec3 c_InitialUpDirection = { 0.0f, 1.0f, 0.0f };
+	const f32 c_InitialRoll = 0.0f;
 
 	// Functions used by the scene
 	void update(float dt);

@@ -91,4 +91,18 @@ void Player::update(f32 dt)
 	m_BulletFactory->update(dt);
 }
 
+void Player::reset()
+{
+	// TODO delete transform; or maybe use Ref
+	transform = Transform();
+	m_Camera->reset();
+	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+
+	m_HP = c_InitialHP;
+	m_MaxHP = c_InitialHP;
+	EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
+
+	m_BulletFactory->reset();
+}
+
 } // namespace game

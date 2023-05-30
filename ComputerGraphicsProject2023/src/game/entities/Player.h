@@ -28,12 +28,16 @@ public:
 	Player();
 
 	void update(f32 dt);
+
+	void reset();
 private:
 	const f32 c_Speed = 10;
 	const f32 c_RotSpeed = 4.0f;
 
-	u32 m_HP = 5;
-	u32 m_MaxHP = 5;
+	const u32 c_InitialHP = 5;
+
+	u32 m_HP = c_InitialHP;
+	u32 m_MaxHP = c_InitialHP;
 
 	bool m_Godmode = false;
 

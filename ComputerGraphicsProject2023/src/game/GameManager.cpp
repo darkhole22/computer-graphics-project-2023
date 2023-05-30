@@ -13,16 +13,16 @@ GameManager::GameManager(Ref<Terrain> terrain)
 	EventBus::addCallback([this](HealthUpdated event) {
 		if (event.hp != 0) return;
 		Application::getWindow()->setCursorMode(CursorMode::NORMAL);
-		setGameState(GameState::GAME_OVER);
+		onGameOver();
 	});
 
-	auto waveTween = m_Scene->makeTween();
-	waveTween->loop();
-	waveTween->addIntervalTweener(10.0f);
-	waveTween->addCallbackTweener([this]() {
+	m_WaveTween = m_Scene->makeTween();
+	m_WaveTween->loop();
+	m_WaveTween->addIntervalTweener(10.0f);
+	m_WaveTween->addCallbackTweener([this]() {
 		std::random_device rd;     // Only used once to initialise (seed) engine
 		std::mt19937 rng(rd());    // Random-number engine used (Mersenne-Twister in this case)
-		std::uniform_int_distribution<int> uni(-30, 30); // Guaranteed unbiased
+		std::uniform_int_distribution<int> uni(-150, 150); // Guaranteed unbiased
 
 		for (int i = 0; i <= 10; i++)
 		{
@@ -36,12 +36,19 @@ GameManager::GameManager(Ref<Terrain> terrain)
 			enemy->setup(m_Player);
 		}
 	});
+	m_WaveTween->reset(false);
+
+	m_GameState = GameState::SETUP;
 }
 
 void GameManager::update(f32 dt)
 {
 	switch (m_GameState)
 	{
+	case GameState::SETUP:
+		m_WaveTween->play();
+		setGameState(GameState::PLAYING);
+		break;
 	case GameState::PLAYING:
 	{
 		m_EnemyFactory->update(dt);
@@ -76,14 +83,19 @@ void GameManager::update(f32 dt)
 		break;
 	}
 	case GameState::PAUSE:
-	if (Input::isActionJustPressed("TOGGLE_PAUSE"))
-	{
-		setGameState(GameState::PLAYING);
-		Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
-	}
-	break;
+		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
+		{
+			setGameState(GameState::PLAYING);
+			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+		}
+		break;
 	case GameState::GAME_OVER:
-	break;
+		if (Input::isActionJustPressed("RESTART"))
+		{
+			beforeRestart();
+			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+		}
+		break;
 	}
 }
 
@@ -94,6 +106,20 @@ void GameManager::setGameState(GameState gameState)
 		m_GameState = gameState;
 		EventBus::emit(GameStateChanged{ m_GameState });
 	}
+}
+
+void GameManager::onGameOver()
+{
+	m_WaveTween->reset(false);
+	setGameState(GameState::GAME_OVER);
+}
+
+void GameManager::beforeRestart()
+{
+	m_EnemyFactory->reset();
+	m_Player->reset();
+
+	setGameState(GameState::SETUP);
 }
 
 } // namespace game

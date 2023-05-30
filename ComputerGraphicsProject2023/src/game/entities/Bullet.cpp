@@ -30,11 +30,15 @@ EntityStatus Bullet::update(float dt)
 
 	if (glm::distance(m_StartingPosition, m_GameObject->transform.getPosition()) > c_Range)
 	{
-		Application::getScene()->removeHitbox(m_Hitbox);
 		return EntityStatus::DEAD;
 	}
 
 	return EntityStatus::ALIVE;
+}
+
+Bullet::~Bullet()
+{
+	Application::getScene()->removeHitbox(m_Hitbox);
 }
 
 } // namespace game

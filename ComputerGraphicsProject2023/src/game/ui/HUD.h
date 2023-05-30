@@ -24,7 +24,8 @@ private:
 	Ref<UIText> m_PauseScreenTitleText;
 	Ref<UIText> m_PauseScreenSubtitleText;
 
-	Ref<UIText> m_GameOverText;
+	Ref<UIText> m_GameOverTitleText;
+	Ref<UIText> m_GameOverSubtitleText;
 
 	void onHealthUpdated(HealthUpdated event);
 

@@ -26,11 +26,17 @@ private:
 	Ref<Player> m_Player = nullptr;
 	Ref<Factory<Enemy>> m_EnemyFactory;
 
-	GameState m_GameState = GameState::PLAYING;
+	Ref<Tween> m_WaveTween;
+
+	GameState m_GameState;
 
 	bool m_InputModeMouse = true;
 
 	void setGameState(GameState gameState);
+
+	void onGameOver();
+
+	void beforeRestart();
 
 };
 
