@@ -104,6 +104,12 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Removes all active entities.
+	 *
+	 * This method removes all active entities, returning their GameObject
+	 * to the GameObjectPool.
+	 */
 	void reset()
 	{
 		for (auto& t : m_ActiveEntities)
