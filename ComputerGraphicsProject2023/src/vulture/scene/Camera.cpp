@@ -12,6 +12,9 @@ Camera::Camera(DescriptorPool& descriptorsPool) :
 
 	m_DescriptorSet = descriptorsPool.getDescriptorSet(m_DescriptorSetLayout, { m_Uniform });
 
+	// Initialize transform
+	reset();
+
 	updateView();
 	updateProjection();
 }
@@ -98,6 +101,14 @@ void Camera::updateView()
 {
 	m_Uniform->view = glm::rotate(glm::mat4(1.0f), roll, glm::vec3(0.0f, 0.0f, 1.0f)) *
 		glm::lookAt(this->position, this->position + this->direction, this->up);
+}
+
+void Camera::reset()
+{
+	position = c_InitialPosition;
+	direction = c_InitialDirection;
+	up = c_InitialUpDirection;
+	roll = c_InitialRoll;
 }
 
 } // namespace vulture

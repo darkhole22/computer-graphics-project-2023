@@ -129,6 +129,13 @@ private:
 				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_START}} };
 		Input::setAction("TOGGLE_PAUSE", pauseAction);
 
+		InputAction restartAction{};
+		restartAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_R}} };
+		restartAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_START}} };
+		Input::setAction("RESTART", restartAction);
+
 		/**********************************************
 		 *                MOVEMENT                    *
 		 **********************************************/
@@ -168,6 +175,9 @@ private:
 				KeyboardBinding{{GLFW_KEY_SPACE}} };
 		fireAction.mouseBindings = {
 				MouseBinding{{GLFW_MOUSE_BUTTON_1}} };
+		fireAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER}}
+		};
 		Input::setAction("FIRE", fireAction);
 
 		InputAction inputModeAction{};
@@ -231,6 +241,12 @@ private:
 				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_BACK}}
 		};
 		Input::setAction("TOGGLE_INFO", toggleInfoAction);
+
+		InputAction toggleGodmodeAction{};
+		toggleGodmodeAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_F1}},
+		};
+		Input::setAction("TOGGLE_GODMODE", toggleGodmodeAction);
 
 		InputAction toggleSkyboxAction{};
 		toggleSkyboxAction.keyboardBindings = {

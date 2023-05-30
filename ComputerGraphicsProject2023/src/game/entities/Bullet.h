@@ -21,6 +21,8 @@ public:
 
 	EntityStatus update(float dt);
 
+	~Bullet();
+
 private:
 	const float c_Speed = 30.0f;
 	const float c_Range = 30.0f;

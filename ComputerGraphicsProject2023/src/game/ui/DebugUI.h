@@ -4,6 +4,8 @@
 #include "vulture/core/Application.h"
 #include "vulture/core/Input.h"
 
+#include "game/EventBus.h"
+
 using namespace vulture;
 
 namespace game {
@@ -15,10 +17,16 @@ public:
 
 	void update(float dt);
 private:
-	UIHandler* m_UIHandler = nullptr;
+	UIHandler* m_UIHandler;
+	Window* m_Window;
+
+	bool m_Visible;
 
 	Ref<UIText> m_FPSText;
 	Ref<UIText> m_FrameTimeText;
+	Ref<UIText> m_GodmodeText;
+
+	void setTextPosition();
 };
 
 } // namespace game

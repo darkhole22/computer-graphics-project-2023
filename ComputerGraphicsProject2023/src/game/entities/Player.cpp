@@ -43,7 +43,7 @@ Player::Player()
 	scene->addHitbox(m_Hitbox);
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
-		if (m_Invincible) return;
+		if (m_Invincible || m_Godmode) return;
 
 		m_HP = std::max(static_cast<i32>(m_HP) - 1, 0);
 		EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
@@ -82,7 +82,27 @@ void Player::update(f32 dt)
 		m_FiringTween->play();
 	}
 
+	if (Input::isActionJustPressed("TOGGLE_GODMODE"))
+	{
+		m_Godmode = !m_Godmode;
+		EventBus::emit(GodmodeToggled{ m_Godmode });
+	}
+
 	m_BulletFactory->update(dt);
+}
+
+void Player::reset()
+{
+	// TODO delete transform; or maybe use Ref
+	transform = Transform();
+	m_Camera->reset();
+	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+
+	m_HP = c_InitialHP;
+	m_MaxHP = c_InitialHP;
+	EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
+
+	m_BulletFactory->reset();
 }
 
 } // namespace game

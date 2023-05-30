@@ -20,6 +20,8 @@ public:
 
 	EntityStatus update(float dt);
 
+	~Enemy();
+
 private:
 	const float c_Speed = 4.0f;
 	Ref<Player> m_Player;

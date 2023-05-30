@@ -33,12 +33,13 @@ EntityStatus Enemy::update(float dt)
 	dir = glm::normalize(dir);
 
 	m_GameObject->transform.translate(dir * c_Speed * dt);
-	
-	if (m_Status == EntityStatus::DEAD)
-	{
-		Application::getScene()->removeHitbox(m_Hitbox);
-	}
+
 	return m_Status;
+}
+
+Enemy::~Enemy()
+{
+	Application::getScene()->removeHitbox(m_Hitbox);
 }
 
 }

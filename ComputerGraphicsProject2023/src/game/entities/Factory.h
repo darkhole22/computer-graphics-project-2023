@@ -72,6 +72,7 @@ public:
 	void remove(Ref<T> t)
 	{
 		m_ObjectPool->put(t->m_GameObject);
+		Application::getScene()->removeObject(t->m_GameObject);
 
 		auto it = m_ActiveEntities.find(t);
 		m_ActiveEntities.erase(it);
@@ -101,6 +102,23 @@ public:
 		{
 			remove(t);
 		}
+	}
+
+	/**
+	 * @brief Removes all active entities.
+	 *
+	 * This method removes all active entities, returning their GameObject
+	 * to the GameObjectPool.
+	 */
+	void reset()
+	{
+		for (auto& t : m_ActiveEntities)
+		{
+			m_ObjectPool->put(t->m_GameObject);
+			Application::getScene()->removeObject(t->m_GameObject);
+		}
+
+		m_ActiveEntities.clear();
 	}
 
 	/**
