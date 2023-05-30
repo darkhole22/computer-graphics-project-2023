@@ -175,6 +175,9 @@ private:
 				KeyboardBinding{{GLFW_KEY_SPACE}} };
 		fireAction.mouseBindings = {
 				MouseBinding{{GLFW_MOUSE_BUTTON_1}} };
+		fireAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER}}
+		};
 		Input::setAction("FIRE", fireAction);
 
 		InputAction inputModeAction{};
