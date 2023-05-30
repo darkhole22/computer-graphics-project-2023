@@ -4,21 +4,17 @@
 
 namespace game {
 
-void centerText(Window* window, Ref<UIText> text, f32 yOffset)
-{
-	text->setPosition((window->getWidth() - text->getWidth()) / 2.0f,
-					  (window->getHeight() - text->getHeight()) / 2.0f + yOffset);
-}
-
 HUD::HUD()
 {
 	m_UIHandler = Application::getScene()->getUIHandle();
 
 	m_Window = Application::getWindow();
 	m_Window->addCallback([this](WindowResizedEvent event) {
-		centerText(m_Window, m_PauseScreenTitleText, 0);
-		centerText(m_Window, m_PauseScreenSubtitleText, m_PauseScreenTitleText->getHeight());
-		centerText(m_Window, m_GameOverText, 0);
+		centerElement(m_PauseScreenTitleText);
+		centerElement(m_PauseScreenSubtitleText, 0.0f, m_PauseScreenTitleText->getHeight());
+		centerElement(m_GameOverText);
+
+		centerElement(m_Crosshair);
 	});
 
 	EventBus::addCallback([this](HealthUpdated e) { onHealthUpdated(e); });
@@ -28,14 +24,18 @@ HUD::HUD()
 	m_AmmoText = m_UIHandler->makeText("Ammo: ");
 	m_AmmoText->setPosition({ 20, 50 });
 
+	m_Crosshair = m_UIHandler->makeImage("crosshair");
+	m_Crosshair->setWidth(50);
+	centerElement(m_Crosshair);
+
 	/****************
 	 * PAUSE SCREEN *
 	 ****************/
 	m_PauseScreenTitleText = m_UIHandler->makeText("PAUSED");
 	m_PauseScreenSubtitleText = m_UIHandler->makeText("Press ESC to Resume.");
 
-	centerText(m_Window, m_PauseScreenTitleText, 0);
-	centerText(m_Window, m_PauseScreenSubtitleText, m_PauseScreenTitleText->getHeight());
+	centerElement(m_PauseScreenTitleText, 0);
+	centerElement(m_PauseScreenSubtitleText, m_PauseScreenTitleText->getHeight());
 
 	m_PauseScreenTitleText->setStroke(0.6f);
 	m_PauseScreenTitleText->setVisible(false);
@@ -45,7 +45,7 @@ HUD::HUD()
 	 * GAME OVER SCREEN *
 	 ********************/
 	m_GameOverText = m_UIHandler->makeText("GAME OVER");
-	centerText(m_Window, m_GameOverText, 0);
+	centerElement(m_GameOverText, 0);
 	m_GameOverText->setStroke(0.6f);
 	m_GameOverText->setVisible(false);
 }
