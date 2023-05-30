@@ -74,12 +74,6 @@ void GameManager::update(f32 dt)
 			Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 		}
 
-		if (Input::isActionJustPressed("TOGGLE_INPUT_MODE"))
-		{
-			m_InputModeMouse = !m_InputModeMouse;
-			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
-		}
-
 		break;
 	}
 	case GameState::PAUSE:

@@ -30,8 +30,6 @@ private:
 
 	GameState m_GameState;
 
-	bool m_InputModeMouse = true;
-
 	void setGameState(GameState gameState);
 
 	void onGameOver();

@@ -180,11 +180,6 @@ private:
 		};
 		Input::setAction("FIRE", fireAction);
 
-		InputAction inputModeAction{};
-		inputModeAction.keyboardBindings = {
-				KeyboardBinding{{GLFW_KEY_I}} };
-		Input::setAction("TOGGLE_INPUT_MODE", inputModeAction);
-
 		/**********************************************
 		 *                  CAMERA                    *
 		 **********************************************/
