@@ -27,11 +27,13 @@ public:
 	Ref<UIImage> makeImage(String image, glm::vec2 position = { 20, 20 }, f32 scale = 100.0f);
 	void removeImage(Ref<UIImage> image);
 
+	// I'm keeping this here for now, but the fact that this is not readily up-to-date with
+	// Window resizes makes it uncomfortable to use.
 	template<class UIElement>
-	void centerElement(Ref<UIElement> element)
+	void centerElement(Ref<UIElement> element, f32 xOffset = 0.0f, f32 yOffset = 0.0f)
 	{
-		element->setPosition((m_ScreenUniform->width - element->getWidth()) / 2.0f,
-						  (m_ScreenUniform->height - element->getHeight()) / 2.0f);
+		element->setPosition((m_ScreenUniform->width - element->getWidth()) / 2.0f + xOffset,
+						  (m_ScreenUniform->height - element->getHeight()) / 2.0f + yOffset);
 	}
 
 	friend class Scene;
