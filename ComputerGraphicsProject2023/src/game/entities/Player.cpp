@@ -43,7 +43,7 @@ Player::Player()
 	scene->addHitbox(m_Hitbox);
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
-		if (m_Invincible) return;
+		if (m_Invincible || m_Godmode) return;
 
 		m_HP = std::max(static_cast<i32>(m_HP) - 1, 0);
 		EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
@@ -80,6 +80,11 @@ void Player::update(f32 dt)
 	if (Input::isActionJustPressed("FIRE"))
 	{
 		m_FiringTween->play();
+	}
+
+	if (Input::isActionJustPressed("TOGGLE_GODMODE"))
+	{
+		m_Godmode = !m_Godmode;
 	}
 
 	m_BulletFactory->update(dt);

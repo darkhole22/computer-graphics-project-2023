@@ -35,6 +35,8 @@ private:
 	u32 m_HP = 5;
 	u32 m_MaxHP = 5;
 
+	bool m_Godmode = false;
+
 	bool m_Invincible = false;
 	f32 m_InvincibilityDuration = 1.0f;
 

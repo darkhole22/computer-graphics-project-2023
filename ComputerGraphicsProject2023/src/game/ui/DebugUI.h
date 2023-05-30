@@ -15,10 +15,13 @@ public:
 
 	void update(float dt);
 private:
-	UIHandler* m_UIHandler = nullptr;
+	UIHandler* m_UIHandler;
+	Window* m_Window;
 
 	Ref<UIText> m_FPSText;
 	Ref<UIText> m_FrameTimeText;
+
+	void setTextPosition();
 };
 
 } // namespace game

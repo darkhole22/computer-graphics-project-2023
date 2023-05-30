@@ -232,6 +232,12 @@ private:
 		};
 		Input::setAction("TOGGLE_INFO", toggleInfoAction);
 
+		InputAction toggleGodmodeAction{};
+		toggleGodmodeAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_F1}},
+		};
+		Input::setAction("TOGGLE_GODMODE", toggleGodmodeAction);
+
 		InputAction toggleSkyboxAction{};
 		toggleSkyboxAction.keyboardBindings = {
 				KeyboardBinding{{GLFW_KEY_M}},
