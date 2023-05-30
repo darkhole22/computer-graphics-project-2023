@@ -32,6 +32,25 @@ static const std::array<String, 8> supportedExtensions = {
 bool loadCubemapPixels(const String& name, u8** pixels, u32& width, u32& height);
 bool loadTexture2DPixels(const String& name, u8** pixels, u32& width, u32& height);
 
+void populateArrayGenerator(f32* pixels, u32 width, u32 height, glm::vec2 position, glm::vec2 dimension, std::function<glm::vec4(f32, f32)> generator)
+{
+	for (u64 y = 0; y < height; y++)
+	{
+		for (u64 x = 0; x < width; x++)
+		{
+			f32 noiseX = dimension.x * static_cast<f32>(x) / (width - 1);
+			f32 noiseY = dimension.y * static_cast<f32>(y) / (height - 1);
+
+			auto color = generator(position.x + noiseX, position.y + noiseY);
+
+			pixels[(y * width + x) * 4 + 3] = color.a; // a
+			pixels[(y * width + x) * 4 + 2] = color.r; // r
+			pixels[(y * width + x) * 4 + 1] = color.g; // g
+			pixels[(y * width + x) * 4 + 0] = color.b; // b
+		}
+	}
+}
+
 Ref<Texture> Texture::get(const String& name)
 {
 	auto it = s_Textures.find(name);
@@ -97,21 +116,7 @@ Ref<Texture> Texture::make(u32 width, u32 height, glm::vec2 position, glm::vec2 
 	Ref<Texture> result;
 	f32* pixels = new f32[width * 4LL * height];
 
-	for (u64 y = 0; y < height; y++)
-	{
-		for (u64 x = 0; x < width; x++)
-		{
-			f32 noiseX = dimension.x * static_cast<f32>(x) / (width - 1);
-			f32 noiseY = dimension.y * static_cast<f32>(y) / (height - 1);
-
-			auto color = generator(position.x + noiseX, position.y + noiseY);
-
-			pixels[(y * width + x) * 4 + 3] = color.a; // a
-			pixels[(y * width + x) * 4 + 2] = color.r; // r
-			pixels[(y * width + x) * 4 + 1] = color.g; // g
-			pixels[(y * width + x) * 4 + 0] = color.b; // b
-		}
-	}
+	populateArrayGenerator(pixels, width, height, position, dimension, generator);
 
 	result = Ref<Texture>(new Texture(width, height, pixels));
 	delete[] pixels;
@@ -203,6 +208,33 @@ void Texture::getCubemapAsync(const String& name, std::function<void(Ref<Texture
 		callback(texture);
 		delete[] loadingData->pixels;
 		delete loadingData;
+	}
+	);
+}
+
+void Texture::makeAsync(u32 width, u32 height, glm::vec2 position, glm::vec2 dimension, std::function<glm::vec4(f32, f32)> generator, std::function<void(Ref<Texture>)> callback)
+{
+	f32* data = new f32[width * 4LL * height];
+	Job::submit([width, height, position, dimension, generator](void* _data) -> bool
+	{
+		f32* pixels = reinterpret_cast<f32*>(_data);
+		populateArrayGenerator(pixels, width, height, position, dimension, generator);
+		return true;
+	}, data, [width, height, callback](bool result, void* _data)
+	{
+		f32* pixels = reinterpret_cast<f32*>(_data);
+		Ref<Texture> texture;
+		if (result)
+		{
+			texture = Ref<Texture>(new Texture(width, height, pixels));
+		}
+		else
+		{
+			texture = s_DefaultCubemap;
+		}
+
+		callback(texture);
+		delete[] pixels;
 	}
 	);
 }

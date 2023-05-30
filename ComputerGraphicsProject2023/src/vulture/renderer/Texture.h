@@ -25,11 +25,11 @@ public:
 	*/
 	static Ref<Texture> get(const String& name);
 	static Ref<Texture> getCubemap(const String& name);
-
 	static Ref<Texture> make(u32 width, u32 height, glm::vec2 position, glm::vec2 dimension, std::function<glm::vec4(f32, f32)> generator);
 
 	static void getAsync(const String& name, std::function<void(Ref<Texture>)> callback);
 	static void getCubemapAsync(const String& name, std::function<void(Ref<Texture>)> callback);
+	static void makeAsync(u32 width, u32 height, glm::vec2 position, glm::vec2 dimension, std::function<glm::vec4(f32, f32)> generator, std::function<void(Ref<Texture>)> callback);
 
 	inline VkImageView getView() const { return m_Image.getView(); }
 	inline u32 getMipLevels() const { return m_MipLevels; };

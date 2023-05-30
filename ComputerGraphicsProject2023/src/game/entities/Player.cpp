@@ -10,6 +10,7 @@ Player::Player()
 {
 	auto scene = Application::getScene();
 	m_Camera = scene->getCamera();
+	m_Camera->setFarPlane(200);
 	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);

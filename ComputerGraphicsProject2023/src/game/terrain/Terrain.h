@@ -8,8 +8,10 @@ using namespace vulture;
 
 struct TerrainVertexBufferObject
 {
-	alignas(4) f32 scale = 35.0f;
-	alignas(4) f32 waterLevel = 0.35f;
+	alignas(4) f32 scale = 50.0f;
+	alignas(4) f32 waterLevel = 0.249f;
+	alignas(4) f32 sandWidth = 0.0005f;
+	alignas(4) f32 rockLevel = 0.33f;
 };
 
 class Terrain;
@@ -18,6 +20,8 @@ class TerrainChunk
 {
 public:
 	TerrainChunk(Terrain* terrain, glm::vec2 position);
+
+	void update(glm::vec2 position);
 
 	~TerrainChunk();
 private:
@@ -30,6 +34,8 @@ private:
 	Uniform<ModelBufferObject> m_Uniform;
 	Ref<DescriptorSet> m_DescriptorSet;
 	ObjectHandle m_Object;
+
+	void updateRenderingComponents(const Ref<Texture>& texture, glm::vec2 position);
 };
 
 struct TerrainGenerationConfig
@@ -37,7 +43,7 @@ struct TerrainGenerationConfig
 	f32 renderDistance = 200.0f;
 	f32 chunkSize = 100.0f;
 	f32 noiseScale = 3.0f;
-
+	f32 heightScale = 50.0f;
 
 	static TerrainGenerationConfig defaultConfig;
 };
@@ -62,11 +68,23 @@ private:
 	Ref<Model> m_Model;
 	Uniform<TerrainVertexBufferObject> m_VertexUniform;
 
+	Ref<Texture> m_WaterTexture;
+	Ref<TextureSampler> m_WaterSampler;
+
+	Ref<Texture>        m_SandTexture;
+	Ref<TextureSampler> m_SandSampler;
+
+	Ref<Texture>        m_GrassTexture;
+	Ref<TextureSampler> m_GrassSampler;
+
+	Ref<Texture>        m_RockTexture;
+	Ref<TextureSampler> m_RockSampler;
+
 	TerrainGenerationConfig m_Config;
 
 	u64 m_ChunksSideCount;
 	std::vector<Ref<TerrainChunk>> m_Chunks;
-	glm::vec2 m_ReferencePosition = {0, 0 };
+	glm::vec2 m_ReferencePosition = { 0, 0 };
 
 	void initializeRenderingComponents();
 	void initializeChunks();

@@ -9,11 +9,10 @@ namespace game {
 
 using namespace vulture;
 
+static constexpr f32 NOISE_SCALE_MULTIPLIER = 100.0f;
+
 f32 noiseFunction(f32 x, f32 y);
 glm::vec4 noise(f32 x, f32 y);
-
-struct NoiseConfig
-{};
 
 TerrainGenerationConfig TerrainGenerationConfig::defaultConfig{};
 
@@ -26,9 +25,9 @@ Terrain::Terrain(const TerrainGenerationConfig& config) :
 
 void Terrain::update(f32 dt)
 {
-	f32 dh = Input::getAxis("TERRAIN_DOWN", "TERRAIN_UP") * dt;
+	f32 dh = Input::getAxis("TERRAIN_DOWN", "TERRAIN_UP") * 0.2f * dt;
 
-	m_VertexUniform->waterLevel = std::clamp(m_VertexUniform->waterLevel + dh, 0.0f, 1.0f);
+	m_VertexUniform->rockLevel = std::clamp(m_VertexUniform->rockLevel + dh, 0.0f, 1.0f);
 }
 
 void Terrain::setReferencePosition(glm::vec2 position)
@@ -57,7 +56,21 @@ void Terrain::setReferencePosition(glm::vec2 position)
 						static_cast<f32>(targetX + x - count / 2),
 						static_cast<f32>(targetY + y - count / 2)
 					};
-					newChunks[y * count + x] = makeRef<TerrainChunk>(this, chunkPosition);
+					vectorCoordX %= count;
+					if (vectorCoordX < 0)
+					{
+						vectorCoordX += count;
+					}
+					vectorCoordY %= count;
+					if (vectorCoordY < 0)
+					{
+						vectorCoordY += count;
+					}
+
+					// newChunks[y * count + x] = makeRef<TerrainChunk>(this, chunkPosition);
+					auto& chunk = m_Chunks[vectorCoordY * count + vectorCoordX];
+					chunk->update(chunkPosition);
+					newChunks[y * count + x] = chunk;
 				}
 				else
 				{
@@ -73,7 +86,7 @@ void Terrain::setReferencePosition(glm::vec2 position)
 
 f32 Terrain::getHeightAt(glm::vec2 position) const
 {
-	auto chunkPosition = position * m_Config.noiseScale / m_Config.chunkSize;
+	auto chunkPosition = position * m_Config.noiseScale / NOISE_SCALE_MULTIPLIER;
 	f32 h = noiseFunction(chunkPosition.x, chunkPosition.y);
 	return std::clamp(h, m_VertexUniform->waterLevel, 1.0f) * m_VertexUniform->scale;
 }
@@ -86,12 +99,30 @@ void Terrain::initializeRenderingComponents()
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS);
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 	m_DescriptorSetLayout->create();
 
 	m_Pipeline = m_Scene->makePipeline("res/shaders/Terrain_vert.spv", "res/shaders/Terrain_frag.spv", m_DescriptorSetLayout);
 
 	m_Model = Model::getPlane(200, 200);
 	m_VertexUniform = Renderer::makeUniform<TerrainVertexBufferObject>();
+
+	m_VertexUniform->scale = m_Config.heightScale;
+
+	m_WaterTexture = Texture::get("water");
+	m_WaterSampler = makeRef<TextureSampler>(*m_WaterTexture);
+
+	m_SandTexture = Texture::get("sand");
+	m_SandSampler = makeRef<TextureSampler>(*m_SandTexture);
+
+	m_GrassTexture = Texture::get("grass");
+	m_GrassSampler = makeRef<TextureSampler>(*m_GrassTexture);
+
+	m_RockTexture = Texture::get("rock");
+	m_RockSampler = makeRef<TextureSampler>(*m_RockTexture);
 }
 
 void Terrain::initializeChunks()
@@ -120,21 +151,18 @@ TerrainChunk::TerrainChunk(Terrain* terrain, glm::vec2 position) :
 {
 	m_Scene = terrain->m_Scene;
 
-	glm::vec2 noiseSize = glm::vec2(1, 1) * terrain->m_Config.noiseScale * terrain->m_Config.chunkSize / 100.0f;
-	m_NoiseTexture = Texture::make(128, 128, position * noiseSize, noiseSize, noise);
-	TextureSamplerConfig samplerConfig;
-	samplerConfig.setAddressMode(VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT);
-	m_NoiseSampler = makeRef<TextureSampler>(*m_NoiseTexture, samplerConfig);
-
 	m_Uniform = Renderer::makeUniform<ModelBufferObject>();
+	glm::vec2 noiseSize = glm::vec2(1, 1) * terrain->m_Config.noiseScale * terrain->m_Config.chunkSize / NOISE_SCALE_MULTIPLIER;
+	updateRenderingComponents(Texture::make(128, 128, position * noiseSize, noiseSize, noise), position);
+}
 
-	m_Uniform->model = glm::translate(glm::mat4(1), glm::vec3(position.x, 0, position.y) * terrain->m_Config.chunkSize) *
-		glm::scale(glm::mat4(1), { terrain->m_Config.chunkSize, 1, terrain->m_Config.chunkSize });
-
-	m_DescriptorSet = m_Scene->getDescriptorPool()->getDescriptorSet(
-		terrain->m_DescriptorSetLayout,
-		{ m_Uniform, *m_NoiseSampler, terrain->m_VertexUniform });
-	m_Object = m_Scene->addObject(terrain->m_Pipeline, terrain->m_Model, m_DescriptorSet);
+void TerrainChunk::update(glm::vec2 position)
+{
+	glm::vec2 noiseSize = glm::vec2(1, 1) * m_Terrain->m_Config.noiseScale * m_Terrain->m_Config.chunkSize / NOISE_SCALE_MULTIPLIER;
+	Texture::makeAsync(128, 128, position * noiseSize, noiseSize, noise, [this, position](Ref<Texture> texture) {
+		m_Scene->removeObject(m_Terrain->m_Pipeline, m_Object);
+		updateRenderingComponents(texture, position);
+	});
 }
 
 TerrainChunk::~TerrainChunk()
@@ -142,11 +170,33 @@ TerrainChunk::~TerrainChunk()
 	m_Scene->removeObject(m_Terrain->m_Pipeline, m_Object);
 }
 
+void TerrainChunk::updateRenderingComponents(const Ref<Texture>& texture, glm::vec2 position)
+{
+	m_NoiseTexture = texture;
+	TextureSamplerConfig samplerConfig;
+	samplerConfig.setAddressMode(VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT);
+	m_NoiseSampler = makeRef<TextureSampler>(*m_NoiseTexture, samplerConfig);
+
+	m_Uniform->model = glm::translate(glm::mat4(1), glm::vec3(position.x, 0, position.y) * m_Terrain->m_Config.chunkSize) *
+		glm::scale(glm::mat4(1), { m_Terrain->m_Config.chunkSize, 1, m_Terrain->m_Config.chunkSize });
+
+	m_DescriptorSet.reset();
+	m_DescriptorSet = m_Scene->getDescriptorPool()->getDescriptorSet(
+		m_Terrain->m_DescriptorSetLayout,
+		{ m_Uniform, *m_NoiseSampler, m_Terrain->m_VertexUniform, *m_Terrain->m_WaterSampler,
+		*m_Terrain->m_SandSampler, *m_Terrain->m_GrassSampler, *m_Terrain->m_RockSampler });
+
+	m_Object = m_Scene->addObject(m_Terrain->m_Pipeline, m_Terrain->m_Model, m_DescriptorSet);
+}
+
 f32 noiseFunction(f32 x, f32 y)
 {
-	f32 h = stb_perlin_noise3_seed(x, y, 0.0f, 0, 0, 0, 420) + 1.0f;
-	h /= 2.0f;
-	return  h;
+	f32 h = stb_perlin_noise3_seed(x, y, 0.0f, 0, 0, 0, 420);
+	h += stb_perlin_ridge_noise3(x, y, 0.0f, 2.0f, 0.5f, 1.0f, 4) * 0.5f;
+	h += 1.5f;
+	h /= 3.0f;
+	h = 0.5f - 4.0f * std::pow(0.5f - h, 3.0f);
+	return h * h;
 }
 
 glm::vec4 noise(f32 x, f32 y)
