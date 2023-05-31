@@ -1,7 +1,5 @@
 #pragma once
-#include "vulture/core/Core.h"
-
-#include <chrono>
+#include "SystemTimer.h"
 
 namespace vulture {
 
@@ -14,7 +12,7 @@ public:
 	~ScopeTimer();
 private:
 	String m_Message;
-	const std::chrono::high_resolution_clock::time_point c_Start;
+	const SystemTimer c_Timer;
 };
 
 } // namespace vulture

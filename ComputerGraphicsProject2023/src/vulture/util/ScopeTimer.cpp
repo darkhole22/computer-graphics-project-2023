@@ -4,13 +4,12 @@
 namespace vulture {
 
 ScopeTimer::ScopeTimer(const String& message) :
-	m_Message(message), c_Start(std::chrono::high_resolution_clock::now())
+	m_Message(message)
 {}
 
 ScopeTimer::~ScopeTimer()
 {
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	u64 nano = std::chrono::duration<u64, std::chrono::nanoseconds::period>(currentTime - c_Start).count();
+	u64 nano = c_Timer.elapsed();
 	u64 micro = nano / 1000;
 	u64 milli = micro / 1000;
 	u64 sec = milli / 1000;
