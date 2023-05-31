@@ -5,10 +5,22 @@
 
 namespace vulture {
 
+/**
+ * @brief A class for measuring the execution time of a scope.
+ *
+ * The ScopeTimer class allows you to measure the execution time of a scope
+ * by starting a timer when the ScopeTimer object is created and stopping it when the object is destroyed.
+ * The class is non-copyable to prevent unintended copying of timer instances.
+ */
 class ScopeTimer
 {
 	NO_COPY(ScopeTimer)
 public:
+	/**
+	 * @brief Constructs a ScopeTimer object with the specified message.
+	 * 
+	 * @param message The message associated with the timer (e.g., scope description).
+	 */
 	ScopeTimer(const String& message);
 
 	~ScopeTimer();
