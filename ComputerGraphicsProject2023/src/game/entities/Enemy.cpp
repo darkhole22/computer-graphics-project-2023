@@ -13,6 +13,7 @@ Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 
 	m_Hitbox->layerMask = ENEMY_MASK;
 	m_Hitbox->collisionMask = PLAYER_BULLET_MASK;
+	m_Hitbox->data = &m_Damage;
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
 		EventBus::emit(EnemyDied{});

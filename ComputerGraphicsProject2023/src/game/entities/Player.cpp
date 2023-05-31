@@ -64,6 +64,9 @@ void Player::update(f32 dt)
 	{
 		m_Stats.dashSpeed = m_Stats.maxDashSpeed;
 		Application::getScene()->makeTween()->addValueTweener(&m_Stats.dashSpeed, 1.0f, m_Stats.dashDuration);
+		Application::getScene()->makeTimer(m_Stats.dashCooldown)->addCallback([this](TimerTimeoutEvent e) {
+			m_Stats.dashesLeft++;
+		});
 		m_Stats.dashesLeft--;
 	}
 
@@ -112,7 +115,9 @@ void Player::onHitBoxEntered(const HitBoxEntered &e)
 {
 	if (m_Invincible || m_Godmode) return;
 
-	m_Stats.hp = std::max(static_cast<i32>(m_Stats.hp) - 1, 0);
+	u32 damage = e.data != nullptr ? *reinterpret_cast<u32*>(e.data) : 1;
+
+	m_Stats.hp = std::max<u32>(m_Stats.hp - damage, 0);
 	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 
 	m_Invincible = true;
