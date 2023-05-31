@@ -1,9 +1,9 @@
 #include "Application.h"
 #include "Input.h"
 #include "vulture/core/Job.h"
+#include "vulture/util/ScopeTimer.h"
 
 #include <iostream>
-#include <chrono>
 
 namespace vulture {
 
@@ -14,6 +14,7 @@ Application::Application(Game& game, AppConfig config) :
 	m_Window(config.name, config.width, config.height),
 	m_Game(&game)
 {
+	DEBUG_TIMER("Application creation");
 	if (!Job::init())
 	{
 		throw std::runtime_error("Unable to initialize the Job System.");
@@ -29,8 +30,7 @@ Application::Application(Game& game, AppConfig config) :
 
 void Application::run()
 {
-	auto startTime = std::chrono::high_resolution_clock::now();
-	float lastTime = 0.0f;
+	SystemTimer timer;
 
 	setup();
 
@@ -41,11 +41,8 @@ void Application::run()
 
 		Job::process();
 
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>
-			(currentTime - startTime).count();
-		float deltaT = time - lastTime;
-		lastTime = time;
+		f64 dt = static_cast<f64>(timer.restart()) / 1000000000.0;
+		f32 deltaT = static_cast<f32>(dt);
 
 		update(deltaT);
 
@@ -58,6 +55,7 @@ void Application::run()
 void Application::setup()
 {
 	Input::initialize(m_Window);
+	DEBUG_TIMER("Game creation");
 	m_Game->setup();
 }
 

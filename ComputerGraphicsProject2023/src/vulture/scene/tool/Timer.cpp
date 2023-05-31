@@ -36,8 +36,11 @@ void Timer::play()
 
 void Timer::stop()
 {
-	m_RemaningTime = 0;
-	emit(TimerTimeoutEvent{});
+	if (m_RemaningTime > 0) 
+	{
+		m_RemaningTime = 0;
+		emit(TimerTimeoutEvent{});
+	}
 }
 
 void Timer::reset(f32 waitTime)

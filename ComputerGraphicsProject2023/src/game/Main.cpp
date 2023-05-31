@@ -83,14 +83,11 @@ public:
 		/***********
 		 * TERRAIN *
 		 ***********/
-		{
-			ScopeTimer timer{"Terrain generation"};
-			TerrainGenerationConfig terrainConfig{};
-			terrainConfig.noiseScale = 2;
-			terrainConfig.heightScale = 250;
-			terrain = makeRef<Terrain>(terrainConfig);
-		}
-		
+		TerrainGenerationConfig terrainConfig{};
+		terrainConfig.noiseScale = 2;
+		terrainConfig.heightScale = 250;
+		terrain = makeRef<Terrain>(terrainConfig);
+
 		/**************
 		 * GAME LOGIC *
 		 **************/
