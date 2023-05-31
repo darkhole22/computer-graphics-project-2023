@@ -74,6 +74,7 @@ private:
 	Ref<Factory<Bullet>> m_BulletFactory;
 
 	void onHitBoxEntered(const HitBoxEntered& e);
+	void onEnemyKilled(const EnemyDied& event);
 };
 
 } // namespace game

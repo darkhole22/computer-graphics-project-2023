@@ -15,9 +15,8 @@ Player::Player()
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 
-	EventBus::addCallback([this](EnemyDied event) {
-		VUINFO("Called");
-	});
+
+	EventBus::addCallback([this](EnemyDied event) { onEnemyKilled(event); });
 
 	/**********
 	 * FIRING *
@@ -63,7 +62,12 @@ void Player::update(f32 dt)
 		Input::isActionJustPressed("DASH"))
 	{
 		m_Stats.dashSpeed = m_Stats.maxDashSpeed;
-		Application::getScene()->makeTween()->addValueTweener(&m_Stats.dashSpeed, 1.0f, m_Stats.dashDuration);
+		m_Invincible = true;
+
+		auto tween = Application::getScene()->makeTween();
+		tween->addValueTweener(&m_Stats.dashSpeed, 1.0f, m_Stats.dashDuration);
+		tween->addCallbackTweener([this]() { m_Invincible = false; });
+
 		Application::getScene()->makeTimer(m_Stats.dashCooldown)->addCallback([this](TimerTimeoutEvent e) {
 			m_Stats.dashesLeft++;
 		});
@@ -117,7 +121,7 @@ void Player::onHitBoxEntered(const HitBoxEntered &e)
 
 	u32 damage = e.data != nullptr ? *reinterpret_cast<u32*>(e.data) : 1;
 
-	m_Stats.hp = std::max<u32>(m_Stats.hp - damage, 0);
+	m_Stats.hp = std::max<i32>(m_Stats.hp - damage, 0);
 	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 
 	m_Invincible = true;
@@ -126,6 +130,22 @@ void Player::onHitBoxEntered(const HitBoxEntered &e)
 	invincibilityTween->addCallbackTweener([this]() {
 		m_Invincible = false;
 	});
+}
+
+void Player::onEnemyKilled(const EnemyDied& event)
+{
+	m_Stats.exp++;
+
+	if (m_Stats.exp >= 10)
+	{
+		VUDEBUG("Level Up!");
+
+		m_Stats.level += m_Stats.exp / 10;
+		m_Stats.exp %= 10;
+
+		m_Stats.dashesLeft++;
+	}
+
 }
 
 } // namespace game
