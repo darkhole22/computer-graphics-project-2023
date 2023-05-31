@@ -3,25 +3,25 @@
 namespace vulture {
 
 Timer::Timer(f32 waitTime, bool oneShot) :
-	m_WaitTime(waitTime), m_RemaningTime(waitTime), m_OneShot(oneShot)
+	m_WaitTime(waitTime), m_RemainingTime(waitTime), m_OneShot(oneShot)
 {}
 
 void Timer::step(f32 dt)
 {
-	if (m_Paused && m_RemaningTime > 0) return;
+	if (m_Paused && m_RemainingTime > 0) return;
 
-	m_RemaningTime -= dt;
+	m_RemainingTime -= dt;
 
-	if (m_RemaningTime <= 0)
+	if (m_RemainingTime <= 0)
 	{
-		m_RemaningTime = m_OneShot ? 0 : m_WaitTime;
+		m_RemainingTime = m_OneShot ? 0 : m_WaitTime;
 		emit(TimerTimeoutEvent{});
 	}
 }
 
 bool Timer::isRunning() const
 {
-	return m_RemaningTime > 0;
+	return m_RemainingTime > 0;
 }
 
 void Timer::pause()
@@ -36,9 +36,9 @@ void Timer::play()
 
 void Timer::stop()
 {
-	if (m_RemaningTime > 0) 
+	if (m_RemainingTime > 0)
 	{
-		m_RemaningTime = 0;
+		m_RemainingTime = 0;
 		emit(TimerTimeoutEvent{});
 	}
 }
@@ -49,7 +49,7 @@ void Timer::reset(f32 waitTime)
 	{
 		m_WaitTime = waitTime;
 	}
-	m_RemaningTime = m_WaitTime;
+	m_RemainingTime = m_WaitTime;
 }
 
 } // namespace vulture

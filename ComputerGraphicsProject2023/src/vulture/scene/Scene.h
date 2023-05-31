@@ -75,7 +75,7 @@ public:
 	DescriptorPool* getDescriptorPool() { return &m_DescriptorsPool; }
 
 	Ref<Tween> makeTween();
-	Ref<Timer> makeTimer(f32 waitTimer, bool oneShot = true);
+	Ref<Timer> makeTimer(f32 waitTime, bool oneShot = true);
 
 	inline void addHitbox(Ref<HitBox> hitbox) { m_CollisionEngine.addHitbox(hitbox); }
 	inline void removeHitbox(Ref<HitBox> hitbox) { m_CollisionEngine.removeHitbox(hitbox); }
@@ -98,7 +98,7 @@ private:
 	PipelineHandle m_NextPipelineHandle = 0;
 
 	std::unordered_set<Ref<Tween>> m_Tweens;
-	std::unordered_set<Ref<Timer>> m_Timerss;
+	std::unordered_set<Ref<Timer>> m_Timers;
 
 	Ref<DescriptorSetLayout> m_GameObjectDSL;
 	PipelineHandle m_GameObjectPipeline;

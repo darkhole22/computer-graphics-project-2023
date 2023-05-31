@@ -100,7 +100,7 @@ void Scene::render(FrameContext target, float dt)
 	m_UIHandler.update(dt);
 
 	stepUtil(m_Tweens, dt);
-	stepUtil(m_Timerss, dt);
+	stepUtil(m_Timers, dt);
 
 	m_CollisionEngine.update(dt);
 
@@ -187,11 +187,11 @@ Ref<Tween> Scene::makeTween()
 	return tween;
 }
 
-Ref<Timer> Scene::makeTimer(f32 waitTimer, bool oneShot)
+Ref<Timer> Scene::makeTimer(f32 waitTime, bool oneShot)
 {
-	auto tween = makeRef<Timer>(waitTimer, oneShot);
-	m_Timerss.insert(tween);
-	return tween;
+	auto timer = makeRef<Timer>(waitTime, oneShot);
+	m_Timers.insert(timer);
+	return timer;
 }
 
 void Scene::recordCommandBuffer(FrameContext& target)

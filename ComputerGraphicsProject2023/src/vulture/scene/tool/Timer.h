@@ -78,12 +78,12 @@ public:
 	 * 
 	 * @return The remaining time in seconds.
 	 */
-	f32 remaningTime() const { return m_RemaningTime; }
+	f32 remainingTime() const { return m_RemainingTime; }
 
 	~Timer() = default;
 private:
 	f32 m_WaitTime;
-	f32 m_RemaningTime;
+	f32 m_RemainingTime;
 	bool m_Paused = false;
 	bool m_OneShot;
 };
