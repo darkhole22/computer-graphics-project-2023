@@ -10,6 +10,7 @@ class Enemy
 public:
 	static const String& s_ModelName;
 	static const String& s_TextureName;
+	static constexpr f32 s_FlyingHeight = 1.0f;
 
 	Ref<GameObject> m_GameObject;
 	Ref<HitBox> m_Hitbox;

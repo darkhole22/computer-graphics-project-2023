@@ -110,7 +110,17 @@ void Player::reset()
 
 void Player::onHitBoxEntered(const HitBoxEntered &e)
 {
+	if (m_Invincible || m_Godmode) return;
 
+	m_Stats.hp = std::max(static_cast<i32>(m_Stats.hp) - 1, 0);
+	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
+
+	m_Invincible = true;
+	auto invincibilityTween = Application::getScene()->makeTween();
+	invincibilityTween->addIntervalTweener(m_InvincibilityDuration);
+	invincibilityTween->addCallbackTweener([this]() {
+		m_Invincible = false;
+	});
 }
 
 } // namespace game

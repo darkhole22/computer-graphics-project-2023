@@ -55,7 +55,7 @@ void GameManager::update(f32 dt)
 		for (auto& enemy : *m_EnemyFactory)
 		{
 			auto pos = enemy->m_GameObject->transform.getPosition();
-			enemy->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+			enemy->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + Enemy::s_FlyingHeight, pos.z);
 			enemy->m_Hitbox->transform = enemy->m_GameObject->transform;
 			enemy->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
 		}
