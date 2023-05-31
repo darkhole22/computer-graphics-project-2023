@@ -1,6 +1,7 @@
 #define VU_LOGGER_TRACE_ENABLED
 
 #include "vulture/core/Logger.h"
+#include "vulture/util/ScopeTimer.h"
 #include "vulture/core/Application.h"
 #include "game/ui/DebugUI.h"
 #include "GameManager.h"
@@ -86,11 +87,15 @@ public:
 		terrainConfig.noiseScale = 2;
 		terrainConfig.heightScale = 250;
 		terrain = makeRef<Terrain>(terrainConfig);
-		
+
 		/**************
 		 * GAME LOGIC *
 		 **************/
 		gameManager = makeRef<GameManager>(terrain);
+
+		scene->makeTimer(5)->addCallback([](const TimerTimeoutEvent&) {
+			VUINFO("Test Timer ended!");
+		});
 	}
 
 	void update(float dt) override
