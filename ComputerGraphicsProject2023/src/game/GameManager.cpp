@@ -27,11 +27,10 @@ GameManager::GameManager(Ref<Terrain> terrain)
 		for (int i = 0; i <= 10; i++)
 		{
 			auto enemy = m_EnemyFactory->get();
-			enemy->m_GameObject->tag = "ENEMY";
 			auto startingLocation = m_Player->transform.getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
 
 			enemy->m_GameObject->transform.setPosition(startingLocation);
-			enemy->m_GameObject->transform.setScale(3.0f, 3.0f, 3.0f);
+			//enemy->m_GameObject->transform.setScale(3.0f, 3.0f, 3.0f);
 
 			enemy->setup(m_Player);
 		}
@@ -80,14 +79,14 @@ void GameManager::update(f32 dt)
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
 			setGameState(GameState::PLAYING);
-			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+			Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 		}
 		break;
 	case GameState::GAME_OVER:
 		if (Input::isActionJustPressed("RESTART"))
 		{
 			beforeRestart();
-			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+			Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 		}
 		break;
 	}
@@ -105,6 +104,7 @@ void GameManager::setGameState(GameState gameState)
 void GameManager::onGameOver()
 {
 	m_WaveTween->reset(false);
+	Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 	setGameState(GameState::GAME_OVER);
 }
 

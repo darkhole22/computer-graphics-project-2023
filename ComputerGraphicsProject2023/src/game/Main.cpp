@@ -180,6 +180,15 @@ private:
 		};
 		Input::setAction("FIRE", fireAction);
 
+		InputAction dashAction{};
+		dashAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_LEFT_SHIFT}}
+		};
+		dashAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_LEFT_BUMPER }}
+		};
+		Input::setAction("DASH", dashAction);
+
 		/**********************************************
 		 *                  CAMERA                    *
 		 **********************************************/

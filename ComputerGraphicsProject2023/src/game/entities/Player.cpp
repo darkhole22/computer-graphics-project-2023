@@ -15,17 +15,23 @@ Player::Player()
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 
+	EventBus::addCallback([this](EnemyDied event) {
+		VUINFO("Called");
+	});
+
+	/**********
+	 * FIRING *
+	 **********/
 	m_FiringTween = Application::getScene()->makeTween();
 	m_FiringTween->loop();
 	m_FiringTween->addCallbackTweener([this]() {
 		auto bullet = m_BulletFactory->get();
-		bullet->m_GameObject->tag = "PLAYER_BULLET";
 
 		bullet->setup(transform.getPosition(), m_Camera->direction);
 
 		EventBus::emit(AmmoUpdated{ 10, 20 });
 	});
-	m_FiringTween->addIntervalTweener(c_FireRatio);
+	m_FiringTween->addIntervalTweener(m_Stats.fireCooldown);
 	m_FiringTween->addCallbackTweener([this]() {
 		if (!Input::isActionPressed("FIRE"))
 		{
@@ -34,6 +40,9 @@ Player::Player()
 	});
 	m_FiringTween->pause();
 
+	/**********
+	 * HITBOX *
+	 **********/
 	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, c_CameraHeight));
 
 	m_Hitbox->layerMask = PLAYER_MASK;
@@ -42,32 +51,27 @@ Player::Player()
 	m_Hitbox->transform = transform;
 	scene->addHitbox(m_Hitbox);
 
-	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
-		if (m_Invincible || m_Godmode) return;
+	m_Hitbox->addCallback([this](const HitBoxEntered& event) { onHitBoxEntered(event); });
 
-		m_HP = std::max(static_cast<i32>(m_HP) - 1, 0);
-		EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
-
-		m_Invincible = true;
-		auto invincibilityTween = Application::getScene()->makeTween();
-		invincibilityTween->addIntervalTweener(m_InvincibilityDuration);
-		invincibilityTween->addCallbackTweener([this]() {
-			m_Invincible = false;
-		});
-	});
-
-	m_BulletFactory = makeRef<Factory<Bullet>>(40);
-
-	EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
+	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 }
 
 void Player::update(f32 dt)
 {
+	if (m_Stats.dashesLeft > 0 &&
+		m_Stats.dashSpeed == 1.0f &&
+		Input::isActionJustPressed("DASH"))
+	{
+		m_Stats.dashSpeed = m_Stats.maxDashSpeed;
+		Application::getScene()->makeTween()->addValueTweener(&m_Stats.dashSpeed, 1.0f, m_Stats.dashDuration);
+		m_Stats.dashesLeft--;
+	}
+
 	auto rotation = Input::getVector("LOOK_LEFT", "LOOK_RIGHT", "LOOK_DOWN", "LOOK_UP", false)
 		* c_RotSpeed * dt;
 
 	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
-		* c_Speed * dt;
+		* c_Speed * m_Stats.dashSpeed * dt ;
 
 	// Move the player
 	transform.rotate(0.0f, -rotation.x, 0.0f);
@@ -98,11 +102,15 @@ void Player::reset()
 	m_Camera->reset();
 	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
-	m_HP = c_InitialHP;
-	m_MaxHP = c_InitialHP;
-	EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
+	m_Stats = PlayerStats{};
+	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 
 	m_BulletFactory->reset();
+}
+
+void Player::onHitBoxEntered(const HitBoxEntered &e)
+{
+
 }
 
 } // namespace game

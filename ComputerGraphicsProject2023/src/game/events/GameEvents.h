@@ -15,6 +15,6 @@ struct GodmodeToggled
 	bool godmodeOn;
 };
 
-#define GAME_EVENTS 	STATIC_EVENT(GameStateChanged) \
+#define GAME_EVENTS		STATIC_EVENT(GameStateChanged) \
 						STATIC_EVENT(GodmodeToggled)
 } // namespace game

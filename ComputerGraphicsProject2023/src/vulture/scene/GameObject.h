@@ -48,13 +48,6 @@ public:
 
 	Transform transform;
 
-	/**
-	 * @brief Tag that represents the kind of object.
-	 *
-	 * This is used for collision detection.
-	 */
-	String tag;
-
 	friend class Scene;
 private:
 	Ref<Model> m_Model;

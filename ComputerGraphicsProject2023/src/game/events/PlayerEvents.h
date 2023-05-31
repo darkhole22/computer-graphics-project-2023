@@ -3,9 +3,9 @@
 #include "vulture/event/Event.h"
 #include "vulture/util/Types.h"
 
-namespace game {
-
 using namespace vulture;
+
+namespace game {
 
 struct HealthUpdated
 {
