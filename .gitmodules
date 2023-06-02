@@ -1,9 +1,9 @@
-[submodule ".\\ComputerGraphicsProject2023\\vendor\\glm"]
-	path = .\\ComputerGraphicsProject2023\\vendor\\glm
+[submodule "ComputerGraphicsProject2023/vendor/glm"]
+	path = ComputerGraphicsProject2023/vendor/glm
 	url = http://github.com/g-truc/glm.git
-[submodule ".\\ComputerGraphicsProject2023\\vendor\\stb"]
-	path = .\\ComputerGraphicsProject2023\\vendor\\stb
+[submodule "ComputerGraphicsProject2023/vendor/stb"]
+	path = ComputerGraphicsProject2023/vendor/stb
 	url = http://github.com/nothings/stb.git
-[submodule ".\\ComputerGraphicsProject2023\\vendor\\GLFW"]
-	path = .\\ComputerGraphicsProject2023\\vendor\\GLFW
+[submodule "ComputerGraphicsProject2023/vendor/GLFW"]
+	path = ComputerGraphicsProject2023/vendor/GLFW
 	url = http://github.com/darkhole22/glfw.git
