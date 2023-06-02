@@ -2,8 +2,8 @@
 
 namespace game {
 
-const String& Enemy::s_ModelName = "character";
-const String& Enemy::s_TextureName = "character";
+const String& Enemy::s_ModelName = "hand-robot";
+const String& Enemy::s_TextureName = "hand-robot";
 
 Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 {
