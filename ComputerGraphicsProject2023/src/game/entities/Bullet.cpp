@@ -2,8 +2,8 @@
 
 namespace game {
 
-const String& Bullet::s_ModelName = "character";
-const String& Bullet::s_TextureName = "character";
+const String Bullet::s_ModelName = "character";
+const String Bullet::s_TextureName = "character";
 
 Bullet::Bullet(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 {

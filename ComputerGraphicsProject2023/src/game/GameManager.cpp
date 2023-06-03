@@ -1,13 +1,16 @@
 #include "GameManager.h"
 
+#include "vulture/core/Logger.h"
+
+#include "vulture/util/ScopeTimer.h"
+
 namespace game {
 
-GameManager::GameManager(Ref<Terrain> terrain)
+GameManager::GameManager(Ref<Terrain> terrain) :
+	m_Terrain(terrain), m_EnemyFactory(20), m_HealthPackFactory(50),
+	m_GameState(GameState::SETUP)
 {
 	m_Scene = Application::getScene();
-	m_Terrain = terrain;
-
-	m_EnemyFactory = makeRef<Factory<Enemy>>(20);
 
 	m_Player = makeRef<Player>();
 	EventBus::addCallback([this](HealthUpdated event) {
@@ -20,13 +23,13 @@ GameManager::GameManager(Ref<Terrain> terrain)
 	m_WaveTween->loop();
 	m_WaveTween->addIntervalTweener(10.0f);
 	m_WaveTween->addCallbackTweener([this]() {
-		std::random_device rd;     // Only used once to initialise (seed) engine
+		std::random_device rd;     // Only used once to initialize (seed) engine
 		std::mt19937 rng(rd());    // Random-number engine used (Mersenne-Twister in this case)
 		std::uniform_int_distribution<int> uni(-150, 150); // Guaranteed unbiased
 
 		for (int i = 0; i <= 10; i++)
 		{
-			auto enemy = m_EnemyFactory->get();
+			auto enemy = m_EnemyFactory.get();
 			enemy->m_GameObject->tag = "ENEMY";
 			auto startingLocation = m_Player->transform.getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
 
@@ -36,9 +39,30 @@ GameManager::GameManager(Ref<Terrain> terrain)
 			enemy->setup(m_Player);
 		}
 	});
-	m_WaveTween->reset(false);
+	m_WaveTween->pause();
 
-	m_GameState = GameState::SETUP;
+	m_HealthPackTween = m_Scene->makeTimer(20, false);
+	m_HealthPackTween->addCallback([this](const TimerTimeoutEvent&) {
+		std::random_device rd;
+		std::mt19937 rng(rd());
+		std::uniform_real_distribution<f32> uni{};
+
+		for (int i = 0; i < 2; i++)
+		{
+			f32 theta = uni(rng) * glm::two_pi<f32>();
+			f32 r = std::sqrt(0.9f * uni(rng) + 0.1f);
+			auto pack = m_HealthPackFactory.get();
+			auto startingLocation = m_Player->transform.getPosition() + glm::vec3(
+				r * 100.0f * std::cos(theta),
+				0.0f,
+				r * 100.0f * std::sin(theta)
+			);
+
+			pack->m_GameObject->transform.setPosition(startingLocation);
+			pack->setup(m_Terrain);
+		}
+	});
+	m_HealthPackTween->pause();
 }
 
 void GameManager::update(f32 dt)
@@ -46,14 +70,15 @@ void GameManager::update(f32 dt)
 	switch (m_GameState)
 	{
 	case GameState::SETUP:
-		m_WaveTween->play();
-		setGameState(GameState::PLAYING);
-		break;
+	m_WaveTween->play();
+	m_HealthPackTween->play();
+	setGameState(GameState::PLAYING);
+	break;
 	case GameState::PLAYING:
 	{
-		m_EnemyFactory->update(dt);
+		m_EnemyFactory.update(dt);
 
-		for (auto& enemy : *m_EnemyFactory)
+		for (auto& enemy : m_EnemyFactory)
 		{
 			auto pos = enemy->m_GameObject->transform.getPosition();
 			enemy->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
@@ -61,15 +86,21 @@ void GameManager::update(f32 dt)
 			enemy->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
 		}
 
+		m_HealthPackFactory.update(dt);
+
 		m_Player->update(dt);
 
 		auto pos = m_Player->transform.getPosition();
 		m_Player->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
 		m_Player->m_Hitbox->transform = m_Player->transform;
 		m_Player->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
+		m_Player->m_PowerUpHitbox->transform = m_Player->transform;
+		m_Player->m_PowerUpHitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
 
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
+			m_WaveTween->pause();
+			m_HealthPackTween->pause();
 			setGameState(GameState::PAUSE);
 			Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 		}
@@ -83,19 +114,21 @@ void GameManager::update(f32 dt)
 		break;
 	}
 	case GameState::PAUSE:
-		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
-		{
-			setGameState(GameState::PLAYING);
-			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
-		}
-		break;
+	if (Input::isActionJustPressed("TOGGLE_PAUSE"))
+	{
+		m_WaveTween->play();
+		m_HealthPackTween->play();
+		setGameState(GameState::PLAYING);
+		Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+	}
+	break;
 	case GameState::GAME_OVER:
-		if (Input::isActionJustPressed("RESTART"))
-		{
-			beforeRestart();
-			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
-		}
-		break;
+	if (Input::isActionJustPressed("RESTART"))
+	{
+		beforeRestart();
+		Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+	}
+	break;
 	}
 }
 
@@ -111,12 +144,14 @@ void GameManager::setGameState(GameState gameState)
 void GameManager::onGameOver()
 {
 	m_WaveTween->reset(false);
+	m_HealthPackTween->reset();
 	setGameState(GameState::GAME_OVER);
 }
 
 void GameManager::beforeRestart()
 {
-	m_EnemyFactory->reset();
+	m_EnemyFactory.reset();
+	m_HealthPackFactory.reset();
 	m_Player->reset();
 
 	setGameState(GameState::SETUP);

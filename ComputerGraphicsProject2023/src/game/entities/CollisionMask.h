@@ -11,5 +11,6 @@ using namespace vulture;
 constexpr u64 PLAYER_MASK = BitMask::BIT0;
 constexpr u64 ENEMY_MASK = BitMask::BIT1;
 constexpr u64 PLAYER_BULLET_MASK = BitMask::BIT2;
+constexpr u64 POWER_UP_MASK = BitMask::BIT3;
 
 }

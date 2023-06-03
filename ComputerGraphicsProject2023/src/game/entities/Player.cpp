@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include "vulture/core/Logger.h"
+#include "game/entities/powerup/HealthPack.h"
 
 using namespace vulture;
 
@@ -54,6 +55,29 @@ Player::Player()
 		invincibilityTween->addCallbackTweener([this]() {
 			m_Invincible = false;
 		});
+	});
+
+	m_PowerUpHitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.5f, c_CameraHeight));
+	m_PowerUpHitbox->layerMask = PLAYER_MASK;
+	m_PowerUpHitbox->collisionMask = POWER_UP_MASK;
+
+	m_PowerUpHitbox->transform = transform;
+	scene->addHitbox(m_PowerUpHitbox);
+
+	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& e) {
+		PowerUpData* powerUp = reinterpret_cast<PowerUpData*>(e.data);
+		switch (powerUp->getType())
+		{
+		case PowerUpType::HealthUp:
+		{
+			HealthPackData* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
+			m_HP = std::min<i32>(m_HP + healthPack->getHealth(), m_MaxHP);
+			EventBus::emit(HealthUpdated{ m_HP, m_MaxHP });
+			break;
+		}
+		default:
+		break;
+		}
 	});
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);

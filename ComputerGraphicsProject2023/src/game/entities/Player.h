@@ -24,6 +24,7 @@ class Player
 public:
 	Transform transform;
 	Ref<HitBox> m_Hitbox;
+	Ref<HitBox> m_PowerUpHitbox;
 
 	Player();
 
