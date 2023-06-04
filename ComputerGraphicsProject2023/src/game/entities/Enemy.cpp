@@ -2,14 +2,14 @@
 
 namespace game {
 
-const String& Enemy::s_ModelName = "flying-mushroom";
-const String& Enemy::s_TextureName = "flying-mushroom";
+const String& Enemy::s_ModelName = "hand-robot";
+const String& Enemy::s_TextureName = "hand-robot";
 
 Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 {
-	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.922f, 1.845f));
+	m_GameObject->transform.setScale(0.5f);
+	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.8f * 0.5f, 2.0f * 0.5f));
 
-	m_GameObject->transform.setScale(0.015f);
 
 	m_Hitbox->layerMask = ENEMY_MASK;
 	m_Hitbox->collisionMask = PLAYER_BULLET_MASK;
