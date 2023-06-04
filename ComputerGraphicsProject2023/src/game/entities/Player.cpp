@@ -15,7 +15,6 @@ Player::Player()
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 
-
 	EventBus::addCallback([this](EnemyDied event) { onEnemyKilled(event); });
 
 	/**********
