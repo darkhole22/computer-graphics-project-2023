@@ -7,9 +7,10 @@ const String& Enemy::s_TextureName = "hand-robot";
 
 Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 {
-	m_GameObject->transform.setScale(0.5f);
+	m_GameObject->transform->setScale(0.5f);
 	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.8f * 0.5f, 2.0f * 0.5f));
 
+	m_Movement = makeRef<MovementComponent>(m_GameObject->transform);
 
 	m_Hitbox->layerMask = ENEMY_MASK;
 	m_Hitbox->collisionMask = PLAYER_BULLET_MASK;
@@ -32,11 +33,11 @@ void Enemy::setup(Ref<Player> player)
 
 EntityStatus Enemy::update(float dt)
 {
-	auto dir = m_Player->transform->getPosition() - m_GameObject->transform.getPosition();
+	auto dir = m_Player->transform->getPosition() - m_GameObject->transform->getPosition();
 	dir.y = 0;
 	dir = glm::normalize(dir);
 
-	m_GameObject->transform.translate(dir * c_Speed * dt);
+	m_Movement->move(dir * c_Speed * dt);
 
 	return m_Status;
 }

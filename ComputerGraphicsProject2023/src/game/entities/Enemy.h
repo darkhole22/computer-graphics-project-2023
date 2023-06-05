@@ -26,8 +26,13 @@ public:
 
 private:
 	const float c_Speed = 4.0f;
-	Ref<Player> m_Player;
+
 	EntityStatus m_Status = EntityStatus::ALIVE;
+
+	Ref<MovementComponent> m_Movement;
+
+	Ref<Player> m_Player;
+
 
 	u32 m_Damage = 1.0f;
 };

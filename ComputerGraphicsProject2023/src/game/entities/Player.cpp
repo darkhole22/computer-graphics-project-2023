@@ -24,7 +24,6 @@ Player::Player()
 	m_FiringTween->addCallbackTweener([this]() {
 		auto bullet = m_BulletFactory->get();
 
-		// bullet->setup(transform.getPosition(), m_Camera->direction);
 		bullet->setup(*transform, m_Camera->direction);
 
 		EventBus::emit(AmmoUpdated{ 10, 20 });
@@ -106,7 +105,7 @@ void Player::reset()
 	transform = makeRef<Transform>();
 	m_Movement = makeRef<MovementComponent>(transform);
 
-	m_Hitbox->transform = *transform;
+	m_Hitbox->transform = transform;
 
 	m_Camera->reset();
 	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
