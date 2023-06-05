@@ -18,6 +18,7 @@ public:
 	explicit Bullet(Ref<GameObject> gameObject);
 
 	void setup(glm::vec3 startingPosition, glm::vec3 direction);
+	void setup(Transform startingTransform, glm::vec3 direction);
 
 	EntityStatus update(float dt);
 

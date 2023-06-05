@@ -21,7 +21,7 @@ public:
 	 */
 	inline void setPosition(glm::vec3 pos)
 	{
-		translate(pos - m_Position);
+		m_Position = pos;
 		m_ShouldUpdate = true;
 	}
 
@@ -41,11 +41,7 @@ public:
 	 */
 	void translate(glm::vec3 translation)
 	{
-		// m_Position += translation;
-		auto frontDir = glm::normalize(m_Rotation * m_FacingDirection);
-		auto rightDir = glm::normalize(glm::cross(frontDir, m_UpDirection));
-
-		m_Position += frontDir * translation.x + m_UpDirection * translation.y + rightDir * translation.z;
+		m_Position += translation;
 		m_ShouldUpdate = true;
 	}
 

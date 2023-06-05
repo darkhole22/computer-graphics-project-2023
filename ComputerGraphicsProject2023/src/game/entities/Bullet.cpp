@@ -25,9 +25,25 @@ void Bullet::setup(glm::vec3 startingPosition, glm::vec3 direction)
 	Application::getScene()->addHitbox(m_Hitbox);
 }
 
+void Bullet::setup(Transform startingTransform, glm::vec3 direction)
+{
+	m_GameObject->transform = startingTransform;
+	m_GameObject->transform.translate(0.0f, 1.5f, 0.0f);
+
+	m_StartingPosition = startingTransform.getPosition();
+
+	auto angle = sin(direction.y);
+	m_GameObject->transform.rotate(0.0f, 0.0f, -glm::radians(90.0f) + angle);
+
+	m_Direction = direction;
+
+	m_Hitbox->transform = m_GameObject->transform;
+	Application::getScene()->addHitbox(m_Hitbox);
+}
+
 EntityStatus Bullet::update(float dt)
 {
-	m_GameObject->transform.translate(m_Direction* c_Speed * dt);
+	m_GameObject->transform.translate(m_Direction * c_Speed * dt);
 	m_Hitbox->transform = m_GameObject->transform;
 
 	if (glm::distance(m_StartingPosition, m_GameObject->transform.getPosition()) > c_Range)

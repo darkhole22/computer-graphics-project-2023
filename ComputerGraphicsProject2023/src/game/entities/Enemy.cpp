@@ -32,7 +32,7 @@ void Enemy::setup(Ref<Player> player)
 
 EntityStatus Enemy::update(float dt)
 {
-	auto dir = m_Player->transform.getPosition() - m_GameObject->transform.getPosition();
+	auto dir = m_Player->transform->getPosition() - m_GameObject->transform.getPosition();
 	dir.y = 0;
 	dir = glm::normalize(dir);
 

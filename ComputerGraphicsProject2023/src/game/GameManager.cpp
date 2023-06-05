@@ -27,7 +27,7 @@ GameManager::GameManager(Ref<Terrain> terrain)
 		for (int i = 0; i <= 10; i++)
 		{
 			auto enemy = m_EnemyFactory->get();
-			auto startingLocation = m_Player->transform.getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
+			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
 
 			enemy->m_GameObject->transform.setPosition(startingLocation);
 			//enemy->m_GameObject->transform.setScale(3.0f, 3.0f, 3.0f);
@@ -45,7 +45,7 @@ void GameManager::update(f32 dt)
 	switch (m_GameState)
 	{
 	case GameState::SETUP:
-		m_WaveTween->play();
+		//m_WaveTween->play();
 		setGameState(GameState::PLAYING);
 		break;
 	case GameState::PLAYING:
@@ -62,9 +62,9 @@ void GameManager::update(f32 dt)
 
 		m_Player->update(dt);
 
-		auto pos = m_Player->transform.getPosition();
-		m_Player->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
-		m_Player->m_Hitbox->transform = m_Player->transform;
+		auto pos = m_Player->transform->getPosition();
+		m_Player->transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+		m_Player->m_Hitbox->transform = *m_Player->transform;
 		m_Player->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
 
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))

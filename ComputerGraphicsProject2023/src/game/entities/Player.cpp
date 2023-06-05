@@ -11,7 +11,6 @@ Player::Player()
 	auto scene = Application::getScene();
 	m_Camera = scene->getCamera();
 	m_Camera->setFarPlane(200);
-	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 
@@ -25,7 +24,8 @@ Player::Player()
 	m_FiringTween->addCallbackTweener([this]() {
 		auto bullet = m_BulletFactory->get();
 
-		bullet->setup(transform.getPosition(), m_Camera->direction);
+		// bullet->setup(transform.getPosition(), m_Camera->direction);
+		bullet->setup(*transform, m_Camera->direction);
 
 		EventBus::emit(AmmoUpdated{ 10, 20 });
 	});
@@ -46,12 +46,11 @@ Player::Player()
 	m_Hitbox->layerMask = PLAYER_MASK;
 	m_Hitbox->collisionMask = ENEMY_MASK;
 
-	m_Hitbox->transform = transform;
 	scene->addHitbox(m_Hitbox);
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& event) { onHitBoxEntered(event); });
 
-	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
+	reset();
 }
 
 void Player::update(f32 dt)
@@ -80,12 +79,12 @@ void Player::update(f32 dt)
 		* c_Speed * m_Stats.dashSpeed * dt ;
 
 	// Move the player
-	transform.rotate(0.0f, -rotation.x, 0.0f);
-	transform.translate(movement.y, 0.0f, movement.x);
+	transform->rotate(0.0f, -rotation.x, 0.0f);
+	m_Movement->move(movement.y, 0.0f, movement.x);
 
 	// Move the camera
 	m_Camera->rotate(-rotation.x, rotation.y, 0.0f);
-	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
 	if (Input::isActionJustPressed("FIRE"))
 	{
@@ -104,9 +103,13 @@ void Player::update(f32 dt)
 void Player::reset()
 {
 	// TODO delete transform; or maybe use Ref
-	transform = Transform();
+	transform = makeRef<Transform>();
+	m_Movement = makeRef<MovementComponent>(transform);
+
+	m_Hitbox->transform = *transform;
+
 	m_Camera->reset();
-	m_Camera->position = transform.getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 
 	m_Stats = PlayerStats{};
 	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });

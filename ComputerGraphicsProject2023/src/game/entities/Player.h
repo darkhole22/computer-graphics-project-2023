@@ -14,6 +14,7 @@
 #include "Bullet.h"
 #include "game/terrain/Terrain.h"
 #include "game/EventBus.h"
+#include "game/components/MovementComponent.h"
 
 namespace game {
 
@@ -47,7 +48,7 @@ struct PlayerStats
 class Player
 {
 public:
-	Transform transform;
+	Ref<Transform> transform;
 	Ref<HitBox> m_Hitbox;
 
 	Player();
@@ -58,6 +59,8 @@ public:
 private:
 	const f32 c_Speed = 10;
 	const f32 c_RotSpeed = 4.0f;
+
+	Ref<MovementComponent> m_Movement;
 
 	PlayerStats m_Stats;
 
