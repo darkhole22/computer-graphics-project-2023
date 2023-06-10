@@ -28,6 +28,7 @@ private:
 	Ref<UIText> m_GameOverSubtitleText;
 
 	void onHealthUpdated(HealthUpdated event);
+	void onBulletShot(BulletShot event);
 
 	void onGameStateChanged(GameStateChanged event);
 

@@ -26,7 +26,7 @@ Player::Player()
 
 		bullet->setup(*transform, m_Camera->direction);
 
-		EventBus::emit(AmmoUpdated{ 10, 20 });
+		EventBus::emit(BulletShot{});
 	});
 	m_FiringTween->addIntervalTweener(m_Stats.fireCooldown);
 	m_FiringTween->addCallbackTweener([this]() {

@@ -19,6 +19,7 @@ HUD::HUD()
 	});
 
 	EventBus::addCallback([this](HealthUpdated e) { onHealthUpdated(e); });
+	EventBus::addCallback([this](BulletShot e) { onBulletShot(e); });
 	EventBus::addCallback([this](GameStateChanged e) { onGameStateChanged(e); });
 
 	m_HPText = m_UIHandler->makeText("HP: ");
@@ -60,6 +61,24 @@ void HUD::onHealthUpdated(HealthUpdated event)
 {
 	m_HPText->setText(stringFormat("HP: %d/%d", event.hp, event.maxHp));
 }
+
+void HUD::onBulletShot(BulletShot event)
+{
+	auto tween = Application::getScene()->makeTween();
+
+	std::function<void(f32)> cb = [this](f32 size) {
+		m_Crosshair->setHeight(size);
+		m_Crosshair->setWidth(size);
+		centerElement(m_Crosshair);
+	};
+
+	auto initialSize = m_Crosshair->getHeight();
+	auto finalSize = initialSize * 1.5f;
+
+	tween->addMethodTweener(cb, initialSize, finalSize, 0.15f);
+	tween->addMethodTweener(cb, finalSize, initialSize, 0.15f);
+}
+
 
 void HUD::onGameStateChanged(GameStateChanged event)
 {
