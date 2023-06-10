@@ -17,7 +17,7 @@ private:
 	Window* m_Window;
 
 	Ref<UIText> m_HPText;
-	Ref<UIText> m_AmmoText;
+	Ref<UIText> m_DashesText;
 
 	Ref<UIImage> m_Crosshair;
 
@@ -28,6 +28,7 @@ private:
 	Ref<UIText> m_GameOverSubtitleText;
 
 	void onHealthUpdated(HealthUpdated event);
+	void onDashesUpdated(DashesUpdated event);
 	void onBulletShot(BulletShot event);
 
 	void onGameStateChanged(GameStateChanged event);

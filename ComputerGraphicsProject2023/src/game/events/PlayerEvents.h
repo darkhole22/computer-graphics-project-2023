@@ -15,7 +15,14 @@ struct HealthUpdated
 
 struct BulletShot {};
 
-#define PLAYER_EVENTS 	STATIC_EVENT(HealthUpdated) \
-						STATIC_EVENT(BulletShot)
+struct DashesUpdated
+{
+	u32 dashes;
+	u32 maxDashes;
+};
+
+#define PLAYER_EVENTS 	STATIC_EVENT(HealthUpdated) 	\
+						STATIC_EVENT(BulletShot)        \
+						STATIC_EVENT(DashesUpdated)
 
 } // namespace game

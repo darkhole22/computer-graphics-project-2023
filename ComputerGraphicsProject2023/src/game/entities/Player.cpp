@@ -67,8 +67,10 @@ void Player::update(f32 dt)
 
 		Application::getScene()->makeTimer(m_Stats.dashCooldown)->addCallback([this](TimerTimeoutEvent e) {
 			m_Stats.dashesLeft++;
+			EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
 		});
 		m_Stats.dashesLeft--;
+		EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
 	}
 
 	auto rotation = Input::getVector("LOOK_LEFT", "LOOK_RIGHT", "LOOK_DOWN", "LOOK_UP", false)
@@ -112,6 +114,7 @@ void Player::reset()
 
 	m_Stats = PlayerStats{};
 	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
+	EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
 
 	m_BulletFactory->reset();
 }
@@ -145,6 +148,9 @@ void Player::onEnemyKilled(const EnemyDied& event)
 		m_Stats.exp %= 10;
 
 		m_Stats.dashesLeft++;
+		m_Stats.maxDashes++;
+
+		EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
 	}
 
 }

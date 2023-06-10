@@ -28,7 +28,7 @@ struct PlayerStats
 	u32 dashesLeft = c_StartingDashes;
 	u32 maxDashes = c_StartingDashes;
 	f32 dashCooldown = c_StartingDashCooldown;
-	f32 dashDuration = 0.3f;
+	f32 dashDuration = 0.15f;
 	f32 dashSpeed = 1.0f;
 	f32 maxDashSpeed = 20.0f;
 
@@ -40,7 +40,7 @@ struct PlayerStats
 	static constexpr u32 c_StartingHP = 5;
 
 	static constexpr u32 c_StartingDashes = 1;
-	static constexpr f32 c_StartingDashCooldown = 2.0f;
+	static constexpr f32 c_StartingDashCooldown = 3.0f;
 
 	static constexpr f32 c_StartingFireCooldown = 1.0f;
 };

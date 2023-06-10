@@ -19,12 +19,15 @@ HUD::HUD()
 	});
 
 	EventBus::addCallback([this](HealthUpdated e) { onHealthUpdated(e); });
+	EventBus::addCallback([this](DashesUpdated e) { onDashesUpdated(e); });
+
 	EventBus::addCallback([this](BulletShot e) { onBulletShot(e); });
+
 	EventBus::addCallback([this](GameStateChanged e) { onGameStateChanged(e); });
 
 	m_HPText = m_UIHandler->makeText("HP: ");
-	m_AmmoText = m_UIHandler->makeText("Ammo: ");
-	m_AmmoText->setPosition({ 20, 50 });
+	m_DashesText = m_UIHandler->makeText("Dashes: ");
+	m_DashesText->setPosition({20, 50 });
 
 	m_Crosshair = m_UIHandler->makeImage("crosshair");
 	m_Crosshair->setWidth(50);
@@ -60,6 +63,11 @@ HUD::HUD()
 void HUD::onHealthUpdated(HealthUpdated event)
 {
 	m_HPText->setText(stringFormat("HP: %d/%d", event.hp, event.maxHp));
+}
+
+void HUD::onDashesUpdated(DashesUpdated event)
+{
+	m_DashesText->setText(stringFormat("Dashes: %d/%d", event.dashes, event.maxDashes));
 }
 
 void HUD::onBulletShot(BulletShot event)
