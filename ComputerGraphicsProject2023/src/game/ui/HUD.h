@@ -21,15 +21,19 @@ private:
 
 	Ref<UIImage> m_Crosshair;
 
-	Ref<UIText> m_PauseScreenTitleText;
-	Ref<UIText> m_PauseScreenSubtitleText;
+	Ref<UIText> m_PauseScreenTitle;
+	Ref<UIText> m_PauseScreenSubtitle;
 
-	Ref<UIText> m_GameOverTitleText;
-	Ref<UIText> m_GameOverSubtitleText;
+	Ref<UIText> m_GameOverTitle;
+	Ref<UIText> m_GameOverSubtitle;
+
+	Ref<UIText> m_LevelUpTitle;
+	Ref<UIText> m_LevelUpSubtitle;
 
 	void onHealthUpdated(HealthUpdated event);
 	void onDashesUpdated(DashesUpdated event);
 	void onBulletShot(BulletShot event);
+	void onLevelUp(const LevelUp& event);
 
 	void onGameStateChanged(GameStateChanged event);
 

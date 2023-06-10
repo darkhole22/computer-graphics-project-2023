@@ -140,17 +140,16 @@ void Player::onEnemyKilled(const EnemyDied& event)
 {
 	m_Stats.exp++;
 
-	if (m_Stats.exp >= 10)
+	if (m_Stats.exp >= PlayerStats::c_ExpRequired)
 	{
-		VUDEBUG("Level Up!");
-
-		m_Stats.level += m_Stats.exp / 10;
-		m_Stats.exp %= 10;
+		m_Stats.level += m_Stats.exp / PlayerStats::c_ExpRequired;
+		m_Stats.exp %= PlayerStats::c_ExpRequired;
 
 		m_Stats.dashesLeft++;
 		m_Stats.maxDashes++;
 
 		EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
+		EventBus::emit(LevelUp{ "Dash Upgraded!"});
 	}
 
 }

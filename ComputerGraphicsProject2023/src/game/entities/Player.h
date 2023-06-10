@@ -39,6 +39,8 @@ struct PlayerStats
 
 	static constexpr u32 c_StartingHP = 5;
 
+	static constexpr u32 c_ExpRequired = 10;
+
 	static constexpr u32 c_StartingDashes = 1;
 	static constexpr f32 c_StartingDashCooldown = 3.0f;
 

@@ -21,8 +21,14 @@ struct DashesUpdated
 	u32 maxDashes;
 };
 
+struct LevelUp
+{
+	String message;
+};
+
 #define PLAYER_EVENTS 	STATIC_EVENT(HealthUpdated) 	\
 						STATIC_EVENT(BulletShot)        \
-						STATIC_EVENT(DashesUpdated)
+						STATIC_EVENT(DashesUpdated)		\
+						STATIC_EVENT(LevelUp)
 
 } // namespace game

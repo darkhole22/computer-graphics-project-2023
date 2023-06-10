@@ -10,16 +10,21 @@ HUD::HUD()
 
 	m_Window = Application::getWindow();
 	m_Window->addCallback([this](WindowResizedEvent event) {
-		centerElement(m_PauseScreenTitleText);
-		centerElement(m_PauseScreenSubtitleText, 0.0f, m_PauseScreenTitleText->getHeight());
-		centerElement(m_GameOverTitleText);
-		centerElement(m_GameOverSubtitleText, 0.0f, m_GameOverTitleText->getHeight());
+		centerElement(m_PauseScreenTitle);
+		centerElement(m_PauseScreenSubtitle, 0.0f, m_PauseScreenTitle->getHeight());
+
+		centerElement(m_GameOverTitle);
+		centerElement(m_GameOverSubtitle, 0.0f, m_GameOverTitle->getHeight());
+
+		centerElement(m_LevelUpTitle, 0.0f, -30.0f);
+		centerElement(m_LevelUpSubtitle, 0.0f, -30.0f + m_LevelUpTitle->getHeight());
 
 		centerElement(m_Crosshair);
 	});
 
 	EventBus::addCallback([this](HealthUpdated e) { onHealthUpdated(e); });
 	EventBus::addCallback([this](DashesUpdated e) { onDashesUpdated(e); });
+	EventBus::addCallback([this](LevelUp e) { onLevelUp(e); });
 
 	EventBus::addCallback([this](BulletShot e) { onBulletShot(e); });
 
@@ -36,28 +41,41 @@ HUD::HUD()
 	/****************
 	 * PAUSE SCREEN *
 	 ****************/
-	m_PauseScreenTitleText = m_UIHandler->makeText("PAUSED");
-	m_PauseScreenSubtitleText = m_UIHandler->makeText("Press ESC to Resume.");
+	m_PauseScreenTitle = m_UIHandler->makeText("PAUSED");
+	m_PauseScreenSubtitle = m_UIHandler->makeText("Press ESC to Resume.");
 
-	centerElement(m_PauseScreenTitleText);
-	centerElement(m_PauseScreenSubtitleText, 0.0f, m_PauseScreenTitleText->getHeight());
+	centerElement(m_PauseScreenTitle);
+	centerElement(m_PauseScreenSubtitle, 0.0f, m_PauseScreenTitle->getHeight());
 
-	m_PauseScreenTitleText->setStroke(0.6f);
-	m_PauseScreenTitleText->setVisible(false);
-	m_PauseScreenSubtitleText->setVisible(false);
+	m_PauseScreenTitle->setStroke(0.6f);
+	m_PauseScreenTitle->setVisible(false);
+	m_PauseScreenSubtitle->setVisible(false);
 
 	/********************
 	 * GAME OVER SCREEN *
 	 ********************/
-	m_GameOverTitleText = m_UIHandler->makeText("GAME OVER");
-	m_GameOverSubtitleText = m_UIHandler->makeText("Press R to Restart");
+	m_GameOverTitle = m_UIHandler->makeText("GAME OVER");
+	m_GameOverSubtitle = m_UIHandler->makeText("Press R to Restart");
 
-	centerElement(m_GameOverTitleText);
-	centerElement(m_GameOverSubtitleText, 0.0f, m_GameOverTitleText->getHeight());
+	centerElement(m_GameOverTitle);
+	centerElement(m_GameOverSubtitle, 0.0f, m_GameOverTitle->getHeight());
 
-	m_GameOverTitleText->setStroke(0.6f);
-	m_GameOverTitleText->setVisible(false);
-	m_GameOverSubtitleText->setVisible(false);
+	m_GameOverTitle->setStroke(0.6f);
+	m_GameOverTitle->setVisible(false);
+	m_GameOverSubtitle->setVisible(false);
+
+	/********************
+	 *     LEVEL UP     *
+	 ********************/
+	m_LevelUpTitle = m_UIHandler->makeText("LEVEL UP!");
+	m_LevelUpSubtitle = m_UIHandler->makeText("Level Up Subtitle");
+
+	centerElement(m_LevelUpTitle, 0.0f, -30.0f);
+	centerElement(m_LevelUpSubtitle, 0.0f, -30.0f + m_LevelUpTitle->getHeight());
+
+	m_LevelUpTitle->setStroke(0.6f);
+	m_LevelUpTitle->setVisible(false);
+	m_LevelUpSubtitle->setVisible(false);
 }
 
 void HUD::onHealthUpdated(HealthUpdated event)
@@ -68,6 +86,21 @@ void HUD::onHealthUpdated(HealthUpdated event)
 void HUD::onDashesUpdated(DashesUpdated event)
 {
 	m_DashesText->setText(stringFormat("Dashes: %d/%d", event.dashes, event.maxDashes));
+}
+
+void HUD::onLevelUp(const LevelUp& event)
+{
+	m_LevelUpSubtitle->setText(event.message);
+
+	m_LevelUpTitle->setVisible(true);
+	m_LevelUpSubtitle->setVisible(true);
+
+	auto tween = Application::getScene()->makeTween();
+	tween->addIntervalTweener(1.0f);
+	tween->addCallbackTweener([this] () {
+		m_LevelUpTitle->setVisible(false);
+		m_LevelUpSubtitle->setVisible(false);
+	});
 }
 
 void HUD::onBulletShot(BulletShot event)
@@ -90,11 +123,11 @@ void HUD::onBulletShot(BulletShot event)
 
 void HUD::onGameStateChanged(GameStateChanged event)
 {
-	m_PauseScreenTitleText->setVisible(event.gameState == GameState::PAUSE);
-	m_PauseScreenSubtitleText->setVisible(event.gameState == GameState::PAUSE);
+	m_PauseScreenTitle->setVisible(event.gameState == GameState::PAUSE);
+	m_PauseScreenSubtitle->setVisible(event.gameState == GameState::PAUSE);
 
-	m_GameOverTitleText->setVisible(event.gameState == GameState::GAME_OVER);
-	m_GameOverSubtitleText->setVisible(event.gameState == GameState::GAME_OVER);
+	m_GameOverTitle->setVisible(event.gameState == GameState::GAME_OVER);
+	m_GameOverSubtitle->setVisible(event.gameState == GameState::GAME_OVER);
 }
 
 } // namespace game
