@@ -65,6 +65,7 @@ void GameManager::update(f32 dt)
 
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
+			m_WaveTween->pause();
 			setGameState(GameState::PAUSE);
 			Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 		}
@@ -74,6 +75,7 @@ void GameManager::update(f32 dt)
 	case GameState::PAUSE:
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
+			m_WaveTween->play();
 			setGameState(GameState::PLAYING);
 			Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 		}
