@@ -29,10 +29,15 @@ HUD::HUD()
 	EventBus::addCallback([this](BulletShot e) { onBulletShot(e); });
 
 	EventBus::addCallback([this](GameStateChanged e) { onGameStateChanged(e); });
+	EventBus::addCallback([this](ScoreUpdated e) { onScoreUpdated(e); });
 
 	m_HPText = m_UIHandler->makeText("HP: ");
+
 	m_DashesText = m_UIHandler->makeText("Dashes: ");
 	m_DashesText->setPosition({20, 50 });
+
+	m_ScoreText = m_UIHandler->makeText("Score: ");
+	m_ScoreText->setPosition({20, 80});
 
 	m_Crosshair = m_UIHandler->makeImage("crosshair");
 	m_Crosshair->setWidth(50);
@@ -70,8 +75,8 @@ HUD::HUD()
 	m_LevelUpTitle = m_UIHandler->makeText("LEVEL UP!");
 	m_LevelUpSubtitle = m_UIHandler->makeText("Level Up Subtitle");
 
-	centerElement(m_LevelUpTitle, 0.0f, -30.0f);
-	centerElement(m_LevelUpSubtitle, 0.0f, -30.0f + m_LevelUpTitle->getHeight());
+	centerElement(m_LevelUpTitle, 0.0f, -100.0f);
+	centerElement(m_LevelUpSubtitle, 0.0f, -100.0f + m_LevelUpTitle->getHeight());
 
 	m_LevelUpTitle->setStroke(0.6f);
 	m_LevelUpTitle->setVisible(false);
@@ -88,7 +93,7 @@ void HUD::onDashesUpdated(DashesUpdated event)
 	m_DashesText->setText(stringFormat("Dashes: %d/%d", event.dashes, event.maxDashes));
 }
 
-void HUD::onLevelUp(const LevelUp& event)
+void HUD::onLevelUp(LevelUp event)
 {
 	m_LevelUpSubtitle->setText(event.message);
 
@@ -129,5 +134,11 @@ void HUD::onGameStateChanged(GameStateChanged event)
 	m_GameOverTitle->setVisible(event.gameState == GameState::GAME_OVER);
 	m_GameOverSubtitle->setVisible(event.gameState == GameState::GAME_OVER);
 }
+
+void HUD::onScoreUpdated(ScoreUpdated event)
+{
+	m_ScoreText->setText(stringFormat("Score: %d", event.score));
+}
+
 
 } // namespace game

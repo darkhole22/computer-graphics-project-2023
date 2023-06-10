@@ -16,6 +16,8 @@ GameManager::GameManager(Ref<Terrain> terrain)
 		onGameOver();
 	});
 
+	EventBus::addCallback([this](EnemyDied e) { onEnemyDied(e); });
+
 	m_WaveTween = m_Scene->makeTween();
 	m_WaveTween->loop();
 	m_WaveTween->addIntervalTweener(10.0f);
@@ -45,6 +47,9 @@ void GameManager::update(f32 dt)
 	switch (m_GameState)
 	{
 	case GameState::SETUP:
+		m_Score = 0;
+		EventBus::emit(ScoreUpdated{m_Score});
+
 		m_WaveTween->play();
 		setGameState(GameState::PLAYING);
 		break;
@@ -112,6 +117,12 @@ void GameManager::beforeRestart()
 	m_Player->reset();
 
 	setGameState(GameState::SETUP);
+}
+
+void GameManager::onEnemyDied(EnemyDied event)
+{
+	m_Score += 100;
+	EventBus::emit(ScoreUpdated{m_Score});
 }
 
 } // namespace game

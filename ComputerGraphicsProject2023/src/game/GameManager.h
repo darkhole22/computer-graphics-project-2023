@@ -29,12 +29,15 @@ private:
 	Ref<Tween> m_WaveTween;
 
 	GameState m_GameState;
+	u32 m_Score;
 
 	void setGameState(GameState gameState);
 
 	void onGameOver();
 
 	void beforeRestart();
+
+	void onEnemyDied(EnemyDied event);
 
 };
 

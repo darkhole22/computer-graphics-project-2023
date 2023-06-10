@@ -18,6 +18,7 @@ private:
 
 	Ref<UIText> m_HPText;
 	Ref<UIText> m_DashesText;
+	Ref<UIText> m_ScoreText;
 
 	Ref<UIImage> m_Crosshair;
 
@@ -33,9 +34,10 @@ private:
 	void onHealthUpdated(HealthUpdated event);
 	void onDashesUpdated(DashesUpdated event);
 	void onBulletShot(BulletShot event);
-	void onLevelUp(const LevelUp& event);
+	void onLevelUp(LevelUp event);
 
 	void onGameStateChanged(GameStateChanged event);
+	void onScoreUpdated(ScoreUpdated event);
 
 	template <class UIElement>
 	void centerElement(Ref<UIElement> element, f32 xOffset = 0.0f, f32 yOffset = 0.0f)
