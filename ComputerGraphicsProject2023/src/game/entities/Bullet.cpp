@@ -19,14 +19,16 @@ void Bullet::setup(Transform startingTransform, glm::vec3 direction)
 	m_GameObject->transform->translate(0.0f, 1.5f, 0.0f);
 	m_GameObject->transform->setScale(0.1f);
 
-	m_StartingPosition = startingTransform.getPosition();
-
 	auto angle = sin(direction.y);
 	m_GameObject->transform->rotate(0.0f, 0.0f, -glm::radians(90.0f) + angle);
 
+	status = EntityStatus::ALIVE;
+
+	m_StartingPosition = startingTransform.getPosition();
 	m_Direction = direction;
 
 	m_Hitbox->transform = m_GameObject->transform;
+	m_Hitbox->data = this;
 	Application::getScene()->addHitbox(m_Hitbox);
 }
 
@@ -39,7 +41,7 @@ EntityStatus Bullet::update(float dt)
 		return EntityStatus::DEAD;
 	}
 
-	return EntityStatus::ALIVE;
+	return status;
 }
 
 Bullet::~Bullet()
