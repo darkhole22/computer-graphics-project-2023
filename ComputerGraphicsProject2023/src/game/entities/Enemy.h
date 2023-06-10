@@ -18,7 +18,7 @@ public:
 
 	explicit Enemy(Ref<GameObject> gameObject);
 
-	void setup(Ref<Player> player);
+	void setup(Ref<Player> player, glm::vec3 spawnLocation);
 
 	EntityStatus update(float dt);
 

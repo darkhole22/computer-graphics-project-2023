@@ -3,17 +3,13 @@
 namespace game {
 
 const String& Bullet::s_ModelName = "bullet";
-const String& Bullet::s_TextureName = "bullet";
+const String& Bullet::s_TextureName = "bullet"; // TODO The texture seems to be broken
 
 Bullet::Bullet(Ref<GameObject> gameObject)
 {
 	m_GameObject = gameObject;
 
-	// TODO: Those should be the correct values for the CollisionShape size
-	// However they seem not to work properly: I suspect that's because of the rotation applied
-	// to the bullet's GameObject.
-	// We should look into this to get it fixed.
-	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.6f * 0.2f, 3.8f * 0.2f));
+	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.6f, 3.6f));
 	m_Hitbox->layerMask = PLAYER_BULLET_MASK;
 }
 
@@ -21,7 +17,7 @@ void Bullet::setup(Transform startingTransform, glm::vec3 direction)
 {
 	m_GameObject->transform = makeRef<Transform>(startingTransform);
 	m_GameObject->transform->translate(0.0f, 1.5f, 0.0f);
-	m_GameObject->transform->setScale(0.2f);
+	m_GameObject->transform->setScale(0.1f);
 
 	m_StartingPosition = startingTransform.getPosition();
 

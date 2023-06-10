@@ -27,10 +27,12 @@ GameManager::GameManager(Ref<Terrain> terrain)
 		for (int i = 0; i <= 10; i++)
 		{
 			auto enemy = m_EnemyFactory->get();
-			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
+			auto startingLocation =
+					m_Player->transform->getPosition() +
+					glm::vec3(uni(rng), 0.0f, uni(rng));
 
 			enemy->m_GameObject->transform->setPosition(startingLocation);
-			enemy->setup(m_Player);
+			enemy->setup(m_Player, startingLocation);
 		}
 	});
 	m_WaveTween->reset(false);
