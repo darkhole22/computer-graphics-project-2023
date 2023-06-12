@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="vulture::String">
+    <DisplayString Condition="(m_Data.head &amp; DYNAMIC_STRING_MASK) == 0">{m_Data.str,s}</DisplayString>
+    <DisplayString>{static_cast&lt;char*&gt;(m_Data.data) + DYNAMIC_OFFSET,s}</DisplayString>
+    <StringView Condition="(m_Data.head &amp; DYNAMIC_STRING_MASK) == 0">m_Data.str,s</StringView>
+    <StringView>static_cast&lt;char*&gt;(m_Data.data) + DYNAMIC_OFFSET,s</StringView>
+    <Expand>
+      <Item Name="[size]" Condition="(m_Data.head &amp; DYNAMIC_STRING_MASK) == 0">(int)m_Data.head</Item>
+      <Item Name="[size]" Condition="(m_Data.head &amp; DYNAMIC_STRING_MASK) != 0">static_cast&lt;DynamicData*&gt;(m_Data.data)->size</Item>
+      <Item Name="[capacity]" Condition="(m_Data.head &amp; DYNAMIC_STRING_MASK) == 0">MAX_SMALL_STRING_LEN + 1</Item>
+      <Item Name="[capacity]" Condition="(m_Data.head &amp; DYNAMIC_STRING_MASK) != 0">static_cast&lt;DynamicData*&gt;(m_Data.data)->capacity</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>
