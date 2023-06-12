@@ -16,7 +16,7 @@ void HitBox::applyTransform()
 {
 	for (auto& shape : m_Shapes)
 	{
-		shape->applyTransform(transform);
+		shape->applyTransform(*transform);
 	}
 }
 

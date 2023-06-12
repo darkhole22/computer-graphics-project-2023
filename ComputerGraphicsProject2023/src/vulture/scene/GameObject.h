@@ -46,14 +46,7 @@ public:
 	 */
 	explicit GameObject(const String& name) : GameObject(name, name) {};
 
-	Transform transform;
-
-	/**
-	 * @brief Tag that represents the kind of object.
-	 *
-	 * This is used for collision detection.
-	 */
-	String tag;
+	Ref<Transform> transform;
 
 	friend class Scene;
 private:
@@ -71,7 +64,7 @@ private:
 	 *
 	 * @param dt The time elapsed since the last frame, in seconds.
 	 */
-	inline void update(f64 dt) { m_Uniform->model = transform.getWorldMatrix(); }
+	inline void update(f64 dt) { m_Uniform->model = transform->getWorldMatrix(); }
 };
 
 } // vulture

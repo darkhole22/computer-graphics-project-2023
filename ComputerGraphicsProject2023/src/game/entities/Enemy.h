@@ -11,12 +11,14 @@ public:
 	static const String& s_ModelName;
 	static const String& s_TextureName;
 
+	static constexpr f32 s_FlyingHeight = 1.0f;
+
 	Ref<GameObject> m_GameObject;
 	Ref<HitBox> m_Hitbox;
 
 	explicit Enemy(Ref<GameObject> gameObject);
 
-	void setup(Ref<Player> player);
+	void setup(Ref<Player> player, glm::vec3 spawnLocation);
 
 	EntityStatus update(float dt);
 
@@ -24,8 +26,14 @@ public:
 
 private:
 	const float c_Speed = 4.0f;
-	Ref<Player> m_Player;
+
 	EntityStatus m_Status = EntityStatus::ALIVE;
+
+	Ref<MovementComponent> m_Movement;
+
+	Ref<Player> m_Player;
+
+	u32 m_Damage = 1;
 };
 
 } // namespace game

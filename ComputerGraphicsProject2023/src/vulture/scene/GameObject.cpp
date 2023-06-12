@@ -11,6 +11,8 @@ GameObject::GameObject(const String &modelName, const String &textureName)
 	m_Texture = Texture::get(textureName);
 	m_TextureSampler = makeRef<TextureSampler>(*m_Texture);
 
+	transform = makeRef<Transform>();
+
 	m_Handle = s_NextHandle;
 	s_NextHandle++;
 }

@@ -14,15 +14,43 @@
 #include "Bullet.h"
 #include "game/terrain/Terrain.h"
 #include "game/EventBus.h"
+#include "game/components/MovementComponent.h"
 
 namespace game {
 
 using namespace vulture;
 
+struct PlayerStats
+{
+	u32 hp = c_StartingHP;
+	u32 maxHp = c_StartingHP;
+
+	u32 dashesLeft = c_StartingDashes;
+	u32 maxDashes = c_StartingDashes;
+	f32 dashCooldown = c_StartingDashCooldown;
+	f32 dashDuration = 0.15f;
+	f32 dashSpeed = 1.0f;
+	f32 maxDashSpeed = 20.0f;
+
+	f32 fireCooldown = c_StartingFireCooldown;
+
+	u32 exp = 0;
+	u32 level = 1;
+
+	static constexpr u32 c_StartingHP = 5;
+
+	static constexpr u32 c_ExpRequired = 10;
+
+	static constexpr u32 c_StartingDashes = 1;
+	static constexpr f32 c_StartingDashCooldown = 3.0f;
+
+	static constexpr f32 c_StartingFireCooldown = 1.0f;
+};
+
 class Player
 {
 public:
-	Transform transform;
+	Ref<Transform> transform;
 	Ref<HitBox> m_Hitbox;
 
 	Player();
@@ -34,10 +62,9 @@ private:
 	const f32 c_Speed = 10;
 	const f32 c_RotSpeed = 4.0f;
 
-	const u32 c_InitialHP = 5;
+	Ref<MovementComponent> m_Movement;
 
-	u32 m_HP = c_InitialHP;
-	u32 m_MaxHP = c_InitialHP;
+	PlayerStats m_Stats;
 
 	bool m_Godmode = false;
 
@@ -48,9 +75,11 @@ private:
 	f32 c_CameraHeight = 1.5f;
 
 	Ref<Tween> m_FiringTween;
-	const f32 c_FireRatio = 0.3f;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
+
+	void onHitBoxEntered(const HitBoxEntered& e);
+	void onEnemyKilled(const EnemyDied& event);
 };
 
 } // namespace game

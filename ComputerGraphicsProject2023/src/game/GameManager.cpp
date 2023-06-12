@@ -16,6 +16,8 @@ GameManager::GameManager(Ref<Terrain> terrain)
 		onGameOver();
 	});
 
+	EventBus::addCallback([this](EnemyDied e) { onEnemyDied(e); });
+
 	m_WaveTween = m_Scene->makeTween();
 	m_WaveTween->loop();
 	m_WaveTween->addIntervalTweener(10.0f);
@@ -27,13 +29,12 @@ GameManager::GameManager(Ref<Terrain> terrain)
 		for (int i = 0; i <= 10; i++)
 		{
 			auto enemy = m_EnemyFactory->get();
-			enemy->m_GameObject->tag = "ENEMY";
-			auto startingLocation = m_Player->transform.getPosition() + glm::vec3(uni(rng), 0.0f, uni(rng));
+			auto startingLocation =
+					m_Player->transform->getPosition() +
+					glm::vec3(uni(rng), 0.0f, uni(rng));
 
-			enemy->m_GameObject->transform.setPosition(startingLocation);
-			enemy->m_GameObject->transform.setScale(3.0f, 3.0f, 3.0f);
-
-			enemy->setup(m_Player);
+			enemy->m_GameObject->transform->setPosition(startingLocation);
+			enemy->setup(m_Player, startingLocation);
 		}
 	});
 	m_WaveTween->reset(false);
@@ -46,6 +47,9 @@ void GameManager::update(f32 dt)
 	switch (m_GameState)
 	{
 	case GameState::SETUP:
+		m_Score = 0;
+		EventBus::emit(ScoreUpdated{m_Score});
+
 		m_WaveTween->play();
 		setGameState(GameState::PLAYING);
 		break;
@@ -55,29 +59,20 @@ void GameManager::update(f32 dt)
 
 		for (auto& enemy : *m_EnemyFactory)
 		{
-			auto pos = enemy->m_GameObject->transform.getPosition();
-			enemy->m_GameObject->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
-			enemy->m_Hitbox->transform = enemy->m_GameObject->transform;
-			enemy->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
+			auto pos = enemy->m_GameObject->transform->getPosition();
+			enemy->m_GameObject->transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + Enemy::s_FlyingHeight, pos.z);
 		}
 
 		m_Player->update(dt);
 
-		auto pos = m_Player->transform.getPosition();
-		m_Player->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
-		m_Player->m_Hitbox->transform = m_Player->transform;
-		m_Player->m_Hitbox->transform.setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1, pos.z);
+		auto pos = m_Player->transform->getPosition();
+		m_Player->transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
 
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
+			m_WaveTween->pause();
 			setGameState(GameState::PAUSE);
 			Application::getWindow()->setCursorMode(CursorMode::NORMAL);
-		}
-
-		if (Input::isActionJustPressed("TOGGLE_INPUT_MODE"))
-		{
-			m_InputModeMouse = !m_InputModeMouse;
-			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
 		}
 
 		break;
@@ -85,15 +80,16 @@ void GameManager::update(f32 dt)
 	case GameState::PAUSE:
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
+			m_WaveTween->play();
 			setGameState(GameState::PLAYING);
-			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+			Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 		}
 		break;
 	case GameState::GAME_OVER:
 		if (Input::isActionJustPressed("RESTART"))
 		{
 			beforeRestart();
-			Application::getWindow()->setCursorMode(m_InputModeMouse ? CursorMode::DISABLED : CursorMode::NORMAL);
+			Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 		}
 		break;
 	}
@@ -111,6 +107,7 @@ void GameManager::setGameState(GameState gameState)
 void GameManager::onGameOver()
 {
 	m_WaveTween->reset(false);
+	Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 	setGameState(GameState::GAME_OVER);
 }
 
@@ -120,6 +117,12 @@ void GameManager::beforeRestart()
 	m_Player->reset();
 
 	setGameState(GameState::SETUP);
+}
+
+void GameManager::onEnemyDied(EnemyDied event)
+{
+	m_Score += 100;
+	EventBus::emit(ScoreUpdated{m_Score});
 }
 
 } // namespace game
