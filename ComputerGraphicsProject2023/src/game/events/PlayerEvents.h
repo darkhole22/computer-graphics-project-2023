@@ -13,13 +13,22 @@ struct HealthUpdated
 	u32 maxHp;
 };
 
-struct AmmoUpdated
+struct BulletShot {};
+
+struct DashesUpdated
 {
-	u32 ammo;
-	u32 maxAmmo;
+	u32 dashes;
+	u32 maxDashes;
 };
 
-#define PLAYER_EVENTS 	STATIC_EVENT(HealthUpdated) \
-						STATIC_EVENT(AmmoUpdated)
+struct LevelUp
+{
+	String message;
+};
+
+#define PLAYER_EVENTS 	STATIC_EVENT(HealthUpdated) 	\
+						STATIC_EVENT(BulletShot)        \
+						STATIC_EVENT(DashesUpdated)		\
+						STATIC_EVENT(LevelUp)
 
 } // namespace game

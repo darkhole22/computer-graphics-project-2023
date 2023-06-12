@@ -1,0 +1,11 @@
+Model Information:
+* title:	Robot after work
+* source:	https://sketchfab.com/3d-models/robot-after-work-6b5c3b5147564244bfa0c9875e3a6a9e
+* author:	Vincent Decc (https://sketchfab.com/VincentDecc)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Robot after work" (https://sketchfab.com/3d-models/robot-after-work-6b5c3b5147564244bfa0c9875e3a6a9e) by Vincent Decc (https://sketchfab.com/VincentDecc) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

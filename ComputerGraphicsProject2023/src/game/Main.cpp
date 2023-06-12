@@ -53,22 +53,6 @@ public:
 		m_DebugUI = makeRef<DebugUI>();
 		m_HUD = makeRef<HUD>();
 
-		/***********
-		 * VOLCANO *
-		 ***********/
-		auto volcano = makeRef<GameObject>("vulture");
-		volcano->transform.setPosition(100.0f, 50.0f, 100.0f);
-		scene->addObject(volcano);
-
-		auto tween = scene->makeTween()->loop();
-
-		std::function<void(float)> scaleCallback = [volcano](float size) {
-			volcano->transform.setScale(size, size, size);
-		};
-
-		tween->addMethodTweener(scaleCallback, 1.0f, 3.0f, 2.0f);
-		tween->addMethodTweener(scaleCallback, 3.0f, 1.0f, 2.0f);
-
 		/*********
 		 * LIGHT *
 		 *********/
@@ -92,10 +76,6 @@ public:
 		 * GAME LOGIC *
 		 **************/
 		gameManager = makeRef<GameManager>(terrain);
-
-		scene->makeTimer(5)->addCallback([](const TimerTimeoutEvent&) {
-			VUINFO("Test Timer ended!");
-		});
 	}
 
 	void update(float dt) override
@@ -108,7 +88,6 @@ public:
 		}
 
 		gameManager->update(dt);
-
 		m_DebugUI->update(dt);
 
 		auto cameraPos = scene->getCamera()->position;
@@ -185,10 +164,14 @@ private:
 		};
 		Input::setAction("FIRE", fireAction);
 
-		InputAction inputModeAction{};
-		inputModeAction.keyboardBindings = {
-				KeyboardBinding{{GLFW_KEY_I}} };
-		Input::setAction("TOGGLE_INPUT_MODE", inputModeAction);
+		InputAction dashAction{};
+		dashAction.keyboardBindings = {
+				KeyboardBinding{{GLFW_KEY_LEFT_SHIFT}}
+		};
+		dashAction.gamepadButtonBindings = {
+				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_LEFT_BUMPER }}
+		};
+		Input::setAction("DASH", dashAction);
 
 		/**********************************************
 		 *                  CAMERA                    *

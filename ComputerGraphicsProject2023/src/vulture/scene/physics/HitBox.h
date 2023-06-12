@@ -83,7 +83,7 @@ public:
 	/**
 	 * @brief Transform of the hit box.
 	 */
-	Transform transform;
+	Ref<Transform> transform;
 
 	/**
 	 * @brief Constructs a HitBox object with the specified collision shape.

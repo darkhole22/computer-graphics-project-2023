@@ -2,37 +2,48 @@
 
 namespace game {
 
-const String& Enemy::s_ModelName = "character";
-const String& Enemy::s_TextureName = "character";
+const String& Enemy::s_ModelName = "hand-robot";
+const String& Enemy::s_TextureName = "hand-robot";
 
 Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 {
-	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, 2.0f));
+	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.9f, 1.8f));
+	m_GameObject->transform->setScale(0.5f);
+
+	m_Movement = makeRef<MovementComponent>(m_GameObject->transform);
 
 	m_Hitbox->layerMask = ENEMY_MASK;
 	m_Hitbox->collisionMask = PLAYER_BULLET_MASK;
+	m_Hitbox->data = &m_Damage;
+	m_Hitbox->transform = m_GameObject->transform;
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
+		EventBus::emit(EnemyDied{});
 		m_Status = EntityStatus::DEAD;
 	});
 }
 
-void Enemy::setup(Ref<Player> player)
+void Enemy::setup(Ref<Player> player, glm::vec3 spawnLocation)
 {
 	m_Player = player;
 	m_Status = EntityStatus::ALIVE;
 
-	m_Hitbox->transform = m_GameObject->transform;
+	m_GameObject->transform->setPosition(spawnLocation);
+
 	Application::getScene()->addHitbox(m_Hitbox);
 }
 
 EntityStatus Enemy::update(float dt)
 {
-	auto dir = m_Player->transform.getPosition() - m_GameObject->transform.getPosition();
-	dir.y = 0;
-	dir = glm::normalize(dir);
+	auto dir = glm::normalize(m_Player->transform->getPosition() - m_GameObject->transform->getPosition());
 
-	m_GameObject->transform.translate(dir * c_Speed * dt);
+	auto angle = glm::angle(
+		glm::normalize(glm::vec2(m_Player->transform->getPosition().x, m_Player->transform->getPosition().z)),
+		glm::normalize(glm::vec2(m_GameObject->transform->getPosition().x, m_GameObject->transform->getPosition().z))
+	);
+
+	//m_GameObject->transform->rotate(0.0f, angle, 0.0f);
+	m_Movement->move(dir * c_Speed * dt);
 
 	return m_Status;
 }

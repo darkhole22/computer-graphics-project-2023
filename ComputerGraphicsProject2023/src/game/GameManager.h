@@ -31,14 +31,15 @@ private:
 	Ref<Timer> m_HealthPackTween;
 
 	GameState m_GameState;
-
-	bool m_InputModeMouse = true;
+	u32 m_Score;
 
 	void setGameState(GameState gameState);
 
 	void onGameOver();
 
 	void beforeRestart();
+
+	void onEnemyDied(EnemyDied event);
 
 };
 

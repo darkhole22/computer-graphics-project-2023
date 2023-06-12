@@ -2,6 +2,9 @@
 
 #include "game/GameState.h"
 #include "vulture/event/Event.h"
+#include "vulture/util/Types.h"
+
+using namespace vulture;
 
 namespace game {
 
@@ -15,6 +18,13 @@ struct GodmodeToggled
 	bool godmodeOn;
 };
 
-#define GAME_EVENTS 	STATIC_EVENT(GameStateChanged) \
-						STATIC_EVENT(GodmodeToggled)
+struct ScoreUpdated
+{
+	u32 score;
+};
+
+#define GAME_EVENTS		STATIC_EVENT(GameStateChanged) 	\
+						STATIC_EVENT(GodmodeToggled)    \
+					 	STATIC_EVENT(ScoreUpdated)
+
 } // namespace game
