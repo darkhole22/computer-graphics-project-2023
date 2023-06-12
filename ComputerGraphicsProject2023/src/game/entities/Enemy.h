@@ -33,8 +33,7 @@ private:
 
 	Ref<Player> m_Player;
 
-
-	u32 m_Damage = 1.0f;
+	u32 m_Damage = 1;
 };
 
 } // namespace game

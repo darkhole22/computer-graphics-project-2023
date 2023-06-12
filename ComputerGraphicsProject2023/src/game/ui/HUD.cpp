@@ -100,9 +100,7 @@ void HUD::onLevelUp(LevelUp event)
 	m_LevelUpTitle->setVisible(true);
 	m_LevelUpSubtitle->setVisible(true);
 
-	auto tween = Application::getScene()->makeTween();
-	tween->addIntervalTweener(1.0f);
-	tween->addCallbackTweener([this] () {
+	Application::getScene()->makeTimer(1.0f)->addCallback([this](TimerTimeoutEvent) {
 		m_LevelUpTitle->setVisible(false);
 		m_LevelUpSubtitle->setVisible(false);
 	});

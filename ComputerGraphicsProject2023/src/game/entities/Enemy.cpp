@@ -20,10 +20,6 @@ Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
 		EventBus::emit(EnemyDied{});
 		m_Status = EntityStatus::DEAD;
-
-		// TODO: This could be modified to allow for piercing bullets
-		auto b = (Bullet*) e.data;
-		b->status = EntityStatus::DEAD;
 	});
 }
 
