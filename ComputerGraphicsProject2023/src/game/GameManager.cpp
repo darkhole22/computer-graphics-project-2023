@@ -57,7 +57,7 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 	});
 	m_HealthPackTimer->pause();
 
-	m_DoubleScoreTimer = m_Scene->makeTimer(10, false);
+	m_DoubleScoreTimer = m_Scene->makeTimer(30, false);
 	m_DoubleScoreTimer->addCallback([this](const TimerTimeoutEvent&) {
 		for (int i = 0; i < 1; i++)
 		{
