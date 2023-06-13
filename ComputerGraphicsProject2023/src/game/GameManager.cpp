@@ -3,9 +3,9 @@
 namespace game {
 
 GameManager::GameManager(Ref<Terrain> terrain) :
-	m_Terrain(terrain), m_EnemyFactory(50),
-	m_HealthPackFactory(10), m_DoubleExpFactory(10),
-	m_GameState(GameState::SETUP)
+		m_Terrain(terrain), m_EnemyFactory(50),
+		m_HealthPackFactory(10), m_DoubleScoreFactory(10),
+		m_GameState(GameState::SETUP)
 {
 	m_Scene = Application::getScene();
 
@@ -17,7 +17,7 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 	});
 
 	EventBus::addCallback([this](EnemyDied e) { onEnemyDied(e); });
-	EventBus::addCallback([this](DoubleExpStarted e) { onDoubleExpStarted(e); });
+	EventBus::addCallback([this](DoubleScoreStarted e) { onDoubleScoreStarted(e); });
 
 	m_WaveTimer = m_Scene->makeTimer(20, false);
 	m_WaveTimer->addCallback([this](const TimerTimeoutEvent&) {
@@ -57,24 +57,24 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 	});
 	m_HealthPackTimer->pause();
 
-	m_DoubleExpTimer = m_Scene->makeTimer(10, false);
-	m_DoubleExpTimer->addCallback([this](const TimerTimeoutEvent&) {
+	m_DoubleScoreTimer = m_Scene->makeTimer(10, false);
+	m_DoubleScoreTimer->addCallback([this](const TimerTimeoutEvent&) {
 		for (int i = 0; i < 1; i++)
 		{
 			f32 theta = Random::next() * glm::two_pi<f32>();
 			f32 r = std::sqrt(0.9f * Random::next() + 0.1f);
-			auto doubleExp = m_DoubleExpFactory.get();
+			auto doubleScore = m_DoubleScoreFactory.get();
 			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(
 					r * 100.0f * std::cos(theta),
 					0.0f,
 					r * 100.0f * std::sin(theta)
 			);
 
-			doubleExp->m_GameObject->transform->setPosition(startingLocation);
-			doubleExp->setup(m_Terrain);
+			doubleScore->m_GameObject->transform->setPosition(startingLocation);
+			doubleScore->setup(m_Terrain);
 		}
 	});
-	m_DoubleExpTimer->pause();
+	m_DoubleScoreTimer->pause();
 }
 
 void GameManager::update(f32 dt)
@@ -85,11 +85,11 @@ void GameManager::update(f32 dt)
 	m_Score = 0;
 	EventBus::emit(ScoreUpdated{ m_Score });
 
-	m_DoubleExpActive = false;
+			m_DoubleScoreActive = false;
 
 	m_WaveTimer->play();
 	m_HealthPackTimer->play();
-	m_DoubleExpTimer->play();
+	m_DoubleScoreTimer->play();
 	setGameState(GameState::PLAYING);
 	break;
 	case GameState::PLAYING:
@@ -103,7 +103,7 @@ void GameManager::update(f32 dt)
 		}
 
 		m_HealthPackFactory.update(dt);
-		m_DoubleExpFactory.update(dt);
+		m_DoubleScoreFactory.update(dt);
 
 		m_Player->update(dt);
 
@@ -114,7 +114,7 @@ void GameManager::update(f32 dt)
 		{
 			m_WaveTimer->pause();
 			m_HealthPackTimer->pause();
-			m_DoubleExpTimer->pause();
+			m_DoubleScoreTimer->pause();
 
 			setGameState(GameState::PAUSE);
 			Application::getWindow()->setCursorMode(CursorMode::NORMAL);
@@ -127,7 +127,7 @@ void GameManager::update(f32 dt)
 	{
 		m_WaveTimer->play();
 		m_HealthPackTimer->play();
-		m_DoubleExpTimer->pause();
+		m_DoubleScoreTimer->play();
 
 		setGameState(GameState::PLAYING);
 		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
@@ -164,7 +164,7 @@ void GameManager::beforeRestart()
 {
 	m_EnemyFactory.reset();
 	m_HealthPackFactory.reset();
-	m_DoubleExpFactory.reset();
+	m_DoubleScoreFactory.reset();
 
 	m_Player->reset();
 
@@ -173,16 +173,16 @@ void GameManager::beforeRestart()
 
 void GameManager::onEnemyDied(EnemyDied event)
 {
-	m_Score += m_DoubleExpActive ? 200 : 100;
+	m_Score += m_DoubleScoreActive ? 200 : 100;
 	EventBus::emit(ScoreUpdated{ m_Score });
 }
 
-void GameManager::onDoubleExpStarted(DoubleExpStarted e)
+void GameManager::onDoubleScoreStarted(DoubleScoreStarted e)
 {
-	m_DoubleExpActive = true;
+	m_DoubleScoreActive = true;
 	m_Scene->makeTimer(e.duration)->addCallback([this](const TimerTimeoutEvent&) {
-		m_DoubleExpActive = false;
-		EventBus::emit(DoubleExpOver{});
+		m_DoubleScoreActive = false;
+		EventBus::emit(DoubleScoreOver{});
 	});
 }
 

@@ -10,7 +10,7 @@
 #include "game/entities/powerup/HealthPack.h"
 #include "vulture/util/ScopeTimer.h"
 #include "game/Random.h"
-#include "game/entities/powerup/DoubleExp.h"
+#include "game/entities/powerup/DoubleScore.h"
 
 namespace game {
 
@@ -27,15 +27,15 @@ private:
 	Ref<Player> m_Player = nullptr;
 	Factory<Enemy> m_EnemyFactory;
 	Factory<HealthPack> m_HealthPackFactory;
-	Factory<DoubleExp> m_DoubleExpFactory;
+	Factory<DoubleScore> m_DoubleScoreFactory;
 
 	Ref<Timer> m_WaveTimer;
 	Ref<Timer> m_HealthPackTimer;
-	Ref<Timer> m_DoubleExpTimer;
+	Ref<Timer> m_DoubleScoreTimer;
 
 	GameState m_GameState;
 	u32 m_Score;
-	bool m_DoubleExpActive;
+	bool m_DoubleScoreActive;
 
 	void setGameState(GameState gameState);
 
@@ -44,7 +44,7 @@ private:
 	void beforeRestart();
 
 	void onEnemyDied(EnemyDied event);
-	void onDoubleExpStarted(DoubleExpStarted e);
+	void onDoubleScoreStarted(DoubleScoreStarted e);
 
 
 };

@@ -2,7 +2,7 @@
 
 #include "vulture/core/Logger.h"
 #include "game/entities/powerup/HealthPack.h"
-#include "game/entities/powerup/DoubleExp.h"
+#include "game/entities/powerup/DoubleScore.h"
 
 using namespace vulture;
 
@@ -66,10 +66,10 @@ Player::Player()
 			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 			break;
 		}
-		case PowerUpType::DoubleExp:
+		case PowerUpType::DoubleScore:
 		{
-			auto *doubleExp = reinterpret_cast<DoubleExpData*>(powerUp);
-			EventBus::emit(DoubleExpStarted{doubleExp->getDuration()});
+			auto *doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+			EventBus::emit(DoubleScoreStarted{doubleScore->getDuration()});
 		}
 		default:
 		break;

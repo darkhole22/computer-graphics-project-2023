@@ -1,12 +1,12 @@
-#include "DoubleExp.h"
+#include "DoubleScore.h"
 #include "game/entities/CollisionMask.h"
 
 namespace game {
 
-	const String DoubleExp::s_ModelName = "star";
-	const String DoubleExp::s_TextureName = "star";
+	const String DoubleScore::s_ModelName = "star";
+	const String DoubleScore::s_TextureName = "star";
 
-	DoubleExp::DoubleExp(Ref<GameObject> gameObject)
+	DoubleScore::DoubleScore(Ref<GameObject> gameObject)
 			: m_GameObject(gameObject)
 	{
 		m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(2.0f, 4.0f));
@@ -22,7 +22,7 @@ namespace game {
 		});
 	}
 
-	void DoubleExp::setup(Ref<Terrain> terrain)
+	void DoubleScore::setup(Ref<Terrain> terrain)
 	{
 		m_Terrain = terrain;
 		m_Status = EntityStatus::ALIVE;
@@ -31,7 +31,7 @@ namespace game {
 		Application::getScene()->addHitbox(m_Hitbox);
 	}
 
-	EntityStatus DoubleExp::update(f32 dt)
+	EntityStatus DoubleScore::update(f32 dt)
 	{
 		m_DeltaHeight += dt;
 		m_DeltaAngle += dt;
@@ -43,17 +43,17 @@ namespace game {
 		return m_Status;
 	}
 
-	DoubleExp::~DoubleExp()
+	DoubleScore::~DoubleScore()
 	{
 		Application::getScene()->removeHitbox(m_Hitbox);
 	}
 
-	PowerUpType DoubleExpData::getType() const
+	PowerUpType DoubleScoreData::getType() const
 	{
-		return PowerUpType::DoubleExp;
+		return PowerUpType::DoubleScore;
 	}
 
-	f32 DoubleExpData::getDuration() const
+	f32 DoubleScoreData::getDuration() const
 	{
 		return m_Duration;
 	}

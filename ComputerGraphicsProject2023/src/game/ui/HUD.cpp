@@ -30,8 +30,8 @@ HUD::HUD()
 
 	EventBus::addCallback([this](GameStateChanged e) { onGameStateChanged(e); });
 	EventBus::addCallback([this](ScoreUpdated e) { onScoreUpdated(e); });
-	EventBus::addCallback([this](DoubleExpStarted e) { onDoubleExpStarted(e); });
-	EventBus::addCallback([this](DoubleExpOver e) { onDoubleExpOver(e); });
+	EventBus::addCallback([this](DoubleScoreStarted e) { onDoubleScoreStarted(e); });
+	EventBus::addCallback([this](DoubleScoreOver e) { onDoubleScoreOver(e); });
 
 	m_HPText = m_UIHandler->makeText("HP: ");
 
@@ -100,14 +100,14 @@ void HUD::onLevelUp(LevelUp event)
 	showNotification("LEVEL UP!", event.message);
 }
 
-void HUD::onDoubleExpStarted(DoubleExpStarted event)
+void HUD::onDoubleScoreStarted(DoubleScoreStarted event)
 {
-	showNotification("DOUBLE EXP!", "Kill them all!");
+	showNotification("DOUBLE SCORE!", "Kill them all!");
 }
 
-void HUD::onDoubleExpOver(DoubleExpOver event)
+void HUD::onDoubleScoreOver(DoubleScoreOver event)
 {
-	showNotification("DOUBLE EXP OVER", "Back to normal.");
+	showNotification("DOUBLE SCORE OVER", "Back to normal.");
 }
 
 void HUD::showNotification(String title, String subtitle)

@@ -35,8 +35,8 @@ private:
 	void onDashesUpdated(DashesUpdated event);
 	void onBulletShot(BulletShot event);
 	void onLevelUp(LevelUp event);
-	void onDoubleExpStarted(DoubleExpStarted event);
-	void onDoubleExpOver(DoubleExpOver event);
+	void onDoubleScoreStarted(DoubleScoreStarted event);
+	void onDoubleScoreOver(DoubleScoreOver event);
 
 	void showNotification(String title, String subtitle);
 
