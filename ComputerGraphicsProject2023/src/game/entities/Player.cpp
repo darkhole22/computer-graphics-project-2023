@@ -2,6 +2,7 @@
 
 #include "vulture/core/Logger.h"
 #include "game/entities/powerup/HealthPack.h"
+#include "game/entities/powerup/DoubleExp.h"
 
 using namespace vulture;
 
@@ -13,8 +14,6 @@ Player::Player()
 	m_Camera = scene->getCamera();
 	m_Camera->setFarPlane(200);
 
-	m_BulletFactory = makeRef<Factory<Bullet>>(40);
-
 	EventBus::addCallback([this](EnemyDied event) { onEnemyKilled(event); });
 
 	/**********
@@ -25,7 +24,7 @@ Player::Player()
 	m_FiringTween->addCallbackTweener([this]() {
 		auto bullet = m_BulletFactory->get();
 
-		bullet->setup(*transform, m_Camera->direction);
+		bullet->setup(*transform, m_Camera->direction, m_Stats.maxBulletHits);
 
 		EventBus::emit(BulletShot{});
 	});
@@ -57,15 +56,20 @@ Player::Player()
 	scene->addHitbox(m_PowerUpHitbox);
 
 	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& e) {
-		PowerUpData* powerUp = reinterpret_cast<PowerUpData*>(e.data);
+		auto* powerUp = reinterpret_cast<PowerUpData*>(e.data);
 		switch (powerUp->getType())
 		{
 		case PowerUpType::HealthUp:
 		{
-			HealthPackData* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
+			auto* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
 			m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
 			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 			break;
+		}
+		case PowerUpType::DoubleExp:
+		{
+			auto *doubleExp = reinterpret_cast<DoubleExpData*>(powerUp);
+			EventBus::emit(DoubleExpStarted{doubleExp->getDuration()});
 		}
 		default:
 		break;
@@ -128,7 +132,6 @@ void Player::update(f32 dt)
 
 void Player::reset()
 {
-	// TODO delete transform; or maybe use Ref
 	transform = makeRef<Transform>();
 	m_Movement = makeRef<MovementComponent>(transform);
 
@@ -171,11 +174,28 @@ void Player::onEnemyKilled(const EnemyDied& event)
 		m_Stats.level += m_Stats.exp / PlayerStats::c_ExpRequired;
 		m_Stats.exp %= PlayerStats::c_ExpRequired;
 
-		m_Stats.dashesLeft++;
-		m_Stats.maxDashes++;
+		f32 rand = Random::next();
+		if (rand < 0.33f)
+		{
+			m_Stats.dashesLeft++;
+			m_Stats.maxDashes++;
 
-		EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
-		EventBus::emit(LevelUp{ "Dash Upgraded!"});
+			EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
+			EventBus::emit(LevelUp{ "Dash Upgraded!"});
+		}
+		else if (rand < 0.66f)
+		{
+			m_Stats.maxHp++;
+			m_Stats.hp++;
+
+			EventBus::emit(HealthUpdated{m_Stats.hp, m_Stats.maxHp});
+			EventBus::emit(LevelUp{ "Health Upgraded!"});
+		}
+		else
+		{
+			m_Stats.maxBulletHits++;
+			EventBus::emit(LevelUp{"Bullets Upgraded!"});
+		}
 	}
 
 }

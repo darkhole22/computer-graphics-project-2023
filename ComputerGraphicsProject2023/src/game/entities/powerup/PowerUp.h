@@ -4,7 +4,7 @@ namespace game {
 
 enum class PowerUpType
 {
-	None, HealthUp
+	None, HealthUp, DoubleExp
 };
 
 class PowerUpData

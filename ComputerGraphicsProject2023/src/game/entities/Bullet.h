@@ -18,7 +18,7 @@ public:
 
 	explicit Bullet(Ref<GameObject> gameObject);
 
-	void setup(Transform startingTransform, glm::vec3 direction);
+	void setup(Transform startingTransform, glm::vec3 direction, u32 maxHits);
 
 	EntityStatus update(float dt);
 
@@ -26,6 +26,8 @@ public:
 private:
 	const float c_Speed = 30.0f;
 	const float c_Range = 30.0f;
+
+	u32 m_HitsLeft;
 
 	Ref<HitBox> m_Hitbox;
 

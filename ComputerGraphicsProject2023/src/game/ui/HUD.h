@@ -28,13 +28,17 @@ private:
 	Ref<UIText> m_GameOverTitle;
 	Ref<UIText> m_GameOverSubtitle;
 
-	Ref<UIText> m_LevelUpTitle;
-	Ref<UIText> m_LevelUpSubtitle;
+	Ref<UIText> m_NotificationTitle;
+	Ref<UIText> m_NotificationSubtitle;
 
 	void onHealthUpdated(HealthUpdated event);
 	void onDashesUpdated(DashesUpdated event);
 	void onBulletShot(BulletShot event);
 	void onLevelUp(LevelUp event);
+	void onDoubleExpStarted(DoubleExpStarted event);
+	void onDoubleExpOver(DoubleExpOver event);
+
+	void showNotification(String title, String subtitle);
 
 	void onGameStateChanged(GameStateChanged event);
 	void onScoreUpdated(ScoreUpdated event);
