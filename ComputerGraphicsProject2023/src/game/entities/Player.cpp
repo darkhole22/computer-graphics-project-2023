@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include "vulture/core/Logger.h"
+#include "game/entities/powerup/HealthPack.h"
 
 using namespace vulture;
 
@@ -48,6 +49,30 @@ Player::Player()
 	scene->addHitbox(m_Hitbox);
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& event) { onHitBoxEntered(event); });
+
+	m_PowerUpHitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.5f, c_CameraHeight));
+	m_PowerUpHitbox->layerMask = PLAYER_MASK;
+	m_PowerUpHitbox->collisionMask = POWER_UP_MASK;
+
+	scene->addHitbox(m_PowerUpHitbox);
+
+	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& e) {
+		PowerUpData* powerUp = reinterpret_cast<PowerUpData*>(e.data);
+		switch (powerUp->getType())
+		{
+		case PowerUpType::HealthUp:
+		{
+			HealthPackData* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
+			m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
+			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
+			break;
+		}
+		default:
+		break;
+		}
+	});
+
+	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 
 	reset();
 }
@@ -108,6 +133,7 @@ void Player::reset()
 	m_Movement = makeRef<MovementComponent>(transform);
 
 	m_Hitbox->transform = transform;
+	m_PowerUpHitbox->transform = transform;
 
 	m_Camera->reset();
 	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);

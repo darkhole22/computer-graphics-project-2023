@@ -2,8 +2,8 @@
 
 namespace game {
 
-const String& Bullet::s_ModelName = "bullet";
-const String& Bullet::s_TextureName = "bullet"; // TODO The texture seems to be broken
+const String Bullet::s_ModelName = "bullet";
+const String Bullet::s_TextureName = "bullet"; // TODO The texture seems to be broken
 
 Bullet::Bullet(Ref<GameObject> gameObject)
 {

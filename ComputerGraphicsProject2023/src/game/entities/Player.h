@@ -52,6 +52,7 @@ class Player
 public:
 	Ref<Transform> transform;
 	Ref<HitBox> m_Hitbox;
+	Ref<HitBox> m_PowerUpHitbox;
 
 	Player();
 
