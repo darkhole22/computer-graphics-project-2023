@@ -16,8 +16,8 @@ HUD::HUD()
 		centerElement(m_GameOverTitle);
 		centerElement(m_GameOverSubtitle, 0.0f, m_GameOverTitle->getHeight());
 
-		centerElement(m_NotificationTitle, 0.0f, - 200.0f);
-		centerElement(m_NotificationSubtitle, 0.0f, - 200.0f + m_NotificationTitle->getHeight());
+		centerElement(m_NotificationTitle, 0.0f, -200.0f);
+		centerElement(m_NotificationSubtitle, 0.0f, -200.0f + m_NotificationTitle->getHeight());
 
 		centerElement(m_Crosshair);
 	});
@@ -36,10 +36,10 @@ HUD::HUD()
 	m_HPText = m_UIHandler->makeText("HP: ");
 
 	m_DashesText = m_UIHandler->makeText("Dashes: ");
-	m_DashesText->setPosition({20, 50 });
+	m_DashesText->setPosition({ 20, 50 });
 
 	m_ScoreText = m_UIHandler->makeText("Score: ");
-	m_ScoreText->setPosition({20, 80});
+	m_ScoreText->setPosition({ 20, 80 });
 
 	m_Crosshair = m_UIHandler->makeImage("crosshair");
 	m_Crosshair->setWidth(50);
@@ -77,8 +77,8 @@ HUD::HUD()
 	m_NotificationTitle = m_UIHandler->makeText("Notification Title");
 	m_NotificationSubtitle = m_UIHandler->makeText("Notification Subtitle");
 
-	centerElement(m_NotificationTitle, 0.0f, - 200.0f);
-	centerElement(m_NotificationSubtitle, 0.0f, - 200.0f + m_NotificationTitle->getHeight());
+	centerElement(m_NotificationTitle, 0.0f, -200.0f);
+	centerElement(m_NotificationSubtitle, 0.0f, -200.0f + m_NotificationTitle->getHeight());
 
 	m_NotificationTitle->setStroke(0.6f);
 	m_NotificationTitle->setVisible(false);
@@ -124,7 +124,6 @@ void HUD::showNotification(String title, String subtitle)
 	});
 }
 
-
 void HUD::onBulletShot(BulletShot event)
 {
 	auto tween = Application::getScene()->makeTween();
@@ -141,7 +140,6 @@ void HUD::onBulletShot(BulletShot event)
 	tween->addMethodTweener(cb, initialSize, finalSize, 0.15f);
 	tween->addMethodTweener(cb, finalSize, initialSize, 0.15f);
 }
-
 
 void HUD::onGameStateChanged(GameStateChanged event)
 {

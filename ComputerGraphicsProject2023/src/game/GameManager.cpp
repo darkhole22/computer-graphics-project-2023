@@ -3,9 +3,9 @@
 namespace game {
 
 GameManager::GameManager(Ref<Terrain> terrain) :
-		m_Terrain(terrain), m_EnemyFactory(50),
-		m_HealthPackFactory(10), m_DoubleScoreFactory(10),
-		m_GameState(GameState::SETUP)
+	m_Terrain(terrain), m_EnemyFactory(50),
+	m_HealthPackFactory(10), m_DoubleScoreFactory(10),
+	m_GameState(GameState::SETUP)
 {
 	m_Scene = Application::getScene();
 
@@ -65,9 +65,9 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 			f32 r = std::sqrt(0.9f * Random::next() + 0.1f);
 			auto doubleScore = m_DoubleScoreFactory.get();
 			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(
-					r * 100.0f * std::cos(theta),
-					0.0f,
-					r * 100.0f * std::sin(theta)
+				r * 100.0f * std::cos(theta),
+				0.0f,
+				r * 100.0f * std::sin(theta)
 			);
 
 			doubleScore->m_GameObject->transform->setPosition(startingLocation);
@@ -82,16 +82,18 @@ void GameManager::update(f32 dt)
 	switch (m_GameState)
 	{
 	case GameState::SETUP:
-	m_Score = 0;
-	EventBus::emit(ScoreUpdated{ m_Score });
+	{
+		m_Score = 0;
+		EventBus::emit(ScoreUpdated{ m_Score });
 
-			m_DoubleScoreActive = false;
+		m_DoubleScoreActive = false;
 
-	m_WaveTimer->play();
-	m_HealthPackTimer->play();
-	m_DoubleScoreTimer->play();
-	setGameState(GameState::PLAYING);
-	break;
+		m_WaveTimer->play();
+		m_HealthPackTimer->play();
+		m_DoubleScoreTimer->play();
+		setGameState(GameState::PLAYING);
+		break;
+	}
 	case GameState::PLAYING:
 	{
 		m_EnemyFactory.update(dt);

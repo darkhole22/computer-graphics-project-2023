@@ -45,8 +45,6 @@ private:
 
 	void onEnemyDied(EnemyDied event);
 	void onDoubleScoreStarted(DoubleScoreStarted e);
-
-
 };
 
 } // namespace game

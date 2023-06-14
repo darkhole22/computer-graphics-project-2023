@@ -7,43 +7,43 @@
 
 namespace game {
 
-	using namespace vulture;
+using namespace vulture;
 
-	class DoubleScoreData : public PowerUpData
-	{
-	public:
-		virtual PowerUpType getType() const;
+class DoubleScoreData : public PowerUpData
+{
+public:
+	virtual PowerUpType getType() const;
 
-		virtual f32 getDuration() const;
+	virtual f32 getDuration() const;
 
-		virtual ~DoubleScoreData() = default;
-	private:
-		f32 m_Duration = 20.0f;
-	};
+	virtual ~DoubleScoreData() = default;
+private:
+	f32 m_Duration = 20.0f;
+};
 
-	class DoubleScore
-	{
-	public:
-		static const String s_ModelName;
-		static const String s_TextureName;
+class DoubleScore
+{
+public:
+	static const String s_ModelName;
+	static const String s_TextureName;
 
-		Ref<GameObject> m_GameObject;
+	Ref<GameObject> m_GameObject;
 
-		explicit DoubleScore(Ref<GameObject> gameObject);
+	explicit DoubleScore(Ref<GameObject> gameObject);
 
-		void setup(Ref<Terrain> terrain);
+	void setup(Ref<Terrain> terrain);
 
-		EntityStatus update(f32 dt);
+	EntityStatus update(f32 dt);
 
-		~DoubleScore();
-	private:
-		Ref<Terrain> m_Terrain = nullptr;
-		Ref<HitBox> m_Hitbox;
-		EntityStatus m_Status = EntityStatus::ALIVE;
-		DoubleScoreData m_Data;
+	~DoubleScore();
+private:
+	Ref<Terrain> m_Terrain = nullptr;
+	Ref<HitBox> m_Hitbox;
+	EntityStatus m_Status = EntityStatus::ALIVE;
+	DoubleScoreData m_Data;
 
-		f32 m_DeltaHeight = 0;
-		f32 m_DeltaAngle = 0;
-	};
+	f32 m_DeltaHeight = 0;
+	f32 m_DeltaAngle = 0;
+};
 
 } // namespace game
