@@ -23,8 +23,16 @@ struct ScoreUpdated
 	u32 score;
 };
 
+struct DoubleScoreStarted
+{
+	f32 duration;
+};
+
+struct DoubleScoreOver{};
+
 #define GAME_EVENTS		STATIC_EVENT(GameStateChanged) 	\
 						STATIC_EVENT(GodmodeToggled)    \
-					 	STATIC_EVENT(ScoreUpdated)
-
+					 	STATIC_EVENT(ScoreUpdated)      \
+						STATIC_EVENT(DoubleScoreStarted)  \
+						STATIC_EVENT(DoubleScoreOver)
 } // namespace game

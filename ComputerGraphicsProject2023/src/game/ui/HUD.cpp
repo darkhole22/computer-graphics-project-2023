@@ -16,8 +16,8 @@ HUD::HUD()
 		centerElement(m_GameOverTitle);
 		centerElement(m_GameOverSubtitle, 0.0f, m_GameOverTitle->getHeight());
 
-		centerElement(m_LevelUpTitle, 0.0f, -30.0f);
-		centerElement(m_LevelUpSubtitle, 0.0f, -30.0f + m_LevelUpTitle->getHeight());
+		centerElement(m_NotificationTitle, 0.0f, -200.0f);
+		centerElement(m_NotificationSubtitle, 0.0f, -200.0f + m_NotificationTitle->getHeight());
 
 		centerElement(m_Crosshair);
 	});
@@ -30,14 +30,16 @@ HUD::HUD()
 
 	EventBus::addCallback([this](GameStateChanged e) { onGameStateChanged(e); });
 	EventBus::addCallback([this](ScoreUpdated e) { onScoreUpdated(e); });
+	EventBus::addCallback([this](DoubleScoreStarted e) { onDoubleScoreStarted(e); });
+	EventBus::addCallback([this](DoubleScoreOver e) { onDoubleScoreOver(e); });
 
 	m_HPText = m_UIHandler->makeText("HP: ");
 
 	m_DashesText = m_UIHandler->makeText("Dashes: ");
-	m_DashesText->setPosition({20, 50 });
+	m_DashesText->setPosition({ 20, 50 });
 
 	m_ScoreText = m_UIHandler->makeText("Score: ");
-	m_ScoreText->setPosition({20, 80});
+	m_ScoreText->setPosition({ 20, 80 });
 
 	m_Crosshair = m_UIHandler->makeImage("crosshair");
 	m_Crosshair->setWidth(50);
@@ -72,15 +74,15 @@ HUD::HUD()
 	/********************
 	 *     LEVEL UP     *
 	 ********************/
-	m_LevelUpTitle = m_UIHandler->makeText("LEVEL UP!");
-	m_LevelUpSubtitle = m_UIHandler->makeText("Level Up Subtitle");
+	m_NotificationTitle = m_UIHandler->makeText("Notification Title");
+	m_NotificationSubtitle = m_UIHandler->makeText("Notification Subtitle");
 
-	centerElement(m_LevelUpTitle, 0.0f, -100.0f);
-	centerElement(m_LevelUpSubtitle, 0.0f, -100.0f + m_LevelUpTitle->getHeight());
+	centerElement(m_NotificationTitle, 0.0f, -200.0f);
+	centerElement(m_NotificationSubtitle, 0.0f, -200.0f + m_NotificationTitle->getHeight());
 
-	m_LevelUpTitle->setStroke(0.6f);
-	m_LevelUpTitle->setVisible(false);
-	m_LevelUpSubtitle->setVisible(false);
+	m_NotificationTitle->setStroke(0.6f);
+	m_NotificationTitle->setVisible(false);
+	m_NotificationSubtitle->setVisible(false);
 }
 
 void HUD::onHealthUpdated(HealthUpdated event)
@@ -95,14 +97,30 @@ void HUD::onDashesUpdated(DashesUpdated event)
 
 void HUD::onLevelUp(LevelUp event)
 {
-	m_LevelUpSubtitle->setText(event.message);
+	showNotification("LEVEL UP!", event.message);
+}
 
-	m_LevelUpTitle->setVisible(true);
-	m_LevelUpSubtitle->setVisible(true);
+void HUD::onDoubleScoreStarted(DoubleScoreStarted event)
+{
+	showNotification("DOUBLE SCORE!", "Kill them all!");
+}
+
+void HUD::onDoubleScoreOver(DoubleScoreOver event)
+{
+	showNotification("DOUBLE SCORE OVER", "Back to normal.");
+}
+
+void HUD::showNotification(String title, String subtitle)
+{
+	m_NotificationTitle->setText(title);
+	m_NotificationSubtitle->setText(subtitle);
+
+	m_NotificationTitle->setVisible(true);
+	m_NotificationSubtitle->setVisible(true);
 
 	Application::getScene()->makeTimer(1.0f)->addCallback([this](TimerTimeoutEvent) {
-		m_LevelUpTitle->setVisible(false);
-		m_LevelUpSubtitle->setVisible(false);
+		m_NotificationTitle->setVisible(false);
+		m_NotificationSubtitle->setVisible(false);
 	});
 }
 
@@ -122,7 +140,6 @@ void HUD::onBulletShot(BulletShot event)
 	tween->addMethodTweener(cb, initialSize, finalSize, 0.15f);
 	tween->addMethodTweener(cb, finalSize, initialSize, 0.15f);
 }
-
 
 void HUD::onGameStateChanged(GameStateChanged event)
 {

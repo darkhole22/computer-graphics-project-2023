@@ -15,6 +15,7 @@
 #include "game/terrain/Terrain.h"
 #include "game/EventBus.h"
 #include "game/components/MovementComponent.h"
+#include "game/Random.h"
 
 namespace game {
 
@@ -24,6 +25,8 @@ struct PlayerStats
 {
 	u32 hp = c_StartingHP;
 	u32 maxHp = c_StartingHP;
+
+	u32 maxBulletHits = c_StartingMaxBulletHits;
 
 	u32 dashesLeft = c_StartingDashes;
 	u32 maxDashes = c_StartingDashes;
@@ -38,6 +41,8 @@ struct PlayerStats
 	u32 level = 1;
 
 	static constexpr u32 c_StartingHP = 5;
+
+	static constexpr u32 c_StartingMaxBulletHits = 1;
 
 	static constexpr u32 c_ExpRequired = 10;
 

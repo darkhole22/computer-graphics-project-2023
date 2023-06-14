@@ -12,15 +12,18 @@ Bullet::Bullet(Ref<GameObject> gameObject)
 	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.6f, 3.6f));
 	m_Hitbox->layerMask = PLAYER_BULLET_MASK;
 	m_Hitbox->collisionMask = ENEMY_MASK;
-	// m_Hitbox->data = this;
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
-		// TODO: This could be modified to allow for piercing bullets
-		status = EntityStatus::DEAD;
+		m_HitsLeft--;
+
+		if (m_HitsLeft <= 0)
+		{
+			status = EntityStatus::DEAD;
+		}
 	});
 }
 
-void Bullet::setup(Transform startingTransform, glm::vec3 direction)
+void Bullet::setup(Transform startingTransform, glm::vec3 direction, u32 maxHits)
 {
 	m_GameObject->transform = makeRef<Transform>(startingTransform);
 	m_GameObject->transform->translate(0.0f, 1.5f, 0.0f);
@@ -33,6 +36,8 @@ void Bullet::setup(Transform startingTransform, glm::vec3 direction)
 
 	m_StartingPosition = startingTransform.getPosition();
 	m_Direction = direction;
+
+	m_HitsLeft = maxHits;
 
 	m_Hitbox->transform = m_GameObject->transform;
 	Application::getScene()->addHitbox(m_Hitbox);
