@@ -9,7 +9,7 @@
 #include "game/GameState.h"
 #include "game/entities/powerup/HealthPack.h"
 #include "vulture/util/ScopeTimer.h"
-#include "game/Random.h"
+#include "vulture/util/Random.h"
 #include "game/entities/powerup/DoubleScore.h"
 
 namespace game {

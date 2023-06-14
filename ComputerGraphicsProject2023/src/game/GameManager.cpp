@@ -23,14 +23,9 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 	m_WaveTimer->addCallback([this](const TimerTimeoutEvent&) {
 		for (int i = 0; i <= 10; i++)
 		{
-			f32 theta = Random::next() * glm::two_pi<f32>();
-			f32 r = std::sqrt(0.9f * Random::next() + 0.1f);
+			auto p = Random::nextAnnulusPoint(100.f);
 			auto enemy = m_EnemyFactory.get();
-			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(
-				r * 150.0f * std::cos(theta),
-				0.0f,
-				r * 150.0f * std::sin(theta)
-			);
+			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 
 			enemy->m_GameObject->transform->setPosition(startingLocation);
 			enemy->setup(m_Player, startingLocation);
@@ -42,14 +37,9 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 	m_HealthPackTimer->addCallback([this](const TimerTimeoutEvent&) {
 		for (int i = 0; i < 2; i++)
 		{
-			f32 theta = Random::next() * glm::two_pi<f32>();
-			f32 r = std::sqrt(0.9f * Random::next() + 0.1f);
+			auto p = Random::nextAnnulusPoint(100.f);
 			auto pack = m_HealthPackFactory.get();
-			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(
-				r * 100.0f * std::cos(theta),
-				0.0f,
-				r * 100.0f * std::sin(theta)
-			);
+			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 
 			pack->m_GameObject->transform->setPosition(startingLocation);
 			pack->setup(m_Terrain);
@@ -61,14 +51,9 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 	m_DoubleScoreTimer->addCallback([this](const TimerTimeoutEvent&) {
 		for (int i = 0; i < 1; i++)
 		{
-			f32 theta = Random::next() * glm::two_pi<f32>();
-			f32 r = std::sqrt(0.9f * Random::next() + 0.1f);
+			auto p = Random::nextAnnulusPoint(100.f);
 			auto doubleScore = m_DoubleScoreFactory.get();
-			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(
-				r * 100.0f * std::cos(theta),
-				0.0f,
-				r * 100.0f * std::sin(theta)
-			);
+			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 
 			doubleScore->m_GameObject->transform->setPosition(startingLocation);
 			doubleScore->setup(m_Terrain);
