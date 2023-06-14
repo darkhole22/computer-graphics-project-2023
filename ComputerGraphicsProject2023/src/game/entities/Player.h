@@ -15,7 +15,7 @@
 #include "game/terrain/Terrain.h"
 #include "game/EventBus.h"
 #include "game/components/MovementComponent.h"
-#include "game/Random.h"
+#include "vulture/util/Random.h"
 
 namespace game {
 
