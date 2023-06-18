@@ -85,6 +85,11 @@ Player::Player(Ref<Terrain> terrain) :
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 
 	reset();
+
+	m_Movement = makeRef<MovementComponent>(transform);
+
+	m_Hitbox->transform = transform;
+	m_PowerUpHitbox->transform = transform;
 }
 
 void Player::update(f32 dt)
@@ -149,10 +154,6 @@ void Player::update(f32 dt)
 void Player::reset()
 {
 	*transform = Transform();
-	m_Movement = makeRef<MovementComponent>(transform);
-
-	m_Hitbox->transform = transform;
-	m_PowerUpHitbox->transform = transform;
 
 	m_Camera->reset();
 	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
