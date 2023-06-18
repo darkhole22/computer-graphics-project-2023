@@ -60,6 +60,9 @@ public:
 	f32 getHeightAt(glm::vec2 position) const;
 	f32 getHeightAt(f32 x, f32 y) const { return getHeightAt({ x, y }); }
 
+	glm::vec2 getSlopeAt(glm::vec2 position) const;
+	glm::vec2 getSlopeAt(f32 x, f32 y) const { return getSlopeAt({ x, y }); }
+
 	friend class TerrainChunk;
 private:
 	Scene* m_Scene = nullptr;

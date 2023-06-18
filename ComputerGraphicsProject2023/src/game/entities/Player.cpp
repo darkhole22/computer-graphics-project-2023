@@ -8,7 +8,8 @@ using namespace vulture;
 
 namespace game {
 
-Player::Player()
+Player::Player(Ref<Terrain> terrain) :
+	transform(makeRef<Transform>()), m_Terrain(terrain)
 {
 	auto scene = Application::getScene();
 	m_Camera = scene->getCamera();
@@ -68,8 +69,8 @@ Player::Player()
 		}
 		case PowerUpType::DoubleScore:
 		{
-			auto *doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
-			EventBus::emit(DoubleScoreStarted{doubleScore->getDuration()});
+			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
 		}
 		default:
 		break;
@@ -96,21 +97,30 @@ void Player::update(f32 dt)
 
 		Application::getScene()->makeTimer(m_Stats.dashCooldown)->addCallback([this](TimerTimeoutEvent e) {
 			m_Stats.dashesLeft++;
-			EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
+			EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 		});
 		m_Stats.dashesLeft--;
-		EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
+		EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 	}
 
 	auto rotation = Input::getVector("LOOK_LEFT", "LOOK_RIGHT", "LOOK_DOWN", "LOOK_UP", false)
 		* c_RotSpeed * dt;
 
-	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
-		* c_Speed * m_Stats.dashSpeed * dt ;
+	auto movement = Input::getVector("MOVE_DOWN", "MOVE_UP", "MOVE_LEFT", "MOVE_RIGHT")
+		* c_Speed * m_Stats.dashSpeed * dt;
 
 	// Move the player
 	transform->rotate(0.0f, -rotation.x, 0.0f);
-	m_Movement->move(movement.y, 0.0f, movement.x);
+	m_Movement->move(movement.x, 0.0f, movement.y);
+
+	auto pos = transform->getPosition();
+	auto slope = m_Terrain->getSlopeAt(pos.x, pos.z);
+	if (glm::length(slope) > c_MaxSlope)
+	{
+		transform->translate(-glm::vec3(slope.x, 0, slope.y) * c_SlopeSpeed * dt);
+	}
+	pos = transform->getPosition();
+	transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
 
 	// Move the camera
 	m_Camera->rotate(-rotation.x, rotation.y, 0.0f);
@@ -132,7 +142,7 @@ void Player::update(f32 dt)
 
 void Player::reset()
 {
-	transform = makeRef<Transform>();
+	*transform = Transform();
 	m_Movement = makeRef<MovementComponent>(transform);
 
 	m_Hitbox->transform = transform;
@@ -143,12 +153,12 @@ void Player::reset()
 
 	m_Stats = PlayerStats{};
 	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
-	EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
+	EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 
 	m_BulletFactory->reset();
 }
 
-void Player::onHitBoxEntered(const HitBoxEntered &e)
+void Player::onHitBoxEntered(const HitBoxEntered& e)
 {
 	if (m_Invincible || m_Godmode) return;
 
@@ -180,21 +190,21 @@ void Player::onEnemyKilled(const EnemyDied& event)
 			m_Stats.dashesLeft++;
 			m_Stats.maxDashes++;
 
-			EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
-			EventBus::emit(LevelUp{ "Dash Upgraded!"});
+			EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
+			EventBus::emit(LevelUp{ "Dash Upgraded!" });
 		}
 		else if (rand < 0.66f)
 		{
 			m_Stats.maxHp++;
 			m_Stats.hp++;
 
-			EventBus::emit(HealthUpdated{m_Stats.hp, m_Stats.maxHp});
-			EventBus::emit(LevelUp{ "Health Upgraded!"});
+			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
+			EventBus::emit(LevelUp{ "Health Upgraded!" });
 		}
 		else
 		{
 			m_Stats.maxBulletHits++;
-			EventBus::emit(LevelUp{"Bullets Upgraded!"});
+			EventBus::emit(LevelUp{ "Bullets Upgraded!" });
 		}
 	}
 

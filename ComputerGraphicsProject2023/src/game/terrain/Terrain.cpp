@@ -91,6 +91,22 @@ f32 Terrain::getHeightAt(glm::vec2 position) const
 	return std::clamp(h, m_VertexUniform->waterLevel, 1.0f) * m_VertexUniform->scale;
 }
 
+glm::vec2 Terrain::getSlopeAt(glm::vec2 position) const
+{
+	constexpr f32 epsilon = 0.01f;
+	auto chunkPosition = position * m_Config.noiseScale / NOISE_SCALE_MULTIPLIER;
+
+	f32 h0 = noiseFunction(chunkPosition.x, chunkPosition.y);
+	f32 hx = noiseFunction(chunkPosition.x + epsilon, chunkPosition.y);
+	f32 hy = noiseFunction(chunkPosition.x, chunkPosition.y + epsilon);
+
+	h0 = std::clamp(h0, m_VertexUniform->waterLevel, 1.0f) * m_VertexUniform->scale;
+	hx = std::clamp(hx, m_VertexUniform->waterLevel, 1.0f) * m_VertexUniform->scale;
+	hy = std::clamp(hy, m_VertexUniform->waterLevel, 1.0f) * m_VertexUniform->scale;
+
+	return glm::vec2(hx - h0, hy - h0);
+}
+
 void Terrain::initializeRenderingComponents()
 {
 	m_Scene = Application::getScene();
