@@ -85,6 +85,7 @@ private:
 	f32 c_CameraHeight = 1.5f;
 
 	Ref<Tween> m_FiringTween;
+	f32 m_BobbingHeight = 1.0f;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
 

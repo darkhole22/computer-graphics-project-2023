@@ -107,6 +107,13 @@ glm::vec2 Terrain::getSlopeAt(glm::vec2 position) const
 	return glm::vec2(hx - h0, hy - h0);
 }
 
+bool Terrain::isWater(glm::vec2 position) const
+{
+	auto chunkPosition = position * m_Config.noiseScale / NOISE_SCALE_MULTIPLIER;
+	f32 h = noiseFunction(chunkPosition.x, chunkPosition.y);
+	return h <= m_VertexUniform->waterLevel;
+}
+
 void Terrain::initializeRenderingComponents()
 {
 	m_Scene = Application::getScene();

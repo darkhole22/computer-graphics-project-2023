@@ -38,6 +38,11 @@ Player::Player(Ref<Terrain> terrain) :
 	});
 	m_FiringTween->pause();
 
+	// Bobbing tween
+	scene->makeTween()->loop()->addMethodTweener<f32>([this](f32 val) {
+		m_BobbingHeight = -0.4f + 0.1f * std::sin(val);
+	}, 0.0f, glm::radians(360.0f), 1.5f);
+
 	/**********
 	 * HITBOX *
 	 **********/
@@ -120,7 +125,8 @@ void Player::update(f32 dt)
 		transform->translate(-glm::vec3(slope.x, 0, slope.y) * c_SlopeSpeed * dt);
 	}
 	pos = transform->getPosition();
-	transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+	transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
+						   m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
 
 	// Move the camera
 	m_Camera->rotate(-rotation.x, rotation.y, 0.0f);
