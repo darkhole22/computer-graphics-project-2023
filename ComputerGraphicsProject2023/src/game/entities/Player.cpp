@@ -8,7 +8,8 @@ using namespace vulture;
 
 namespace game {
 
-Player::Player()
+Player::Player() :
+	m_GunAudio("shot"), m_DamageAudio("hurt")
 {
 	auto scene = Application::getScene();
 	m_Camera = scene->getCamera();
@@ -26,6 +27,7 @@ Player::Player()
 
 		bullet->setup(*transform, m_Camera->direction, m_Stats.maxBulletHits);
 
+		m_GunAudio.play();
 		EventBus::emit(BulletShot{});
 	});
 	m_FiringTween->addIntervalTweener(m_Stats.fireCooldown);
@@ -68,8 +70,8 @@ Player::Player()
 		}
 		case PowerUpType::DoubleScore:
 		{
-			auto *doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
-			EventBus::emit(DoubleScoreStarted{doubleScore->getDuration()});
+			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
 		}
 		default:
 		break;
@@ -96,17 +98,17 @@ void Player::update(f32 dt)
 
 		Application::getScene()->makeTimer(m_Stats.dashCooldown)->addCallback([this](TimerTimeoutEvent e) {
 			m_Stats.dashesLeft++;
-			EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
+			EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 		});
 		m_Stats.dashesLeft--;
-		EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
+		EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 	}
 
 	auto rotation = Input::getVector("LOOK_LEFT", "LOOK_RIGHT", "LOOK_DOWN", "LOOK_UP", false)
 		* c_RotSpeed * dt;
 
 	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
-		* c_Speed * m_Stats.dashSpeed * dt ;
+		* c_Speed * m_Stats.dashSpeed * dt;
 
 	// Move the player
 	transform->rotate(0.0f, -rotation.x, 0.0f);
@@ -143,14 +145,14 @@ void Player::reset()
 
 	m_Stats = PlayerStats{};
 	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
-	EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
+	EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 
 	m_BulletFactory->reset();
 }
 
-void Player::onHitBoxEntered(const HitBoxEntered &e)
+void Player::onHitBoxEntered(const HitBoxEntered& e)
 {
-	if (m_Invincible || m_Godmode) return;
+	if (m_Invincible || m_Godmode || m_Stats.hp == 0) return;
 
 	u32 damage = e.data != nullptr ? *reinterpret_cast<u32*>(e.data) : 1;
 
@@ -163,6 +165,8 @@ void Player::onHitBoxEntered(const HitBoxEntered &e)
 	invincibilityTween->addCallbackTweener([this]() {
 		m_Invincible = false;
 	});
+
+	m_DamageAudio.play();
 }
 
 void Player::onEnemyKilled(const EnemyDied& event)
@@ -180,21 +184,21 @@ void Player::onEnemyKilled(const EnemyDied& event)
 			m_Stats.dashesLeft++;
 			m_Stats.maxDashes++;
 
-			EventBus::emit(DashesUpdated{m_Stats.dashesLeft, m_Stats.maxDashes});
-			EventBus::emit(LevelUp{ "Dash Upgraded!"});
+			EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
+			EventBus::emit(LevelUp{ "Dash Upgraded!" });
 		}
 		else if (rand < 0.66f)
 		{
 			m_Stats.maxHp++;
 			m_Stats.hp++;
 
-			EventBus::emit(HealthUpdated{m_Stats.hp, m_Stats.maxHp});
-			EventBus::emit(LevelUp{ "Health Upgraded!"});
+			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
+			EventBus::emit(LevelUp{ "Health Upgraded!" });
 		}
 		else
 		{
 			m_Stats.maxBulletHits++;
-			EventBus::emit(LevelUp{"Bullets Upgraded!"});
+			EventBus::emit(LevelUp{ "Bullets Upgraded!" });
 		}
 	}
 

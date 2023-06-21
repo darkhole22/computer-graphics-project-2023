@@ -5,7 +5,7 @@ namespace game {
 GameManager::GameManager(Ref<Terrain> terrain) :
 	m_Terrain(terrain), m_EnemyFactory(50),
 	m_HealthPackFactory(10), m_DoubleScoreFactory(10),
-	m_GameState(GameState::SETUP)
+	m_GameState(GameState::SETUP), m_DeathAudio("lose")
 {
 	m_Scene = Application::getScene();
 
@@ -123,6 +123,7 @@ void GameManager::update(f32 dt)
 	case GameState::GAME_OVER:
 	if (Input::isActionJustPressed("RESTART"))
 	{
+		m_DeathAudio.stop();
 		beforeRestart();
 		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 	}
@@ -144,6 +145,8 @@ void GameManager::onGameOver()
 	m_WaveTimer->reset(false);
 	Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 	m_HealthPackTimer->reset();
+	if (m_GameState != GameState::GAME_OVER)
+		m_DeathAudio.play();
 	setGameState(GameState::GAME_OVER);
 }
 

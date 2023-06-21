@@ -7,10 +7,6 @@
 #include "GameManager.h"
 #include "terrain/Terrain.h"
 
-#undef APIENTRY
-#include "soloud.h"
-#include "soloud_wav.h"
-
 using namespace vulture;
 
 namespace game {
@@ -34,15 +30,8 @@ public:
 	String skyboxName = "rural";
 #endif
 
-	Ref<SoLoud::Soloud> gSoloud = makeRef<SoLoud::Soloud>();
-	Ref<SoLoud::Wav> gWave = makeRef<SoLoud::Wav>();      // One wave file
-
 	void setup() override
 	{
-		gSoloud->init(); // Initialize SoLoud
-		auto res = gWave->load("res/sounds/sample.wav"); // Load a wave
-		VUINFO("%d", res);
-
 		/**********
 		 *  SETUP *
 		 **********/
@@ -96,8 +85,6 @@ public:
 			static bool useSkybox = false;
 			scene->setSkybox(useSkybox ? skyboxName : "rural");
 			useSkybox = !useSkybox;
-
-			gSoloud->play(*gWave); // Play the wave
 		}
 
 		gameManager->update(dt);
@@ -281,7 +268,6 @@ private:
 int main()
 {
 	Logger logger("output.log");
-
 	try
 	{
 		Ref<Application> app; // The game must be destroyed before the application
@@ -297,8 +283,6 @@ int main()
 	{
 		VUFATAL("An exception was thrown.\nMessage: %s\n\nShutting down!", exception.what());
 	}
-
-	// gSoloud->deinit(); // Clean up!
 
 	return EXIT_FAILURE;
 }
