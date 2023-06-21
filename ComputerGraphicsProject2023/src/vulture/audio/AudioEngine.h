@@ -2,6 +2,9 @@
 
 namespace vulture {
 
+/**
+ * @brief A fully static class to handle the audio
+ */
 class AudioEngine
 {
 public:
