@@ -20,6 +20,8 @@ if os.target() == "windows" then
    include ("ComputerGraphicsProject2023/vendor/GLFW/")
 end
 
+include ("ComputerGraphicsProject2023/vendor/soloud/")
+
 project "ComputerGraphicsProject2023"
     location "ComputerGraphicsProject2023"
     kind "ConsoleApp"
@@ -42,6 +44,7 @@ project "ComputerGraphicsProject2023"
         "%{prj.name}/src",
         "%{prj.name}/vendor/glm",
         "%{prj.name}/vendor/stb",
+        "%{prj.name}/vendor/soloud/include",
         "%{prj.name}/vendor/tinyobj"
     }
     
@@ -57,6 +60,11 @@ project "ComputerGraphicsProject2023"
         "glslc %{prj.location}/res/shaders/Terrain.vert -o %{prj.location}/res/shaders/Terrain_vert.spv",
         "glslc %{prj.location}/res/shaders/Terrain.frag -o %{prj.location}/res/shaders/Terrain_frag.spv",
         "{COPYDIR} %{prj.location}/res %{cfg.targetdir}/res"
+    }
+    
+    links
+    {
+        "SoLoud"
     }
 
     filter "system:windows"
