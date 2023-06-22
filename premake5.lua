@@ -33,9 +33,9 @@ project "ComputerGraphicsProject2023"
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
     files
-    { 
-        "%{prj.name}/src/**.h",
+    {
         "%{prj.name}/vendor/glm/glm/**.hpp",
+        "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp"
     }
 
@@ -94,7 +94,8 @@ project "ComputerGraphicsProject2023"
             "Xxf86vm",
             "Xrandr",
             "Xi",
-            "dl"
+            "dl",
+            "asound"
         }
     
     filter "configurations:Debug"

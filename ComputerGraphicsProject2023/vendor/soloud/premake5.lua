@@ -13,7 +13,6 @@ project "SoLoud"
         "src/audiosource/**.c",
         "src/c_api/**.cpp",
         "src/filter/**.cpp",
-        "src/tool/**.cpp"
 	}
     
     includedirs
@@ -22,20 +21,16 @@ project "SoLoud"
     }
     
 	filter "system:linux"
-		pic "On"
-
 		systemversion "latest"
 		staticruntime "On"
 
         files
         {
-            "src/backend/oss/**.cpp",
             "src/backend/alsa/**.cpp"
         }
         
         defines
         {
-            "WITH_OSS",
             "WITH_ALSA"
         }
 
