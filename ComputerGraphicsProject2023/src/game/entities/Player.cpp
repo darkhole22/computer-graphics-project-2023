@@ -8,8 +8,9 @@ using namespace vulture;
 
 namespace game {
 
-Player::Player() :
-	m_GunAudio("shot"), m_DamageAudio("hurt")
+Player::Player(Ref<Terrain> terrain) :
+	m_GunAudio("shot"), m_DamageAudio("hurt"),
+	transform(makeRef<Transform>()), m_Terrain(terrain)
 {
 	auto scene = Application::getScene();
 	m_Camera = scene->getCamera();
@@ -38,6 +39,11 @@ Player::Player() :
 		}
 	});
 	m_FiringTween->pause();
+
+	// Bobbing tween
+	scene->makeTween()->loop()->addMethodTweener<f32>([this](f32 val) {
+		m_BobbingHeight = -0.4f + 0.1f * std::sin(val);
+	}, 0.0f, glm::radians(360.0f), 1.5f);
 
 	/**********
 	 * HITBOX *
@@ -81,6 +87,11 @@ Player::Player() :
 	m_BulletFactory = makeRef<Factory<Bullet>>(40);
 
 	reset();
+
+	m_Movement = makeRef<MovementComponent>(transform);
+
+	m_Hitbox->transform = transform;
+	m_PowerUpHitbox->transform = transform;
 }
 
 void Player::update(f32 dt)
@@ -107,12 +118,22 @@ void Player::update(f32 dt)
 	auto rotation = Input::getVector("LOOK_LEFT", "LOOK_RIGHT", "LOOK_DOWN", "LOOK_UP", false)
 		* c_RotSpeed * dt;
 
-	auto movement = Input::getVector("MOVE_LEFT", "MOVE_RIGHT", "MOVE_DOWN", "MOVE_UP")
+	auto movement = Input::getVector("MOVE_DOWN", "MOVE_UP", "MOVE_LEFT", "MOVE_RIGHT")
 		* c_Speed * m_Stats.dashSpeed * dt;
 
 	// Move the player
 	transform->rotate(0.0f, -rotation.x, 0.0f);
-	m_Movement->move(movement.y, 0.0f, movement.x);
+	m_Movement->move(movement.x, 0.0f, movement.y);
+
+	auto pos = transform->getPosition();
+	auto slope = m_Terrain->getSlopeAt(pos.x, pos.z);
+	if (glm::length(slope) > c_MaxSlope)
+	{
+		transform->translate(-glm::vec3(slope.x, 0, slope.y) * c_SlopeSpeed * dt);
+	}
+	pos = transform->getPosition();
+	transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
+						   m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
 
 	// Move the camera
 	m_Camera->rotate(-rotation.x, rotation.y, 0.0f);
@@ -134,11 +155,7 @@ void Player::update(f32 dt)
 
 void Player::reset()
 {
-	transform = makeRef<Transform>();
-	m_Movement = makeRef<MovementComponent>(transform);
-
-	m_Hitbox->transform = transform;
-	m_PowerUpHitbox->transform = transform;
+	*transform = Transform();
 
 	m_Camera->reset();
 	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);

@@ -9,7 +9,7 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 {
 	m_Scene = Application::getScene();
 
-	m_Player = makeRef<Player>();
+	m_Player = makeRef<Player>(m_Terrain);
 	EventBus::addCallback([this](HealthUpdated event) {
 		if (event.hp != 0) return;
 		Application::getWindow()->setCursorMode(CursorMode::NORMAL);
@@ -94,8 +94,7 @@ void GameManager::update(f32 dt)
 
 		m_Player->update(dt);
 
-		auto pos = m_Player->transform->getPosition();
-		m_Player->transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z), pos.z);
+
 
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
