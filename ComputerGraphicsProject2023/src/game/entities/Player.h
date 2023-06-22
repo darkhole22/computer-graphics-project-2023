@@ -59,13 +59,15 @@ public:
 	Ref<HitBox> m_Hitbox;
 	Ref<HitBox> m_PowerUpHitbox;
 
-	Player();
+	Player(Ref<Terrain> terrain);
 
 	void update(f32 dt);
 
 	void reset();
 private:
-	const f32 c_Speed = 10;
+	const f32 c_Speed = 10.0f;
+	const f32 c_SlopeSpeed = 20.0f;
+	const f32 c_MaxSlope = 0.6f;
 	const f32 c_RotSpeed = 4.0f;
 
 	Ref<MovementComponent> m_Movement;
@@ -77,10 +79,13 @@ private:
 	bool m_Invincible = false;
 	f32 m_InvincibilityDuration = 1.0f;
 
+	Ref<Terrain> m_Terrain;
+
 	Camera* m_Camera;
 	f32 c_CameraHeight = 1.5f;
 
 	Ref<Tween> m_FiringTween;
+	f32 m_BobbingHeight = 1.0f;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
 
