@@ -2,6 +2,7 @@
 #include "Input.h"
 #include "vulture/core/Job.h"
 #include "vulture/util/ScopeTimer.h"
+#include "vulture/audio/AudioEngine.h"
 
 #include <iostream>
 
@@ -23,6 +24,11 @@ Application::Application(Game& game, AppConfig config) :
 	if (!Renderer::init(config.name, m_Window))
 	{
 		throw std::runtime_error("Unable to initialize the Renderer.");
+	}
+
+	if (!AudioEngine::init())
+	{
+		throw std::runtime_error("Unable to initialize the Audio Engine.");
 	}
 
 	m_Scene = makeRef<Scene>();
@@ -68,6 +74,8 @@ Application::~Application()
 {
 	m_Scene.reset();
 	Input::cleanup();
+
+	AudioEngine::cleanup();
 
 	Renderer::cleanup();
 

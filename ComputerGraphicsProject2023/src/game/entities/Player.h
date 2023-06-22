@@ -16,6 +16,7 @@
 #include "game/EventBus.h"
 #include "game/components/MovementComponent.h"
 #include "vulture/util/Random.h"
+#include "vulture/audio/AudioPlayer.h"
 
 namespace game {
 
@@ -88,6 +89,8 @@ private:
 	f32 m_BobbingHeight = 1.0f;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
+	AudioPlayer m_GunAudio;
+	AudioPlayer m_DamageAudio;
 
 	void onHitBoxEntered(const HitBoxEntered& e);
 	void onEnemyKilled(const EnemyDied& event);

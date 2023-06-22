@@ -9,6 +9,7 @@ using namespace vulture;
 namespace game {
 
 Player::Player(Ref<Terrain> terrain) :
+	m_GunAudio("shot"), m_DamageAudio("hurt"),
 	transform(makeRef<Transform>()), m_Terrain(terrain)
 {
 	auto scene = Application::getScene();
@@ -27,6 +28,7 @@ Player::Player(Ref<Terrain> terrain) :
 
 		bullet->setup(*transform, m_Camera->direction, m_Stats.maxBulletHits);
 
+		m_GunAudio.play();
 		EventBus::emit(BulletShot{});
 	});
 	m_FiringTween->addIntervalTweener(m_Stats.fireCooldown);
@@ -167,7 +169,7 @@ void Player::reset()
 
 void Player::onHitBoxEntered(const HitBoxEntered& e)
 {
-	if (m_Invincible || m_Godmode) return;
+	if (m_Invincible || m_Godmode || m_Stats.hp == 0) return;
 
 	u32 damage = e.data != nullptr ? *reinterpret_cast<u32*>(e.data) : 1;
 
@@ -180,6 +182,8 @@ void Player::onHitBoxEntered(const HitBoxEntered& e)
 	invincibilityTween->addCallbackTweener([this]() {
 		m_Invincible = false;
 	});
+
+	m_DamageAudio.play();
 }
 
 void Player::onEnemyKilled(const EnemyDied& event)

@@ -10,6 +10,7 @@
 #include "game/entities/powerup/HealthPack.h"
 #include "vulture/util/ScopeTimer.h"
 #include "vulture/util/Random.h"
+#include "vulture/audio/AudioPlayer.h"
 #include "game/entities/powerup/DoubleScore.h"
 
 namespace game {
@@ -36,6 +37,8 @@ private:
 	GameState m_GameState;
 	u32 m_Score;
 	bool m_DoubleScoreActive;
+
+	AudioPlayer m_DeathAudio;
 
 	void setGameState(GameState gameState);
 
