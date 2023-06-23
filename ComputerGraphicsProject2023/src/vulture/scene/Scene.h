@@ -77,6 +77,8 @@ public:
 	Ref<Tween> makeTween();
 	Ref<Timer> makeTimer(f32 waitTime, bool oneShot = true);
 
+	void callLater(std::function<void()> fun);
+
 	inline void addHitbox(Ref<HitBox> hitbox) { m_CollisionEngine.addHitbox(hitbox); }
 	inline void removeHitbox(Ref<HitBox> hitbox) { m_CollisionEngine.removeHitbox(hitbox); }
 
@@ -98,7 +100,11 @@ private:
 	PipelineHandle m_NextPipelineHandle = 0;
 
 	std::unordered_set<Ref<Tween>> m_Tweens;
+	bool m_TweenLoopFlag = false;
 	std::unordered_set<Ref<Timer>> m_Timers;
+	bool m_TimersLoopFlag = false;
+
+	std::vector<std::function<void()>> m_DeferredFunctions;
 
 	Ref<DescriptorSetLayout> m_GameObjectDSL;
 	PipelineHandle m_GameObjectPipeline;
