@@ -63,6 +63,8 @@ Player::Player(Ref<Terrain> terrain) :
 
 	scene->addHitbox(m_PowerUpHitbox);
 
+	m_ExplosionFactory = makeRef<Factory<Explosion>>(3);
+
 	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& e) {
 		auto* powerUp = reinterpret_cast<PowerUpData*>(e.data);
 		switch (powerUp->getType())
@@ -78,6 +80,13 @@ Player::Player(Ref<Terrain> terrain) :
 		{
 			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
 			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
+			break;
+		}
+		case PowerUpType::Bomb:
+		{
+			auto p = Random::nextAnnulusPoint(30.0f, 20.0f);
+			auto exp = m_ExplosionFactory->get();
+			exp->setup(transform->getPosition() + glm::vec3(p.x, 1.5f, p.y));
 		}
 		default:
 		break;
@@ -151,6 +160,7 @@ void Player::update(f32 dt)
 	}
 
 	m_BulletFactory->update(dt);
+	m_ExplosionFactory->update(dt);
 }
 
 void Player::reset()

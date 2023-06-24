@@ -36,7 +36,7 @@ public:
 	*
 	* @param initialSize The initial size of the GameObjectPool.
 	*/
-	explicit Factory<T>(int initialSize)
+	explicit Factory<T>(int initialSize = 10)
 	{
 		m_ObjectPool = makeRef<GameObjectPool>(initialSize, T::s_ModelName, T::s_TextureName);
 	}

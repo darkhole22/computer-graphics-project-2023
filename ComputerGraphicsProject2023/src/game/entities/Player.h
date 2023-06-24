@@ -17,6 +17,7 @@
 #include "game/components/MovementComponent.h"
 #include "vulture/util/Random.h"
 #include "vulture/audio/AudioPlayer.h"
+#include "Explosion.h"
 
 namespace game {
 
@@ -91,6 +92,8 @@ private:
 	Ref<Factory<Bullet>> m_BulletFactory;
 	AudioPlayer m_GunAudio;
 	AudioPlayer m_DamageAudio;
+
+	Ref<Factory<Explosion>> m_ExplosionFactory;
 
 	void onHitBoxEntered(const HitBoxEntered& e);
 	void onEnemyKilled(const EnemyDied& event);

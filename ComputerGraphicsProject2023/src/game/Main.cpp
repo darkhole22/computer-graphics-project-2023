@@ -36,7 +36,7 @@ public:
 		 *  SETUP *
 		 **********/
 		window = Application::getWindow();
-		window->setCursorMode(CursorMode::DISABLED);
+		window->setCursorMode(CursorMode::NORMAL);
 
 		scene = Application::getScene();
 		EventBus::init();

@@ -12,6 +12,7 @@
 #include "vulture/util/Random.h"
 #include "vulture/audio/AudioPlayer.h"
 #include "game/entities/powerup/DoubleScore.h"
+#include "game/entities/PowerUpManager.h"
 
 namespace game {
 
@@ -21,18 +22,18 @@ public:
 	explicit GameManager(Ref<Terrain> terrain);
 
 	void update(f32 dt);
+
+	~GameManager() = default;
 private:
 	Scene* m_Scene = nullptr;
 	Ref<Terrain> m_Terrain = nullptr;
 
 	Ref<Player> m_Player = nullptr;
+
 	Factory<Enemy> m_EnemyFactory;
-	Factory<HealthPack> m_HealthPackFactory;
-	Factory<DoubleScore> m_DoubleScoreFactory;
+	PowerUpManager m_PowerUpManager;
 
 	Ref<Timer> m_WaveTimer;
-	Ref<Timer> m_HealthPackTimer;
-	Ref<Timer> m_DoubleScoreTimer;
 
 	GameState m_GameState;
 	u32 m_Score;
