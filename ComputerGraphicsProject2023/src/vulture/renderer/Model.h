@@ -18,7 +18,7 @@ struct Vertex
 class Model
 {
 public:
-	static Ref<Model> get(const String& name);
+	static Ref<Model> get(const String& name, const glm::mat4& loadTransform = glm::mat4(1));
 
 	static Ref<Model> getPlane(u32 hCount = 1, u32 vCount = 1);
 

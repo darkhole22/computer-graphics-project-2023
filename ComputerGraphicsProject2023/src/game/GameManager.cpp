@@ -3,7 +3,7 @@
 namespace game {
 
 GameManager::GameManager(Ref<Terrain> terrain) :
-	m_Terrain(terrain), m_EnemyFactory(50),
+	m_Terrain(terrain), m_EnemyFactory(50, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
 	m_HealthPackFactory(10), m_DoubleScoreFactory(10),
 	m_GameState(GameState::SETUP), m_DeathAudio("lose")
 {
@@ -21,13 +21,12 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 
 	m_WaveTimer = m_Scene->makeTimer(20, false);
 	m_WaveTimer->addCallback([this](const TimerTimeoutEvent&) {
-		for (int i = 0; i <= 10; i++)
+		for (int i = 0; i < 10; i++)
 		{
 			auto p = Random::nextAnnulusPoint(100.f);
 			auto enemy = m_EnemyFactory.get();
 			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 
-			enemy->m_GameObject->transform->setPosition(startingLocation);
 			enemy->setup(m_Player, startingLocation);
 		}
 	});

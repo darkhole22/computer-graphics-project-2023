@@ -22,9 +22,9 @@ public:
 
 extern RendererData rendererData;
 
-static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indices, const String& path);
+static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indices, const String& path, const glm::mat4& loadTransform);
 
-Ref<Model> Model::get(const String& name)
+Ref<Model> Model::get(const String& name, const glm::mat4& loadTransform)
 {
 	auto it = s_Models.find(name);
 	if (it != s_Models.end())
@@ -47,7 +47,7 @@ Ref<Model> Model::get(const String& name)
 	// {
 	// 
 	// } else
-	if (std::filesystem::exists((namePrefix + ".obj").cString()) && loadModelFromObj(vertices, indices, namePrefix))
+	if (std::filesystem::exists((namePrefix + ".obj").cString()) && loadModelFromObj(vertices, indices, namePrefix, loadTransform))
 	{
 		result = Ref<Model>(new Model(vertices, indices));
 		s_Models.insert({ name, result });
@@ -95,7 +95,7 @@ Ref<Model> Model::getPlane(u32 hCount, u32 vCount)
 	return Ref<Model>(new Model(vertices, indices));
 }
 
-static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indices, const String& path)
+static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& indices, const String& path, const glm::mat4& loadTransform)
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
@@ -117,21 +117,26 @@ static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& in
 #ifdef VU_LOGGER_INFO_ENABLED
 	u32 totalVertexCount = 0;
 #endif
+	glm::mat4 normalLoadTransform = glm::inverse(glm::transpose(loadTransform));
 	for (const auto& shape : shapes)
 	{
 		for (const auto& index : shape.mesh.indices)
 		{
 			Vertex vertex{
+				glm::vec3(loadTransform * glm::vec4
 				{
 					attrib.vertices[3 * index.vertex_index + 0],
 					attrib.vertices[3 * index.vertex_index + 1],
-					attrib.vertices[3 * index.vertex_index + 2]
-				},
+					attrib.vertices[3 * index.vertex_index + 2],
+					1.0f
+				}),
+				glm::vec3(normalLoadTransform * glm::vec4
 				{
 					attrib.normals[3 * index.normal_index + 0],
 					attrib.normals[3 * index.normal_index + 1],
-					attrib.normals[3 * index.normal_index + 2]
-				},
+					attrib.normals[3 * index.normal_index + 2],
+					1.0f
+				}),
 				{
 					attrib.texcoords[2 * index.texcoord_index + 0],
 					1.0f - attrib.texcoords[2LL * index.texcoord_index + 1]
