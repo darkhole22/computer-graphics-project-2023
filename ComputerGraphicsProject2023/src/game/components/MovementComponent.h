@@ -39,6 +39,11 @@ public:
 	 */
 	inline void move(f32 x, f32 y, f32 z) { move(glm::vec3(x, y, z)); }
 
+	/**
+	 * @brief Rotate the object to face the provided target.
+	 *
+	 * @param target The target position.
+	 */
 	inline void lookAt(glm::vec3 target)
 	{
 		auto a = glm::normalize(target - m_Transform->getPosition());
@@ -55,9 +60,6 @@ public:
 			// m_Transform->setRotation(glm::inverse(m_Transform->getRotation()) * direction);
 			m_Transform->rotate(q);
 		}
-		b = glm::normalize(m_Transform->getRotation() * glm::vec3(1.0f, 0.0f, 0.0f));
-		auto res = a - b;
-
 	}
 
 private:
