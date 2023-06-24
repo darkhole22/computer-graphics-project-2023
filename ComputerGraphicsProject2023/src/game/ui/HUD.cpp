@@ -118,6 +118,11 @@ void HUD::showNotification(String title, String subtitle)
 	m_NotificationTitle->setVisible(true);
 	m_NotificationSubtitle->setVisible(true);
 
+	Application::getScene()->callLater([this]() {
+		centerElement(m_NotificationTitle, 0.0f, -200.0f);
+		centerElement(m_NotificationSubtitle, 0.0f, -200.0f + m_NotificationTitle->getHeight());
+	});
+
 	Application::getScene()->makeTimer(1.0f)->addCallback([this](TimerTimeoutEvent) {
 		m_NotificationTitle->setVisible(false);
 		m_NotificationSubtitle->setVisible(false);
