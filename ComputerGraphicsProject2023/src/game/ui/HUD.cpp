@@ -142,8 +142,10 @@ void HUD::onBulletShot(BulletShot event)
 	auto initialSize = m_Crosshair->getHeight();
 	auto finalSize = initialSize * 1.5f;
 
-	tween->addMethodTweener(cb, initialSize, finalSize, 0.15f);
-	tween->addMethodTweener(cb, finalSize, initialSize, 0.15f);
+	f32 duration = std::min(event.fireCooldown * 0.45f, 0.15f);
+
+	tween->addMethodTweener(cb, initialSize, finalSize, duration);
+	tween->addMethodTweener(cb, finalSize, initialSize, duration);
 }
 
 void HUD::onGameStateChanged(GameStateChanged event)
