@@ -92,6 +92,8 @@ private:
 	AudioPlayer m_GunAudio;
 	AudioPlayer m_DamageAudio;
 
+	void updateFiringTween();
+
 	void onHitBoxEntered(const HitBoxEntered& e);
 	void onEnemyKilled(const EnemyDied& event);
 };
