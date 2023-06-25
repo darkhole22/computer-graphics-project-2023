@@ -3,7 +3,7 @@
 namespace game {
 
 const String Explosion::s_ModelName = "explosion";
-const String Explosion::s_TextureName = "grass";
+const String Explosion::s_TextureName = "explosion";
 
 Explosion::Explosion(Ref<GameObject> gameObject)
 {
