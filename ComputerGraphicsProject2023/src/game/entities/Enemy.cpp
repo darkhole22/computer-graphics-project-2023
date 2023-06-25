@@ -35,15 +35,9 @@ void Enemy::setup(Ref<Player> player, glm::vec3 spawnLocation)
 
 EntityStatus Enemy::update(float dt)
 {
-	auto dir = glm::normalize(m_Player->transform->getPosition() - m_GameObject->transform->getPosition());
-
-	auto angle = glm::angle(
-		glm::normalize(glm::vec2(m_Player->transform->getPosition().x, m_Player->transform->getPosition().z)),
-		glm::normalize(glm::vec2(m_GameObject->transform->getPosition().x, m_GameObject->transform->getPosition().z))
-	);
-
-	//m_GameObject->transform->rotate(0.0f, angle, 0.0f);
-	m_Movement->move(dir * c_Speed * dt);
+	auto target = m_Player->transform->getPosition();
+	m_Movement->lookAt({target.x, m_GameObject->transform->getPosition().y, target.z});
+	m_Movement->move(c_Speed * dt, 0, 0);
 
 	return m_Status;
 }

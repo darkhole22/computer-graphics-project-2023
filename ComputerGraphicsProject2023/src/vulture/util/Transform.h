@@ -92,6 +92,13 @@ public:
 	inline glm::quat getRotation() const { return m_Rotation; }
 
 	/**
+	 * @brief Sets the rotation of the object using a rotation quaternion.
+	 *
+	 * @param rot The rotation quaternion.
+	 */
+	inline void setRotation(glm::quat rot) { m_Rotation = rot; m_ShouldUpdate = true; }
+
+	/**
 	 * @brief Sets the rotation of the object using a rotation vector.
 	 *
 	 * @param rot The rotation vector.
@@ -106,6 +113,13 @@ public:
 	 * @param z The rotation angle around the z-axis.
 	 */
 	inline void setRotation(f32 x, f32 y, f32 z) { setRotation(glm::vec3(x, y, z)); }
+
+	/**
+	 * @brief Rotates the object by the specified rotation quaternion.
+	 *
+	 * @param rotation The rotation quaternion.
+	 */
+	inline void rotate(glm::quat rotation) { m_Rotation = rotation * m_Rotation; m_ShouldUpdate = true; }
 
 	/**
 	 * @brief Rotates the object by the specified angles around the x, y, and z axes, respectively.
@@ -147,11 +161,7 @@ private:
 	glm::vec3 m_Scale = glm::vec3(1.0f, 1.0f, 1.0f);
 
 	bool m_ShouldUpdate = true;
-
-	glm::mat4 m_WorldMatrix;
-
-	glm::vec3 m_FacingDirection = glm::vec3(1.0f, 0.0f, 0.0f);
-	glm::vec3 m_UpDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::mat4 m_WorldMatrix = glm::mat4(1);
 };
 
 } // namespace vulture

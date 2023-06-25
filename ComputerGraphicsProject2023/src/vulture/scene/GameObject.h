@@ -37,7 +37,7 @@ public:
 	 * @param modelName Name of the model.
 	 * @param textureName Name of the texture.
 	 */
-	GameObject(const String& modelName, const String& textureName);
+	GameObject(const String& modelName, const String& textureName, const glm::mat4& loadTransform = glm::mat4(1));
 
 	/**
 	 * @brief Constructs a new GameObject object.

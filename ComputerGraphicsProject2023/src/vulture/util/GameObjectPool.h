@@ -25,7 +25,7 @@ public:
 	 * @param modelName The name of the model that the GameObjects will use.
 	 * @param textureName The name of the texture that the GameObjects will use.
 	 */
-	GameObjectPool(u32 initialSize, const String& modelName, const String& textureName);
+	GameObjectPool(u32 initialSize, const String& modelName, const String& textureName, const glm::mat4& loadTransform = glm::mat4(1));
 
 	/**
 	 * @brief Retrieves a GameObject instance from the pool.
