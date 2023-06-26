@@ -18,8 +18,13 @@ void World::updateUniforms(FrameContext& target, const Camera& camera)
 	if (m_DescriptorSet)
 	{
 		m_Uniform->cameraPosition = camera.position;
-		m_Uniform->lightColor = directLight.color;
-		m_Uniform->lightDirection = directLight.direction;
+
+		m_Uniform->directLightColor = directLight.color;
+		m_Uniform->directLightDirection = directLight.direction;
+
+		m_Uniform->pointLightPosition = pointLight.position;
+		m_Uniform->pointLightColor = pointLight.color;
+
 		m_DescriptorSet->map(index);
 	}
 }

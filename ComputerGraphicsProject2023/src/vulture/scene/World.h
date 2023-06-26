@@ -10,8 +10,12 @@ namespace vulture {
 
 struct WorldBufferObject
 {
-	alignas(16) glm::vec3 lightDirection;
-	alignas(16) glm::vec4 lightColor;
+	alignas(16) glm::vec3 pointLightPosition;
+	alignas(16) glm::vec4 pointLightColor;
+
+	alignas(16) glm::vec3 directLightDirection;
+	alignas(16) glm::vec4 directLightColor;
+
 	alignas(16) glm::vec3 cameraPosition;
 };
 
@@ -21,12 +25,19 @@ struct DirectLight
 	glm::vec4 color;
 };
 
+struct PointLight
+{
+	glm::vec3 position;
+	glm::vec4 color;
+};
+
 class World
 {
 public:
 	explicit World(DescriptorPool& descriptorsPool);
 
 	DirectLight directLight;
+	PointLight pointLight;
 
 	~World() = default;
 

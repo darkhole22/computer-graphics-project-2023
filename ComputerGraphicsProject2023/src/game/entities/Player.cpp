@@ -86,7 +86,7 @@ Player::Player(Ref<Terrain> terrain) :
 		{
 			auto p = Random::nextAnnulusPoint(30.0f, 20.0f);
 			auto exp = m_ExplosionFactory->get();
-			exp->setup(transform->getPosition() + glm::vec3(p.x, 1.5f, p.y));
+			exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
 		}
 		default:
 		break;

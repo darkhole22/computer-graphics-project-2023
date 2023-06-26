@@ -3,8 +3,12 @@
 layout(set = 0, binding = 1) uniform sampler2D texSampler;
 
 layout(set = 2, binding = 0) uniform WorldBufferObject {
-    vec4 lightDirection;
-    vec4 lightColor;
+    vec4 pointLightPosition;
+    vec4 pointLightDirection;
+
+    vec4 directLightDirection;
+    vec4 directLightColor;
+
     vec4 cameraPosition;
 } wubo;
 
@@ -36,8 +40,8 @@ void main() {
     vec3 Norm = normalize(fragNorm);
     vec3 CameraDir = normalize(wubo.cameraPosition.xyz - fragPos);
 
-    vec3 lightDir = wubo.lightDirection.xyz;
-    vec3 lightColor = wubo.lightColor.rgb;
+    vec3 lightDir = wubo.directLightDirection.xyz;
+    vec3 lightColor = wubo.directLightColor.rgb;
 
     vec3 DiffSpec = BRDF(CameraDir, Norm, lightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), gamma);
     vec3 Ambient = texture(texSampler, fragTexCoord).rgb * 0.05f;

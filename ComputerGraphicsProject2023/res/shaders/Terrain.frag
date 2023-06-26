@@ -3,8 +3,12 @@
 layout(set = 0, binding = 1) uniform sampler2D texSampler;
 
 layout(set = 2, binding = 0) uniform WorldBufferObject {
-    vec4 lightDirection;
-    vec4 lightColor;
+    vec4 pointLightPosition;
+    vec4 pointLightDirection;
+
+    vec4 directLightDirection;
+    vec4 directLightColor;
+
     vec4 cameraPosition;
 } wubo;
 
@@ -86,12 +90,12 @@ void main() {
     
     vec3 cameraDir = normalize(wubo.cameraPosition.xyz - fragPos);
     vec3 norm = fragNorm;
-    vec3 lightDir = wubo.lightDirection.xyz;
+    vec3 lightDir = wubo.directLightDirection.xyz;
     
     //vec3 diffSpec = BRDF(cameraDir, norm, lightDir, color, vec3(1.0));
     vec3 diff = OrenNayar(cameraDir, norm, lightDir, color, 0.4);
 
     vec3 ambient = color * 0.05;
     
-    outColor = vec4(clamp(0.95 * diff * wubo.lightColor.rgb + ambient, 0.0, 1.0), 1.0);
+    outColor = vec4(clamp(0.95 * diff * wubo.directLightColor.rgb + ambient, 0.0, 1.0), 1.0);
 }

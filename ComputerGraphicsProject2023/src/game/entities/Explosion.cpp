@@ -29,8 +29,12 @@ void Explosion::setup(glm::vec3 initialPosition)
 	auto tween = Application::getScene()->makeTween();
 	tween->addMethodTweener<f32>(scaleCallback, 0.0f, 10.0f, 5.0f);
 	tween->addIntervalTweener(3.0f);
-	tween->addMethodTweener<f32>(scaleCallback, 5.0f, 0.0f, 5.0f);
+	tween->addMethodTweener<f32>(scaleCallback, 5.0f, 0.0f, 2.0f);
 	tween->addCallbackTweener([this] () { m_Status = EntityStatus::DEAD; });
+
+	World* world = Application::getScene()->getWorld();
+	world->pointLight.position = m_GameObject->transform->getPosition();
+	world->pointLight.color = { 5.0f, 0.0f, 0.0f, 1.0f };
 }
 
 EntityStatus Explosion::update(float dt)
@@ -41,6 +45,10 @@ EntityStatus Explosion::update(float dt)
 Explosion::~Explosion()
 {
 	Application::getScene()->removeHitbox(m_Hitbox);
+
+	World* world = Application::getScene()->getWorld();
+	world->pointLight.position = m_GameObject->transform->getPosition();
+	world->pointLight.color = { 0.0f, 0.0f, 0.0f, 1.0f };
 }
 
 } // namespace game
