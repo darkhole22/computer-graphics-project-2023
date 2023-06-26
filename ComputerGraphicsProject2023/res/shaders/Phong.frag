@@ -4,7 +4,7 @@ layout(set = 0, binding = 1) uniform sampler2D texSampler;
 
 layout(set = 2, binding = 0) uniform WorldBufferObject {
     vec4 pointLightPosition;
-    vec4 pointLightDirection;
+    vec4 pointLightColor;
 
     vec4 directLightDirection;
     vec4 directLightColor;
@@ -36,15 +36,35 @@ vec3 BRDF(vec3 V, vec3 N, vec3 L, vec3 Md, vec3 Ms, float gamma) {
     return lambert_diffuse + phong_specular;
 }
 
+float pointLightDecay = 1.0f;
+float pointLightG = 100.0f; // TODO Tweak this value
+
+vec3 pointLightModel(vec3 lightColor, vec3 lightPosition, vec3 fragPosition) {
+    return lightColor * pow(pointLightG / length(lightPosition - fragPos), pointLightDecay);
+}
+
 void main() {
     vec3 Norm = normalize(fragNorm);
     vec3 CameraDir = normalize(wubo.cameraPosition.xyz - fragPos);
 
-    vec3 lightDir = wubo.directLightDirection.xyz;
-    vec3 lightColor = wubo.directLightColor.rgb;
+    // Direct Light
+    vec3 directLightDir = wubo.directLightDirection.xyz;
+    vec3 directLightColor = wubo.directLightColor.rgb;
 
-    vec3 DiffSpec = BRDF(CameraDir, Norm, lightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), gamma);
-    vec3 Ambient = texture(texSampler, fragTexCoord).rgb * 0.05f;
+    vec3 DiffSpec = BRDF(CameraDir, Norm, directLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), gamma);
 
-    outColor = vec4(clamp(0.95 * (DiffSpec) * lightColor + Ambient, 0.0f, 1.0f), 1.0f);
+    vec3 directLightComponent = directLightColor * DiffSpec;
+
+    // Point Light
+    vec3 pointLightDir = normalize(wubo.pointLightPosition.xyz - fragPos);
+    vec3 pointLightColor = wubo.pointLightColor.rgb;
+
+    DiffSpec = BRDF(CameraDir, Norm, pointLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), gamma);
+    vec3 pointLightComponent = pointLightModel(pointLightColor, wubo.pointLightPosition.xyz, fragPos) * DiffSpec;
+
+    // Ambient Lighting
+    vec3 Ambient = texture(texSampler, fragTexCoord).rgb;
+
+    // TODO: I'm not sure why we're weighting the different components like this.
+    outColor = vec4(clamp(0.95f * (directLightComponent + pointLightComponent) + 0.05f * Ambient, 0.0f, 1.0f), 1.0f);
 }
