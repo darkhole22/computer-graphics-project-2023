@@ -51,7 +51,7 @@ Player::Player(Ref<Terrain> terrain) :
 	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, c_CameraHeight));
 
 	m_Hitbox->layerMask = PLAYER_MASK;
-	m_Hitbox->collisionMask = ENEMY_MASK;
+	m_Hitbox->collisionMask = ENEMY_MASK | EXPLOSION_MASK;
 
 	scene->addHitbox(m_Hitbox);
 
@@ -63,7 +63,7 @@ Player::Player(Ref<Terrain> terrain) :
 
 	scene->addHitbox(m_PowerUpHitbox);
 
-	m_ExplosionFactory = makeRef<Factory<Explosion>>(3);
+	m_ExplosionFactory = makeRef<Factory<Explosion>>(1);
 
 	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& e) {
 		auto* powerUp = reinterpret_cast<PowerUpData*>(e.data);
@@ -175,6 +175,7 @@ void Player::reset()
 	EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 
 	m_BulletFactory->reset();
+	m_ExplosionFactory->reset();
 }
 
 void Player::onHitBoxEntered(const HitBoxEntered& e)

@@ -38,7 +38,7 @@ public:
 	*/
 	explicit Factory<T>(int initialSize = 10)
 	{
-		m_ObjectPool = makeRef<GameObjectPool>(initialSize, T::s_ModelName, T::s_TextureName);
+		m_ObjectPool = makeRef<GameObjectPool>(initialSize, T::s_ModelName, T::s_TextureName, T::s_EmissionTextureName, T::s_RoughnessTextureName);
 	}
 
 	/**

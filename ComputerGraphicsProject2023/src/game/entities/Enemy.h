@@ -8,8 +8,10 @@ namespace game {
 class Enemy
 {
 public:
-	static const String& s_ModelName;
-	static const String& s_TextureName;
+	static const String s_ModelName;
+	static const String s_TextureName;
+	static const String s_EmissionTextureName;
+	static const String s_RoughnessTextureName;
 
 	static constexpr f32 s_FlyingHeight = 1.0f;
 

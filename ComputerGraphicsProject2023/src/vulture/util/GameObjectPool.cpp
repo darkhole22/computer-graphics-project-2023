@@ -5,12 +5,12 @@
 
 namespace vulture {
 
-GameObjectPool::GameObjectPool(u32 initialSize, const String& modelName, const String& textureName) :
-	m_ModelName(modelName), m_TextureName(textureName)
+GameObjectPool::GameObjectPool(u32 initialSize, const String& modelName, const String& textureName, const String& emissionTextureName, const String& roughnessTextureName) :
+	m_ModelName(modelName), m_TextureName(textureName), m_EmissionTextureName(emissionTextureName), m_RoughnessTextureName(roughnessTextureName)
 {
 	for (u32 i = 0; i < initialSize; i++)
 	{
-		m_ObjectQueue.push(makeRef<GameObject>(m_ModelName, m_TextureName));
+		m_ObjectQueue.push(makeRef<GameObject>(m_ModelName, m_TextureName, m_EmissionTextureName, m_RoughnessTextureName));
 	}
 }
 
@@ -19,7 +19,7 @@ Ref<GameObject> GameObjectPool::get()
 	Ref<GameObject> obj;
 	if (m_ObjectQueue.empty())
 	{
-		obj = makeRef<GameObject>(m_ModelName, m_TextureName);
+		obj = makeRef<GameObject>(m_ModelName, m_TextureName, m_EmissionTextureName, m_RoughnessTextureName);
 	}
 	else
 	{

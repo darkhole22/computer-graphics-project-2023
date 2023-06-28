@@ -1,10 +1,18 @@
 #version 450
 
 layout(set = 0, binding = 1) uniform sampler2D texSampler;
+layout(set = 0, binding = 2) uniform sampler2D texEmission;
+layout(set = 0, binding = 3) uniform sampler2D texRoughness;
+
+layout(set = 0, binding = 4) uniform ObjectBufferObject {
+    float emissionStrength;
+} oubo;
 
 layout(set = 2, binding = 0) uniform WorldBufferObject {
     vec4 pointLightPosition;
     vec4 pointLightColor;
+    float pointLightDecay;
+    float pointLightMaxRange;
 
     vec4 directLightDirection;
     vec4 directLightColor;
@@ -18,9 +26,7 @@ layout(location = 2) in vec3 fragPos;
 
 layout(location = 0) out vec4 outColor;
 
-// TODO: Move this to an input which varies based on the object.
-float gamma = 160.0f;
-
+// This BRDF Implements Lambert Diffuse + Phong Specular
 vec3 BRDF(vec3 V, vec3 N, vec3 L, vec3 Md, vec3 Ms, float gamma) {
     //vec3 V  - direction of the viewer
     //vec3 N  - normal vector to the surface
@@ -36,35 +42,36 @@ vec3 BRDF(vec3 V, vec3 N, vec3 L, vec3 Md, vec3 Ms, float gamma) {
     return lambert_diffuse + phong_specular;
 }
 
-float pointLightDecay = 1.0f;
-float pointLightG = 100.0f; // TODO Tweak this value
-
-vec3 pointLightModel(vec3 lightColor, vec3 lightPosition, vec3 fragPosition) {
-    return lightColor * pow(pointLightG / length(lightPosition - fragPos), pointLightDecay);
+vec3 pointLightModel(vec3 lightColor, vec3 lightPosition, vec3 fragPosition, float lightDecay, float lightMaxRange) {
+    return lightColor * pow(lightMaxRange / length(lightPosition - fragPos), lightDecay);
 }
 
 void main() {
     vec3 Norm = normalize(fragNorm);
     vec3 CameraDir = normalize(wubo.cameraPosition.xyz - fragPos);
+    float roughness = texture(texRoughness, fragTexCoord).r * 255.0f;
 
     // Direct Light
     vec3 directLightDir = wubo.directLightDirection.xyz;
     vec3 directLightColor = wubo.directLightColor.rgb;
 
-    vec3 DiffSpec = BRDF(CameraDir, Norm, directLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), gamma);
-
+    vec3 DiffSpec = BRDF(CameraDir, Norm, directLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), roughness);
     vec3 directLightComponent = directLightColor * DiffSpec;
 
     // Point Light
     vec3 pointLightDir = normalize(wubo.pointLightPosition.xyz - fragPos);
     vec3 pointLightColor = wubo.pointLightColor.rgb;
 
-    DiffSpec = BRDF(CameraDir, Norm, pointLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), gamma);
-    vec3 pointLightComponent = pointLightModel(pointLightColor, wubo.pointLightPosition.xyz, fragPos) * DiffSpec;
+    DiffSpec = BRDF(CameraDir, Norm, pointLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), roughness);
+    vec3 pointLightComponent = pointLightModel(pointLightColor, wubo.pointLightPosition.xyz, fragPos, wubo.pointLightDecay, wubo.pointLightMaxRange) * DiffSpec;
 
     // Ambient Lighting
     vec3 Ambient = texture(texSampler, fragTexCoord).rgb;
 
-    // TODO: I'm not sure why we're weighting the different components like this.
-    outColor = vec4(clamp(0.95f * (directLightComponent + pointLightComponent) + 0.05f * Ambient, 0.0f, 1.0f), 1.0f);
+    // Emission
+    vec3 Emission = texture(texEmission, fragTexCoord).rgb;
+
+    // Out
+    vec3 baseColor = clamp(0.95f * (directLightComponent + pointLightComponent) + 0.05f * Ambient, 0.0f, 1.0f);
+    outColor = vec4(mix(baseColor, Emission, oubo.emissionStrength), 1.0f);
 }

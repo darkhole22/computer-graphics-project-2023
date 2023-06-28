@@ -2,8 +2,10 @@
 
 namespace game {
 
-const String& Enemy::s_ModelName = "hand-robot";
-const String& Enemy::s_TextureName = "hand-robot";
+const String Enemy::s_ModelName = "hand-robot";
+const String Enemy::s_TextureName = "hand-robot";
+const String Enemy::s_EmissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME;
+const String Enemy::s_RoughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME;
 
 Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 {

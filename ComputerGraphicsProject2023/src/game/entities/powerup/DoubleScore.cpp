@@ -4,6 +4,8 @@ namespace game {
 
 const String DoubleScore::s_ModelName = "star";
 const String DoubleScore::s_TextureName = "star";
+const String DoubleScore::s_EmissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME;
+const String DoubleScore::s_RoughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME;
 
 DoubleScore::DoubleScore(Ref<GameObject> gameObject) : PowerUp<DoubleScoreData>(gameObject) {};
 

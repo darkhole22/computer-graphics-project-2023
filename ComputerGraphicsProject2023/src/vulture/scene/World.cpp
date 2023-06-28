@@ -24,6 +24,8 @@ void World::updateUniforms(FrameContext& target, const Camera& camera)
 
 		m_Uniform->pointLightPosition = pointLight.position;
 		m_Uniform->pointLightColor = pointLight.color;
+		m_Uniform->pointLightDecay = pointLight.decay;
+		m_Uniform->pointLightMaxRange = pointLight.maxRange;
 
 		m_DescriptorSet->map(index);
 	}

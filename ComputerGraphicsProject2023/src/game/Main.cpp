@@ -16,7 +16,6 @@ class TestGame : public Game
 public:
 	Window* window = nullptr;
 	Scene* scene = nullptr;
-	float c_CameraHeight = 1.5f;
 
 	Ref<DebugUI> m_DebugUI = nullptr;
 	Ref<HUD> m_HUD = nullptr;

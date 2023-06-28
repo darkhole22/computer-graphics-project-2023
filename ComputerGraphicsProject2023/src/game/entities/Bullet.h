@@ -11,6 +11,9 @@ class Bullet
 public:
 	static const String s_ModelName;
 	static const String s_TextureName;
+	static const String s_EmissionTextureName;
+	static const String s_RoughnessTextureName;
+
 
 	Ref<GameObject> m_GameObject;
 

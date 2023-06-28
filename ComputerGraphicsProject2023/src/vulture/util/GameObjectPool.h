@@ -25,7 +25,12 @@ public:
 	 * @param modelName The name of the model that the GameObjects will use.
 	 * @param textureName The name of the texture that the GameObjects will use.
 	 */
-	GameObjectPool(u32 initialSize, const String& modelName, const String& textureName);
+	GameObjectPool(
+		u32 initialSize,
+	   	const String& modelName,
+	   	const String& textureName,
+	   	const String& emissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME,
+	   	const String& roughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME);
 
 	/**
 	 * @brief Retrieves a GameObject instance from the pool.
@@ -52,6 +57,8 @@ public:
 private:
 	String m_ModelName;
 	String m_TextureName;
+	String m_RoughnessTextureName;
+	String m_EmissionTextureName;
 
 	std::queue<Ref<GameObject>> m_ObjectQueue;
 };
