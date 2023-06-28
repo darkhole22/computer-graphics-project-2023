@@ -21,24 +21,7 @@ Player::Player(Ref<Terrain> terrain) :
 	/**********
 	 * FIRING *
 	 **********/
-	m_FiringTween = Application::getScene()->makeTween();
-	m_FiringTween->loop();
-	m_FiringTween->addCallbackTweener([this]() {
-		auto bullet = m_BulletFactory->get();
-
-		bullet->setup(*transform, m_Camera->direction, m_Stats.maxBulletHits);
-
-		m_GunAudio.play();
-		EventBus::emit(BulletShot{});
-	});
-	m_FiringTween->addIntervalTweener(m_Stats.fireCooldown);
-	m_FiringTween->addCallbackTweener([this]() {
-		if (!Input::isActionPressed("FIRE"))
-		{
-			m_FiringTween->pause();
-		}
-	});
-	m_FiringTween->pause();
+	updateFiringTween();
 
 	// Bobbing tween
 	scene->makeTween()->loop()->addMethodTweener<f32>([this](f32 val) {
@@ -178,6 +161,33 @@ void Player::reset()
 	m_ExplosionFactory->reset();
 }
 
+void Player::updateFiringTween()
+{
+	if (m_FiringTween) m_FiringTween->stop();
+
+	m_FiringTween = Application::getScene()->makeTween();
+	m_FiringTween->loop();
+	m_FiringTween->addCallbackTweener([this]() {
+		auto bullet = m_BulletFactory->get();
+
+		bullet->setup(*transform, m_Camera->direction, m_Stats.maxBulletHits);
+
+		m_GunAudio.play();
+		EventBus::emit(BulletShot{ m_Stats.fireCooldown });
+	});
+	m_FiringTween->addIntervalTweener(m_Stats.fireCooldown);
+	m_FiringTween->addCallbackTweener([this]() {
+		if (!Input::isActionPressed("FIRE"))
+		{
+			m_FiringTween->pause();
+		}
+	});
+	if (!Input::isActionPressed("FIRE"))
+	{
+		m_FiringTween->pause();
+	}
+}
+
 void Player::onHitBoxEntered(const HitBoxEntered& e)
 {
 	if (m_Invincible || m_Godmode || m_Stats.hp == 0) return;
@@ -207,7 +217,7 @@ void Player::onEnemyKilled(const EnemyDied& event)
 		m_Stats.exp %= PlayerStats::c_ExpRequired;
 
 		f32 rand = Random::next();
-		if (rand < 0.33f)
+		if (rand < 0.25f)
 		{
 			m_Stats.dashesLeft++;
 			m_Stats.maxDashes++;
@@ -215,13 +225,20 @@ void Player::onEnemyKilled(const EnemyDied& event)
 			EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 			EventBus::emit(LevelUp{ "Dash Upgraded!" });
 		}
-		else if (rand < 0.66f)
+		else if (rand < 0.50f)
 		{
 			m_Stats.maxHp++;
 			m_Stats.hp++;
 
 			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 			EventBus::emit(LevelUp{ "Health Upgraded!" });
+		}
+		else if (rand < 0.75f && m_Stats.fireCooldown > 0.1f)
+		{
+			m_Stats.fireCooldown -= 0.1f;
+			updateFiringTween();
+
+			EventBus::emit(LevelUp{ "Fire Ratio Upgraded!" });
 		}
 		else
 		{

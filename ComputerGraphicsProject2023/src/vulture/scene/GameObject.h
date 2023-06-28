@@ -52,7 +52,8 @@ public:
 		const String &modelName,
 		const String &baseTextureName,
 		const String &emissionTextureName = c_DefaultEmissionTextureName,
-		const String &roughnessTextureName = c_DefaultRoughnessTextureName
+		const String &roughnessTextureName = c_DefaultRoughnessTextureName,
+		const glm::mat4& loadTransform = glm::mat4(1.0f)
 	);
 
 	/**

@@ -13,7 +13,10 @@ struct HealthUpdated
 	u32 maxHp;
 };
 
-struct BulletShot {};
+struct BulletShot
+{
+	f32 fireCooldown;
+};
 
 struct DashesUpdated
 {

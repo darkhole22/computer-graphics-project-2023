@@ -54,8 +54,9 @@ Scene::Scene() :
 }
 
 template<class T>
-void stepUtil(std::unordered_set<Ref<T>>& set, f32 dt)
+void stepUtil(std::unordered_set<Ref<T>>& set, f32 dt, bool& looping)
 {
+	looping = true;
 	for (auto it = set.begin(); it != set.end();)
 	{
 		T* util = it->get();
@@ -69,6 +70,7 @@ void stepUtil(std::unordered_set<Ref<T>>& set, f32 dt)
 		else
 			++it;
 	}
+	looping = false;
 }
 
 void Scene::render(FrameContext target, float dt)
@@ -101,8 +103,8 @@ void Scene::render(FrameContext target, float dt)
 	m_UIHandler.m_ScreenUniform->height = static_cast<float>(height);
 	m_UIHandler.update(dt);
 
-	stepUtil(m_Tweens, dt);
-	stepUtil(m_Timers, dt);
+	stepUtil(m_Tweens, dt, m_TweenLoopFlag);
+	stepUtil(m_Timers, dt, m_TimersLoopFlag);
 
 	m_CollisionEngine.update(dt);
 
@@ -113,6 +115,13 @@ void Scene::render(FrameContext target, float dt)
 	}
 
 	updateUniforms(target);
+
+	// Moving the functions in a local variable to avoid insertion during the loop.
+	std::vector<std::function<void()>> deferredFunctions = std::move(m_DeferredFunctions);
+	for (auto& fun : deferredFunctions)
+	{
+		fun();
+	}
 }
 
 PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
@@ -194,15 +203,26 @@ void Scene::setSkybox(const String& name)
 Ref<Tween> Scene::makeTween()
 {
 	auto tween = makeRef<Tween>();
-	m_Tweens.insert(tween);
+	if (!m_TweenLoopFlag)
+		m_Tweens.insert(tween);
+	else
+		callLater([this, tween]() {m_Tweens.insert(tween); });
 	return tween;
 }
 
 Ref<Timer> Scene::makeTimer(f32 waitTime, bool oneShot)
 {
 	auto timer = makeRef<Timer>(waitTime, oneShot);
-	m_Timers.insert(timer);
+	if (!m_TimersLoopFlag)
+		m_Timers.insert(timer);
+	else
+		callLater([this, timer]() {m_Timers.insert(timer); });
 	return timer;
+}
+
+void Scene::callLater(std::function<void()> fun)
+{
+	m_DeferredFunctions.push_back(fun);
 }
 
 void Scene::recordCommandBuffer(FrameContext& target)

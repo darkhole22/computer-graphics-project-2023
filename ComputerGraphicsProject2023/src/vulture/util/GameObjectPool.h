@@ -30,7 +30,8 @@ public:
 	   	const String& modelName,
 	   	const String& textureName,
 	   	const String& emissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME,
-	   	const String& roughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME);
+	   	const String& roughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME,
+		const glm::mat4& loadTransform = glm::mat4(1));
 
 	/**
 	 * @brief Retrieves a GameObject instance from the pool.

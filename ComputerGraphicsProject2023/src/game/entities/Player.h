@@ -95,6 +95,8 @@ private:
 
 	Ref<Factory<Explosion>> m_ExplosionFactory;
 
+	void updateFiringTween();
+
 	void onHitBoxEntered(const HitBoxEntered& e);
 	void onEnemyKilled(const EnemyDied& event);
 };

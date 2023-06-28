@@ -5,12 +5,16 @@
 
 namespace vulture {
 
-GameObjectPool::GameObjectPool(u32 initialSize, const String& modelName, const String& textureName, const String& emissionTextureName, const String& roughnessTextureName) :
+GameObjectPool::GameObjectPool(
+		u32 initialSize,
+		const String& modelName, const String& textureName, const String& emissionTextureName, const String& roughnessTextureName,
+		const glm::mat4& loadTransform
+) :
 	m_ModelName(modelName), m_TextureName(textureName), m_EmissionTextureName(emissionTextureName), m_RoughnessTextureName(roughnessTextureName)
 {
 	for (u32 i = 0; i < initialSize; i++)
 	{
-		m_ObjectQueue.push(makeRef<GameObject>(m_ModelName, m_TextureName, m_EmissionTextureName, m_RoughnessTextureName));
+		m_ObjectQueue.push(makeRef<GameObject>(m_ModelName, m_TextureName, m_EmissionTextureName, m_RoughnessTextureName, loadTransform));
 	}
 }
 

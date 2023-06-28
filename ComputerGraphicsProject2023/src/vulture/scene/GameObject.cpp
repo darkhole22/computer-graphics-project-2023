@@ -9,10 +9,11 @@ const String GameObject::c_DefaultRoughnessTextureName = DEFAULT_ROUGHNESS_TEXTU
 
 GameObject::GameObject(
 		const String &modelName,
-		const String &baseTextureName, const String &emissionTextureName, const String &roughnessTextureName
+		const String &baseTextureName, const String &emissionTextureName, const String &roughnessTextureName,
+		const glm::mat4& loadTransform
 )
 {
-	m_Model = Model::get(modelName);
+	m_Model = Model::get(modelName, loadTransform);
 	m_ModelUniform = Renderer::makeUniform<ModelBufferObject>();
 
 	m_BaseTexture = Texture::get("base/" + baseTextureName);

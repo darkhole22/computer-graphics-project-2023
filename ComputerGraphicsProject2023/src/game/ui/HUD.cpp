@@ -118,6 +118,11 @@ void HUD::showNotification(String title, String subtitle)
 	m_NotificationTitle->setVisible(true);
 	m_NotificationSubtitle->setVisible(true);
 
+	Application::getScene()->callLater([this]() {
+		centerElement(m_NotificationTitle, 0.0f, -200.0f);
+		centerElement(m_NotificationSubtitle, 0.0f, -200.0f + m_NotificationTitle->getHeight());
+	});
+
 	Application::getScene()->makeTimer(1.0f)->addCallback([this](TimerTimeoutEvent) {
 		m_NotificationTitle->setVisible(false);
 		m_NotificationSubtitle->setVisible(false);
@@ -137,8 +142,10 @@ void HUD::onBulletShot(BulletShot event)
 	auto initialSize = m_Crosshair->getHeight();
 	auto finalSize = initialSize * 1.5f;
 
-	tween->addMethodTweener(cb, initialSize, finalSize, 0.15f);
-	tween->addMethodTweener(cb, finalSize, initialSize, 0.15f);
+	f32 duration = std::min(event.fireCooldown * 0.45f, 0.15f);
+
+	tween->addMethodTweener(cb, initialSize, finalSize, duration);
+	tween->addMethodTweener(cb, finalSize, initialSize, duration);
 }
 
 void HUD::onGameStateChanged(GameStateChanged event)

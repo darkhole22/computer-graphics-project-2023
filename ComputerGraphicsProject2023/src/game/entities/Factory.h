@@ -36,9 +36,13 @@ public:
 	*
 	* @param initialSize The initial size of the GameObjectPool.
 	*/
-	explicit Factory<T>(int initialSize = 10)
+	explicit Factory<T>(int initialSize, const glm::mat4& loadTransform = glm::mat4(1))
 	{
-		m_ObjectPool = makeRef<GameObjectPool>(initialSize, T::s_ModelName, T::s_TextureName, T::s_EmissionTextureName, T::s_RoughnessTextureName);
+		m_ObjectPool = makeRef<GameObjectPool>(
+				initialSize,
+				T::s_ModelName, T::s_TextureName, T::s_EmissionTextureName, T::s_RoughnessTextureName,
+				loadTransform
+		);
 	}
 
 	/**
