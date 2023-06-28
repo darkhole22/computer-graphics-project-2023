@@ -126,7 +126,7 @@ public:
 	 *
 	 * @param rotation The rotation vector around the three axes.
 	 */
-	inline void rotate(glm::vec3 rotation) { m_Rotation *= glm::quat(rotation); m_ShouldUpdate = true; }
+	inline void rotate(glm::vec3 rotation) { rotate(glm::quat(rotation)); }
 
 	/**
 	 * @brief Rotates the object by the specified angles around the x, y, and z axes, respectively.
