@@ -24,6 +24,11 @@ struct ModelBufferObject
 	glm::mat4 model = glm::mat4(1.0f);
 };
 
+/**
+ * ObjectBufferObject contains information about the object useful for rendering and fragment shader computations.
+ *
+ * - emissionStrength represent how much light should be emitted by the object.
+ */
 struct ObjectBufferObject
 {
 	f32 emissionStrength = 0.0f;
@@ -46,7 +51,10 @@ public:
 	 * @brief Constructs a new GameObject object.
 	 *
 	 * @param modelName Name of the model.
-	 * @param textureName Name of the texture.
+	 * @param baseTextureName Name of the base color texture.
+	 * @param emissionTextureName Name of the emission color texture.
+	 * @param roughnessTextureName Name of the roughness texture.
+	 * @param loadTransform Initial model transform.
 	 */
 	GameObject(
 		const String &modelName,
@@ -57,12 +65,15 @@ public:
 	);
 
 	/**
-	 * @brief Constructs a new GameObject object.
+	 * @brief Constructs a new GameObject object, using default emission and roughness textures.
 	 *
-	 * @param name Name of both the model and of the texture.
+	 * @param name Name of both the model and of the base color texture.
 	 */
 	explicit GameObject(const String& name) : GameObject(name, name) {};
 
+	/**
+	 * @brief Sets the emission strength of the object.
+	 */
 	inline void setEmissionStrength(f32 strength) { m_ObjectUniform->emissionStrength = strength; }
 
 	Ref<Transform> transform;

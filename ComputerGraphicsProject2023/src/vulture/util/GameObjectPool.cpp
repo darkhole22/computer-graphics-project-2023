@@ -7,10 +7,10 @@ namespace vulture {
 
 GameObjectPool::GameObjectPool(
 		u32 initialSize,
-		const String& modelName, const String& textureName, const String& emissionTextureName, const String& roughnessTextureName,
+		const String& modelName, const String& baseTextureName, const String& emissionTextureName, const String& roughnessTextureName,
 		const glm::mat4& loadTransform
 ) :
-	m_ModelName(modelName), m_TextureName(textureName), m_EmissionTextureName(emissionTextureName), m_RoughnessTextureName(roughnessTextureName)
+		m_ModelName(modelName), m_TextureName(baseTextureName), m_EmissionTextureName(emissionTextureName), m_RoughnessTextureName(roughnessTextureName)
 {
 	for (u32 i = 0; i < initialSize; i++)
 	{
