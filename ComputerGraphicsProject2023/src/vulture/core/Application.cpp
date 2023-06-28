@@ -56,6 +56,7 @@ void Application::run()
 	}
 
 	Renderer::waitIdle();
+	m_Scene->cleanup();
 }
 
 void Application::setup()

@@ -1,16 +1,17 @@
 #include "PowerUpManager.h"
 
+#include "game/entities/powerup/Bomb.h"
 #include "game/entities/powerup/HealthPack.h"
-
+#include "game/entities/powerup/DoubleScore.h"
 
 namespace game {
 
 PowerUpManager::PowerUpManager(Ref<Player> player, Ref<Terrain> terrain) :
 	m_Player(player), m_Terrain(terrain)
 {
-	m_Handlers.push_back(PowerUpHandler::create<HealthPack>(player, terrain, 10.0f, 1));
-	m_Handlers.push_back(PowerUpHandler::create<DoubleScore>(player, terrain, 10.0f, 1));
-	m_Handlers.push_back(PowerUpHandler::create<Bomb>(player, terrain, 10.0f, 1));
+	m_Handlers.emplace_back(PowerUpHandler::create<HealthPack>(player, terrain, 10.0f, 1));
+	m_Handlers.emplace_back(PowerUpHandler::create<DoubleScore>(player, terrain, 10.0f, 1));
+	m_Handlers.emplace_back(PowerUpHandler::create<Bomb>(player, terrain, 10.0f, 1));
 }
 
 void PowerUpManager::start()

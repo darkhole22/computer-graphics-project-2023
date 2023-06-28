@@ -83,6 +83,8 @@ public:
 	inline void removeHitbox(Ref<HitBox> hitbox) { m_CollisionEngine.removeHitbox(hitbox); }
 
 	~Scene() = default;
+
+	friend class Application;
 private:
 	DescriptorPool m_DescriptorsPool;
 
@@ -113,6 +115,8 @@ private:
 	void updateUniforms(FrameContext& target);
 
 	void setModified();
+
+	void cleanup();
 };
 
 }

@@ -280,4 +280,10 @@ void Scene::setModified()
 	}
 }
 
+void Scene::cleanup()
+{
+	m_Timers.clear();
+	m_Tweens.clear();
+}
+
 } // namespace vulture

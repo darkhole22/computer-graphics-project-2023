@@ -11,7 +11,7 @@ namespace game {
 
 Player::Player(Ref<Terrain> terrain) :
 	m_GunAudio("shot"), m_DamageAudio("hurt"),
-	transform(makeRef<Transform>()), m_Terrain(terrain)
+	transform(makeRef<Transform>()), m_Terrain(terrain), m_ExplosionFactory(1)
 {
 	auto scene = Application::getScene();
 	m_Camera = scene->getCamera();
@@ -62,7 +62,6 @@ Player::Player(Ref<Terrain> terrain) :
 	 * FACTORIES *
 	 *************/
 	m_BulletFactory = makeRef<Factory<Bullet>>(10);
-	m_ExplosionFactory = makeRef<Factory<Explosion>>(1);
 
 	reset();
 	m_Movement = makeRef<MovementComponent>(transform);
@@ -125,7 +124,7 @@ void Player::update(f32 dt)
 	}
 
 	m_BulletFactory->update(dt);
-	m_ExplosionFactory->update(dt);
+	m_ExplosionFactory.update(dt);
 }
 
 void Player::reset()
@@ -140,7 +139,12 @@ void Player::reset()
 	EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 
 	m_BulletFactory->reset();
-	m_ExplosionFactory->reset();
+	m_ExplosionFactory.reset();
+}
+
+Player::~Player()
+{
+	m_ExplosionFactory.reset();
 }
 
 void Player::updateFiringTween()
@@ -240,7 +244,6 @@ void Player::onPowerUpEntered(const HitBoxEntered& e)
 			if (m_Stats.hp < m_Stats.maxHp) {
 				auto *healthPack = reinterpret_cast<HealthPackData *>(powerUp);
 				m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
-				healthPack->handled = true;
 				EventBus::emit(HealthUpdated{m_Stats.hp, m_Stats.maxHp});
 			}
 			break;
@@ -248,7 +251,6 @@ void Player::onPowerUpEntered(const HitBoxEntered& e)
 		case PowerUpType::DoubleScore:
 		{
 			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
-			doubleScore->handled = true;
 			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
 			break;
 		}
@@ -257,9 +259,8 @@ void Player::onPowerUpEntered(const HitBoxEntered& e)
 			if (m_CanSpawnExplosion) {
 				auto *bomb = reinterpret_cast<BombData*>(powerUp);
 				auto p = Random::nextAnnulusPoint(20.0f, 10.0f);
-				auto exp = m_ExplosionFactory->get();
+				auto exp = m_ExplosionFactory.get();
 				exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
-				bomb->handled = true;
 			}
 		}
 		default:

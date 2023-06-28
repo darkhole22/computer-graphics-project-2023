@@ -59,10 +59,10 @@ private:
     private:                                                                                   \
 	EventHandler<E> m_EventHandler_##E;                                                        \
     public:                                                                                    \
-	inline static void emit(const E& e) { s_Instance->m_EventHandler_##E .emit(e); }           \
+	inline static void emit(const E& e) { if (s_Instance) s_Instance->m_EventHandler_##E .emit(e); }           \
 	inline static EventHandler<E>::CallbackReference addCallback(EventHandler<E>::Callback cb) \
-			{ return s_Instance->m_EventHandler_##E .addCallback(cb); }                        \
+			{ return (s_Instance) ? s_Instance->m_EventHandler_##E .addCallback(cb) : EventHandler<E>::CallbackReference{}; }                        \
 	inline static void removeCallback(EventHandler<E>::CallbackReference cr)                   \
-			{ s_Instance->m_EventHandler_##E .removeCallback(cr); }
+			{ if (s_Instance) s_Instance->m_EventHandler_##E .removeCallback(cr); }
 
 } // namespace vulture

@@ -66,6 +66,8 @@ public:
 	void update(f32 dt);
 
 	void reset();
+
+	~Player();
 private:
 	const f32 c_Speed = 10.0f;
 	const f32 c_SlopeSpeed = 20.0f;
@@ -95,7 +97,7 @@ private:
 	AudioPlayer m_GunAudio;
 	AudioPlayer m_DamageAudio;
 
-	Ref<Factory<Explosion>> m_ExplosionFactory;
+	Factory<Explosion> m_ExplosionFactory;
 
 	void updateFiringTween();
 

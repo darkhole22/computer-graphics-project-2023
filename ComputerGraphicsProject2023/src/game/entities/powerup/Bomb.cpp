@@ -15,9 +15,4 @@ PowerUpType BombData::getType() const
 	return PowerUpType::Bomb;
 }
 
-f32 BombData::getExplosionRadius() const
-{
-	return m_ExplosionRadius;
-}
-
 } // namespace game

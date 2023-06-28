@@ -97,6 +97,7 @@ public:
 
 	~TestGame()
 	{
+		gameManager.reset();
 		EventBus::cleanup();
 	}
 private:

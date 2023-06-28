@@ -12,8 +12,6 @@ class BombData : public PowerUpData
 public:
 	virtual PowerUpType getType() const;
 
-	virtual f32 getExplosionRadius() const;
-
 	virtual ~BombData() = default;
 private:
 	f32 m_ExplosionRadius = 3.0f;

@@ -2,9 +2,6 @@
 
 #include <utility>
 
-#include "game/entities/powerup/Bomb.h"
-#include "game/entities/powerup/HealthPack.h"
-#include "game/entities/powerup/DoubleScore.h"
 #include "game/entities/Player.h"
 #include "game/entities/Factory.h"
 #include "vulture/core/Core.h"
@@ -52,7 +49,10 @@ public:
 		m_ResetImpl();
 	}
 
-	~PowerUpHandler() = default;
+	~PowerUpHandler()
+	{
+		m_ResetImpl();
+	}
 private:
 	Ref<Timer> m_Timer;
 
@@ -60,7 +60,7 @@ private:
 	std::function<void ()> m_ResetImpl;
 
 	PowerUpHandler(std::function<void (f32)> updateImpl, std::function<void ()> resetImpl, Ref<Timer> timer) :
-		m_UpdateImpl(std::move(updateImpl)), m_ResetImpl(std::move(resetImpl)), m_Timer(std::move(timer))
+		 m_Timer(std::move(timer)), m_UpdateImpl(std::move(updateImpl)),m_ResetImpl(std::move(resetImpl))
 	{
 	}
 };
@@ -78,7 +78,6 @@ public:
 	void reset();
 
 	~PowerUpManager() = default;
-
 private:
 	Ref<Player> m_Player;
 	Ref<Terrain> m_Terrain;
