@@ -23,6 +23,10 @@ Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 		EventBus::emit(EnemyDied{});
 		m_Status = EntityStatus::DEAD;
 	});
+
+	Application::getScene()->makeTween()->loop()->addMethodTweener<f32>([this](f32 val) {
+		m_FlyingHeight = 1.0f + 0.2f * std::sin(val);
+	}, 0.0f, glm::radians(360.0f), 1.0f);
 }
 
 void Enemy::setup(Ref<Player> player, glm::vec3 spawnLocation)
@@ -35,10 +39,10 @@ void Enemy::setup(Ref<Player> player, glm::vec3 spawnLocation)
 	Application::getScene()->addHitbox(m_Hitbox);
 }
 
-EntityStatus Enemy::update(float dt)
+EntityStatus Enemy::update(f32 dt)
 {
 	auto target = m_Player->transform->getPosition();
-	m_Movement->lookAt({target.x, m_GameObject->transform->getPosition().y, target.z});
+	m_Movement->lookAt({ target.x, m_GameObject->transform->getPosition().y, target.z });
 	m_Movement->move(c_Speed * dt, 0, 0);
 
 	return m_Status;

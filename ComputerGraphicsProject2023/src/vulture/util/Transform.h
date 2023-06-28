@@ -119,14 +119,14 @@ public:
 	 *
 	 * @param rotation The rotation quaternion.
 	 */
-	inline void rotate(glm::quat rotation) { m_Rotation = rotation * m_Rotation; m_ShouldUpdate = true; }
+	inline void rotate(glm::quat rotation) { m_Rotation *= rotation; m_ShouldUpdate = true; }
 
 	/**
 	 * @brief Rotates the object by the specified angles around the x, y, and z axes, respectively.
 	 *
 	 * @param rotation The rotation vector around the three axes.
 	 */
-	inline void rotate(glm::vec3 rotation) { m_Rotation *= glm::quat(rotation); m_ShouldUpdate = true; }
+	inline void rotate(glm::vec3 rotation) { rotate(glm::quat(rotation)); }
 
 	/**
 	 * @brief Rotates the object by the specified angles around the x, y, and z axes, respectively.
