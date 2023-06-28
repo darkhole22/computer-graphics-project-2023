@@ -17,6 +17,7 @@
 #include "game/components/MovementComponent.h"
 #include "vulture/util/Random.h"
 #include "vulture/audio/AudioPlayer.h"
+#include "Explosion.h"
 
 namespace game {
 
@@ -65,6 +66,8 @@ public:
 	void update(f32 dt);
 
 	void reset();
+
+	~Player();
 private:
 	const f32 c_Speed = 10.0f;
 	const f32 c_SlopeSpeed = 20.0f;
@@ -80,6 +83,8 @@ private:
 	bool m_Invincible = false;
 	f32 m_InvincibilityDuration = 1.0f;
 
+	bool m_CanSpawnExplosion = true;
+
 	Ref<Terrain> m_Terrain;
 
 	Camera* m_Camera;
@@ -92,9 +97,13 @@ private:
 	AudioPlayer m_GunAudio;
 	AudioPlayer m_DamageAudio;
 
+	Factory<Explosion> m_ExplosionFactory;
+
 	void updateFiringTween();
 
 	void onHitBoxEntered(const HitBoxEntered& e);
+	void onPowerUpEntered(const HitBoxEntered& e);
+
 	void onEnemyKilled(const EnemyDied& event);
 };
 

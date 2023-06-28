@@ -1,52 +1,13 @@
 #include "HealthPack.h"
-#include "game/entities/CollisionMask.h"
 
 namespace game {
 
 const String HealthPack::s_ModelName = "health";
 const String HealthPack::s_TextureName = "health";
+const String HealthPack::s_EmissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME;
+const String HealthPack::s_RoughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME;
 
-HealthPack::HealthPack(Ref<GameObject> gameObject)
-	: m_GameObject(gameObject)
-{
-	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, 2.0f));
-
-	m_Hitbox->layerMask = POWER_UP_MASK;
-	m_Hitbox->collisionMask = PLAYER_MASK;
-
-	m_Hitbox->transform = m_GameObject->transform;
-	m_Hitbox->data = &m_Data;
-
-	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
-		m_Status = EntityStatus::DEAD;
-	});
-}
-
-void HealthPack::setup(Ref<Terrain> terrain)
-{
-	m_Terrain = terrain;
-	m_Status = EntityStatus::ALIVE;
-	m_GameObject->transform->setScale(0.5f);
-
-	Application::getScene()->addHitbox(m_Hitbox);
-}
-
-EntityStatus HealthPack::update(f32 dt)
-{
-	m_DeltaHeight += dt;
-	m_DeltaAngle += dt;
-
-	auto pos = m_GameObject->transform->getPosition();
-	m_GameObject->transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + 1.0f + 0.5f * std::sin(m_DeltaHeight), pos.z);
-	m_GameObject->transform->setRotation(0, m_DeltaAngle, 0);
-
-	return m_Status;
-}
-
-HealthPack::~HealthPack()
-{
-	Application::getScene()->removeHitbox(m_Hitbox);
-}
+HealthPack::HealthPack(Ref<GameObject> gameObject) : PowerUp<HealthPackData>(gameObject) {};
 
 PowerUpType HealthPackData::getType() const
 {

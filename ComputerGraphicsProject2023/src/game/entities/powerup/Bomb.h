@@ -2,23 +2,23 @@
 
 #include "PowerUp.h"
 
+
 namespace game {
 
 using namespace vulture;
 
-class DoubleScoreData : public PowerUpData
+class BombData : public PowerUpData
 {
 public:
 	virtual PowerUpType getType() const;
 
-	virtual f32 getDuration() const;
-
-	virtual ~DoubleScoreData() = default;
+	virtual ~BombData() = default;
 private:
-	f32 m_Duration = 20.0f;
+	f32 m_ExplosionRadius = 3.0f;
 };
 
-class DoubleScore : public PowerUp<DoubleScoreData>
+
+class Bomb : public PowerUp<BombData>
 {
 public:
 	static const String s_ModelName;
@@ -26,7 +26,7 @@ public:
 	static const String s_EmissionTextureName;
 	static const String s_RoughnessTextureName;
 
-	explicit DoubleScore(Ref<GameObject> gameObject);
+	explicit Bomb(Ref<GameObject> gameObject);
 };
 
 } // namespace game

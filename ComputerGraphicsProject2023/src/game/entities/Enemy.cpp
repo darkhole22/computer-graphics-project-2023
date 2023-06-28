@@ -2,8 +2,10 @@
 
 namespace game {
 
-const String& Enemy::s_ModelName = "hand-robot";
-const String& Enemy::s_TextureName = "hand-robot";
+const String Enemy::s_ModelName = "hand-robot";
+const String Enemy::s_TextureName = "hand-robot";
+const String Enemy::s_EmissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME;
+const String Enemy::s_RoughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME;
 
 Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 {
@@ -13,7 +15,7 @@ Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
 	m_Movement = makeRef<MovementComponent>(m_GameObject->transform);
 
 	m_Hitbox->layerMask = ENEMY_MASK;
-	m_Hitbox->collisionMask = PLAYER_BULLET_MASK;
+	m_Hitbox->collisionMask = PLAYER_BULLET_MASK | EXPLOSION_MASK;
 	m_Hitbox->data = &m_Damage;
 	m_Hitbox->transform = m_GameObject->transform;
 

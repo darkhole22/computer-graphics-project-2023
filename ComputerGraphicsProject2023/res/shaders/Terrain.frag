@@ -3,8 +3,14 @@
 layout(set = 0, binding = 1) uniform sampler2D texSampler;
 
 layout(set = 2, binding = 0) uniform WorldBufferObject {
-    vec4 lightDirection;
-    vec4 lightColor;
+    vec4 pointLightPosition;
+    vec4 pointLightColor;
+    float pointLightDecay;
+    float pointLightMaxRange;
+
+    vec4 directLightDirection;
+    vec4 directLightColor;
+
     vec4 cameraPosition;
 } wubo;
 
@@ -26,25 +32,12 @@ layout(location = 2) in vec3 fragPos;
 
 layout(location = 0) out vec4 outColor;
 
-// TODO: Move this to an input which varies based on the object.
-float gamma = 160.0;
-
-vec3 BRDF(vec3 V, vec3 N, vec3 L, vec3 Md, vec3 Ms) {
-    //vec3 V  - direction of the viewer
-    //vec3 N  - normal vector to the surface
-    //vec3 L  - light vector (from the light model)
-    //vec3 Md - main color of the surface
-    //vec3 Ms - specular color of the surface
-    
-    //float gamma - Exponent for power specular term
-    vec3 lambert_diffuse = Md * max(dot(L, N), 0);
-
-    vec3 rlx = -reflect(-L, N);
-    vec3 phong_specular = Ms * pow(clamp(dot(-V, rlx), 0.0, 1.0), gamma);
-
-    return lambert_diffuse + phong_specular;
+vec3 pointLightModel(vec3 lightColor, vec3 lightPosition, vec3 fragPosition, float lightDecay, float lightMaxRange) {
+    return lightColor * pow(lightMaxRange / length(lightPosition - fragPos), lightDecay);
 }
 
+// This BRDF implements OrenNayar, used for materials that do not show specular reflections
+// such as our terrain.
 vec3 OrenNayar(vec3 V, vec3 N, vec3 L, vec3 Md, float sigma) {
     //vec3 V  - direction of the viewer
     //vec3 N  - normal vector to the surface
@@ -68,7 +61,7 @@ vec3 OrenNayar(vec3 V, vec3 N, vec3 L, vec3 Md, float sigma) {
 
     vec3 oren_nayar_diffuse = l * (A + B * G * sin(alpha) * tan(beta));
 
-    return oren_nayar_diffuse; // Oren-Nayar is used for materials that don't show specular reflections.
+    return oren_nayar_diffuse;
 }
 
 float doubleStep(float val, float minVal, float maxVal)
@@ -86,12 +79,24 @@ void main() {
     
     vec3 cameraDir = normalize(wubo.cameraPosition.xyz - fragPos);
     vec3 norm = fragNorm;
-    vec3 lightDir = wubo.lightDirection.xyz;
-    
-    //vec3 diffSpec = BRDF(cameraDir, norm, lightDir, color, vec3(1.0));
-    vec3 diff = OrenNayar(cameraDir, norm, lightDir, color, 0.4);
 
-    vec3 ambient = color * 0.05;
-    
-    outColor = vec4(clamp(0.95 * diff * wubo.lightColor.rgb + ambient, 0.0, 1.0), 1.0);
+    // Direct Light
+    vec3 lightDir = wubo.directLightDirection.xyz;
+
+    vec3 diff = OrenNayar(cameraDir, norm, lightDir, color, 0.4);
+    vec3 directLightComponent = wubo.directLightColor.rgb * diff;
+
+    // Point Light
+    vec3 pointLightDir = normalize(wubo.pointLightPosition.xyz - fragPos);
+    vec3 pointLightColor = wubo.pointLightColor.rgb;
+
+    diff = OrenNayar(cameraDir, norm, pointLightDir, color, 0.4);
+    vec3 pointLightComponent = pointLightModel(pointLightColor, wubo.pointLightPosition.xyz, fragPos, wubo.pointLightDecay, wubo.pointLightMaxRange) * diff;
+
+    // Ambient
+    vec3 Ambient = color;
+
+    // Out
+    vec3 baseColor = clamp(0.95f * (directLightComponent + pointLightComponent) + 0.05f * Ambient, 0.0f, 1.0f);
+    outColor = vec4(baseColor, 1.0);
 }

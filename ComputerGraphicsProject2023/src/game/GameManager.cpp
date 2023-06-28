@@ -3,13 +3,14 @@
 namespace game {
 
 GameManager::GameManager(Ref<Terrain> terrain) :
-	m_Terrain(terrain), m_EnemyFactory(50, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
-	m_HealthPackFactory(10), m_DoubleScoreFactory(10),
-	m_GameState(GameState::SETUP), m_DeathAudio("lose")
+		m_Terrain(terrain), m_Player(makeRef<Player>(terrain)),
+		m_EnemyFactory(50, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
+		m_PowerUpManager(m_Player, terrain),
+		m_GameState(GameState::SETUP),
+		m_DeathAudio("lose")
 {
 	m_Scene = Application::getScene();
 
-	m_Player = makeRef<Player>(m_Terrain);
 	EventBus::addCallback([this](HealthUpdated event) {
 		if (event.hp != 0) return;
 		Application::getWindow()->setCursorMode(CursorMode::NORMAL);
@@ -31,34 +32,6 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 		}
 	});
 	m_WaveTimer->pause();
-
-	m_HealthPackTimer = m_Scene->makeTimer(40, false);
-	m_HealthPackTimer->addCallback([this](const TimerTimeoutEvent&) {
-		for (int i = 0; i < 2; i++)
-		{
-			auto p = Random::nextAnnulusPoint(100.f);
-			auto pack = m_HealthPackFactory.get();
-			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
-
-			pack->m_GameObject->transform->setPosition(startingLocation);
-			pack->setup(m_Terrain);
-		}
-	});
-	m_HealthPackTimer->pause();
-
-	m_DoubleScoreTimer = m_Scene->makeTimer(30, false);
-	m_DoubleScoreTimer->addCallback([this](const TimerTimeoutEvent&) {
-		for (int i = 0; i < 1; i++)
-		{
-			auto p = Random::nextAnnulusPoint(100.f);
-			auto doubleScore = m_DoubleScoreFactory.get();
-			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
-
-			doubleScore->m_GameObject->transform->setPosition(startingLocation);
-			doubleScore->setup(m_Terrain);
-		}
-	});
-	m_DoubleScoreTimer->pause();
 }
 
 void GameManager::update(f32 dt)
@@ -73,9 +46,10 @@ void GameManager::update(f32 dt)
 		m_DoubleScoreActive = false;
 
 		m_WaveTimer->play();
-		m_HealthPackTimer->play();
-		m_DoubleScoreTimer->play();
+		m_PowerUpManager.start();
+
 		setGameState(GameState::PLAYING);
+		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 		break;
 	}
 	case GameState::PLAYING:
@@ -88,18 +62,14 @@ void GameManager::update(f32 dt)
 			enemy->m_GameObject->transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + Enemy::s_FlyingHeight, pos.z);
 		}
 
-		m_HealthPackFactory.update(dt);
-		m_DoubleScoreFactory.update(dt);
-
+		m_PowerUpManager.update(dt);
 		m_Player->update(dt);
-
-
 
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
 			m_WaveTimer->pause();
-			m_HealthPackTimer->pause();
-			m_DoubleScoreTimer->pause();
+
+			m_PowerUpManager.pause();
 
 			setGameState(GameState::PAUSE);
 			Application::getWindow()->setCursorMode(CursorMode::NORMAL);
@@ -111,8 +81,8 @@ void GameManager::update(f32 dt)
 	if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 	{
 		m_WaveTimer->play();
-		m_HealthPackTimer->play();
-		m_DoubleScoreTimer->play();
+
+		m_PowerUpManager.start();
 
 		setGameState(GameState::PLAYING);
 		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
@@ -142,7 +112,9 @@ void GameManager::onGameOver()
 {
 	m_WaveTimer->reset(false);
 	Application::getWindow()->setCursorMode(CursorMode::NORMAL);
-	m_HealthPackTimer->reset();
+
+	m_PowerUpManager.pause();
+
 	if (m_GameState != GameState::GAME_OVER)
 		m_DeathAudio.play();
 	setGameState(GameState::GAME_OVER);
@@ -151,9 +123,7 @@ void GameManager::onGameOver()
 void GameManager::beforeRestart()
 {
 	m_EnemyFactory.reset();
-	m_HealthPackFactory.reset();
-	m_DoubleScoreFactory.reset();
-
+	m_PowerUpManager.reset();
 	m_Player->reset();
 
 	setGameState(GameState::SETUP);

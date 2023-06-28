@@ -3,6 +3,7 @@
 #include "vulture/core/Logger.h"
 #include "game/entities/powerup/HealthPack.h"
 #include "game/entities/powerup/DoubleScore.h"
+#include "game/entities/powerup/Bomb.h"
 
 using namespace vulture;
 
@@ -10,7 +11,7 @@ namespace game {
 
 Player::Player(Ref<Terrain> terrain) :
 	m_GunAudio("shot"), m_DamageAudio("hurt"),
-	transform(makeRef<Transform>()), m_Terrain(terrain)
+	transform(makeRef<Transform>()), m_Terrain(terrain), m_ExplosionFactory(1)
 {
 	auto scene = Application::getScene();
 	m_Camera = scene->getCamera();
@@ -32,49 +33,38 @@ Player::Player(Ref<Terrain> terrain) :
 	 * HITBOX *
 	 **********/
 	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, c_CameraHeight));
+	m_Hitbox->transform = transform;
 
 	m_Hitbox->layerMask = PLAYER_MASK;
-	m_Hitbox->collisionMask = ENEMY_MASK;
+	m_Hitbox->collisionMask = ENEMY_MASK | EXPLOSION_MASK;
 
 	scene->addHitbox(m_Hitbox);
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& event) { onHitBoxEntered(event); });
 
+	/*************
+	 * POWER UPS *
+	 *************/
 	m_PowerUpHitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.5f, c_CameraHeight));
+	m_PowerUpHitbox->transform = transform;
+
 	m_PowerUpHitbox->layerMask = PLAYER_MASK;
 	m_PowerUpHitbox->collisionMask = POWER_UP_MASK;
 
 	scene->addHitbox(m_PowerUpHitbox);
 
-	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& e) {
-		auto* powerUp = reinterpret_cast<PowerUpData*>(e.data);
-		switch (powerUp->getType())
-		{
-		case PowerUpType::HealthUp:
-		{
-			auto* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
-			m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
-			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
-			break;
-		}
-		case PowerUpType::DoubleScore:
-		{
-			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
-			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
-		}
-		default:
-		break;
-		}
-	});
+	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& event) { onPowerUpEntered(event); });
 
-	m_BulletFactory = makeRef<Factory<Bullet>>(40);
+	EventBus::addCallback([this] (const ExplosionStarted&) { m_CanSpawnExplosion = false; });
+	EventBus::addCallback([this] (const ExplosionFinished&) { m_CanSpawnExplosion = true; });
+
+	/*************
+	 * FACTORIES *
+	 *************/
+	m_BulletFactory = makeRef<Factory<Bullet>>(10);
 
 	reset();
-
 	m_Movement = makeRef<MovementComponent>(transform);
-
-	m_Hitbox->transform = transform;
-	m_PowerUpHitbox->transform = transform;
 }
 
 void Player::update(f32 dt)
@@ -134,6 +124,7 @@ void Player::update(f32 dt)
 	}
 
 	m_BulletFactory->update(dt);
+	m_ExplosionFactory.update(dt);
 }
 
 void Player::reset()
@@ -148,6 +139,12 @@ void Player::reset()
 	EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
 
 	m_BulletFactory->reset();
+	m_ExplosionFactory.reset();
+}
+
+Player::~Player()
+{
+	m_ExplosionFactory.reset();
 }
 
 void Player::updateFiringTween()
@@ -235,7 +232,40 @@ void Player::onEnemyKilled(const EnemyDied& event)
 			EventBus::emit(LevelUp{ "Bullets Upgraded!" });
 		}
 	}
+}
 
+void Player::onPowerUpEntered(const HitBoxEntered& e)
+{
+	auto* powerUp = reinterpret_cast<PowerUpData*>(e.data);
+	switch (powerUp->getType())
+	{
+		case PowerUpType::HealthUp:
+		{
+			if (m_Stats.hp < m_Stats.maxHp) {
+				auto *healthPack = reinterpret_cast<HealthPackData *>(powerUp);
+				m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
+				EventBus::emit(HealthUpdated{m_Stats.hp, m_Stats.maxHp});
+			}
+			break;
+		}
+		case PowerUpType::DoubleScore:
+		{
+			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
+			break;
+		}
+		case PowerUpType::Bomb:
+		{
+			if (m_CanSpawnExplosion) {
+				auto *bomb = reinterpret_cast<BombData*>(powerUp);
+				auto p = Random::nextAnnulusPoint(20.0f, 10.0f);
+				auto exp = m_ExplosionFactory.get();
+				exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
+			}
+		}
+		default:
+			break;
+	}
 }
 
 } // namespace game

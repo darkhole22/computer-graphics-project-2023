@@ -7,7 +7,6 @@ PowerUpType PowerUpData::getType() const
 	return PowerUpType::None;
 }
 
-PowerUpData::~PowerUpData()
-{}
+PowerUpData::~PowerUpData() = default;
 
 } // namespace game

@@ -19,13 +19,22 @@ class GameObjectPool
 {
 public:
 	/**
-	 * @brief Constructs a GameObjectPool object with the specified initial size, model name, and texture name.
+	 * @brief Constructs a GameObjectPool object with the specified initial size, model name and transform, and textures.
 	 *
 	 * @param initialSize The initial size of the GameObjectPool.
 	 * @param modelName The name of the model that the GameObjects will use.
-	 * @param textureName The name of the texture that the GameObjects will use.
+	 * @param baseTextureName Name of the base color texture.
+	 * @param emissionTextureName Name of the emission color texture.
+	 * @param roughnessTextureName Name of the roughness texture.
+	 * @param loadTransform Initial model transform.
 	 */
-	GameObjectPool(u32 initialSize, const String& modelName, const String& textureName, const glm::mat4& loadTransform = glm::mat4(1));
+	GameObjectPool(
+		u32 initialSize,
+	   	const String& modelName,
+	   	const String& baseTextureName,
+	   	const String& emissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME,
+	   	const String& roughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME,
+		const glm::mat4& loadTransform = glm::mat4(1));
 
 	/**
 	 * @brief Retrieves a GameObject instance from the pool.
@@ -52,6 +61,8 @@ public:
 private:
 	String m_ModelName;
 	String m_TextureName;
+	String m_RoughnessTextureName;
+	String m_EmissionTextureName;
 
 	std::queue<Ref<GameObject>> m_ObjectQueue;
 };

@@ -16,7 +16,6 @@ class TestGame : public Game
 public:
 	Window* window = nullptr;
 	Scene* scene = nullptr;
-	float c_CameraHeight = 1.5f;
 
 	Ref<DebugUI> m_DebugUI = nullptr;
 	Ref<HUD> m_HUD = nullptr;
@@ -36,7 +35,7 @@ public:
 		 *  SETUP *
 		 **********/
 		window = Application::getWindow();
-		window->setCursorMode(CursorMode::DISABLED);
+		window->setCursorMode(CursorMode::NORMAL);
 
 		scene = Application::getScene();
 		EventBus::init();
@@ -98,6 +97,7 @@ public:
 
 	~TestGame()
 	{
+		gameManager.reset();
 		EventBus::cleanup();
 	}
 private:
