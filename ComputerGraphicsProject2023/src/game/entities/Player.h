@@ -98,6 +98,8 @@ private:
 	void updateFiringTween();
 
 	void onHitBoxEntered(const HitBoxEntered& e);
+	void onPowerUpEntered(const HitBoxEntered& e);
+
 	void onEnemyKilled(const EnemyDied& event);
 };
 

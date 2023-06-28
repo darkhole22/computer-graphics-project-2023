@@ -32,6 +32,7 @@ Player::Player(Ref<Terrain> terrain) :
 	 * HITBOX *
 	 **********/
 	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, c_CameraHeight));
+	m_Hitbox->transform = transform;
 
 	m_Hitbox->layerMask = PLAYER_MASK;
 	m_Hitbox->collisionMask = ENEMY_MASK | EXPLOSION_MASK;
@@ -40,50 +41,27 @@ Player::Player(Ref<Terrain> terrain) :
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& event) { onHitBoxEntered(event); });
 
+	/*************
+	 * POWER UPS *
+	 *************/
 	m_PowerUpHitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.5f, c_CameraHeight));
+	m_PowerUpHitbox->transform = transform;
+
 	m_PowerUpHitbox->layerMask = PLAYER_MASK;
 	m_PowerUpHitbox->collisionMask = POWER_UP_MASK;
 
 	scene->addHitbox(m_PowerUpHitbox);
 
+	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& event) { onPowerUpEntered(event); });
+
+	/*************
+	 * FACTORIES *
+	 *************/
+	m_BulletFactory = makeRef<Factory<Bullet>>(10);
 	m_ExplosionFactory = makeRef<Factory<Explosion>>(1);
 
-	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& e) {
-		auto* powerUp = reinterpret_cast<PowerUpData*>(e.data);
-		switch (powerUp->getType())
-		{
-		case PowerUpType::HealthUp:
-		{
-			auto* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
-			m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
-			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
-			break;
-		}
-		case PowerUpType::DoubleScore:
-		{
-			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
-			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
-			break;
-		}
-		case PowerUpType::Bomb:
-		{
-			auto p = Random::nextAnnulusPoint(30.0f, 20.0f);
-			auto exp = m_ExplosionFactory->get();
-			exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
-		}
-		default:
-		break;
-		}
-	});
-
-	m_BulletFactory = makeRef<Factory<Bullet>>(40);
-
 	reset();
-
 	m_Movement = makeRef<MovementComponent>(transform);
-
-	m_Hitbox->transform = transform;
-	m_PowerUpHitbox->transform = transform;
 }
 
 void Player::update(f32 dt)
@@ -246,7 +224,35 @@ void Player::onEnemyKilled(const EnemyDied& event)
 			EventBus::emit(LevelUp{ "Bullets Upgraded!" });
 		}
 	}
+}
 
+void Player::onPowerUpEntered(const HitBoxEntered& e)
+{
+	auto* powerUp = reinterpret_cast<PowerUpData*>(e.data);
+	switch (powerUp->getType())
+	{
+		case PowerUpType::HealthUp:
+		{
+			auto* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
+			m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
+			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
+			break;
+		}
+		case PowerUpType::DoubleScore:
+		{
+			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
+			break;
+		}
+		case PowerUpType::Bomb:
+		{
+			auto p = Random::nextAnnulusPoint(30.0f, 20.0f);
+			auto exp = m_ExplosionFactory->get();
+			exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
+		}
+		default:
+			break;
+	}
 }
 
 } // namespace game
