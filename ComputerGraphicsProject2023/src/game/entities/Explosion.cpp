@@ -8,6 +8,7 @@ const String Explosion::s_EmissionTextureName = "explosion";
 const String Explosion::s_RoughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME;
 
 Explosion::Explosion(Ref<GameObject> gameObject)
+	: m_Audio("explosion")
 {
 	m_GameObject = gameObject;
 	m_GameObject->setEmissionStrength(1.0f);
@@ -59,6 +60,7 @@ void Explosion::setup(glm::vec3 initialPosition)
 	tween->addCallbackTweener([this] () { m_Status = EntityStatus::DEAD; });
 
 	world->pointLight.position = m_GameObject->transform->getPosition();
+	m_Audio.play();
 }
 
 EntityStatus Explosion::update(float dt)

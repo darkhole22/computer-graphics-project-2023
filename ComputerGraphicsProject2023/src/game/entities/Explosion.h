@@ -2,6 +2,7 @@
 
 #include "vulture/util/String.h"
 #include "vulture/scene/GameObject.h"
+#include "vulture/audio/AudioPlayer.h"
 
 #include "Factory.h"
 #include "CollisionMask.h"
@@ -30,6 +31,8 @@ public:
 private:
 	Ref<HitBox> m_Hitbox;
 	EntityStatus m_Status;
+
+	AudioPlayer m_Audio;
 };
 
 } // namespace game
