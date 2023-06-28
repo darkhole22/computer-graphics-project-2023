@@ -13,7 +13,6 @@ public:
 	static const String s_EmissionTextureName;
 	static const String s_RoughnessTextureName;
 
-	static constexpr f32 s_FlyingHeight = 1.0f;
 
 	Ref<GameObject> m_GameObject;
 	Ref<HitBox> m_Hitbox;
@@ -22,14 +21,17 @@ public:
 
 	void setup(Ref<Player> player, glm::vec3 spawnLocation);
 
-	EntityStatus update(float dt);
+	EntityStatus update(f32 dt);
+
+	inline f32 getFlyingHeight() { return m_FlyingHeight; }
 
 	~Enemy();
 
 private:
-	const float c_Speed = 4.0f;
+	const f32 c_Speed = 4.0f;
 
 	EntityStatus m_Status = EntityStatus::ALIVE;
+	f32 m_FlyingHeight = 1.0f;
 
 	Ref<MovementComponent> m_Movement;
 
