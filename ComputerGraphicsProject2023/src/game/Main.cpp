@@ -69,7 +69,7 @@ public:
 		directLightTween->addMethodTweener<f32>([this](f32 angle) {
 			constexpr float hAngle = glm::radians(10.0f);
 			f32 decay = 1.0f - std::pow(sin(angle), 5.0f);
-			scene->getWorld()->directLight.color = (1.0f - 0.5f * sin(angle)) *
+			scene->getWorld()->directLight.color = static_cast<f32>(1.0f - 0.5f * sin(angle)) *
 				glm::vec4(decay * 1.0f, decay * 0.2f, 1.0f - decay, 1.0f);
 			scene->getWorld()->directLight.direction = glm::vec3(cos(angle) * cos(hAngle), sin(angle) * cos(hAngle), sin(hAngle));
 		}, glm::radians(180.0f), 0.0f, 60.0f);
