@@ -3,6 +3,7 @@
 #include "vulture/core/Logger.h"
 #include "game/entities/powerup/HealthPack.h"
 #include "game/entities/powerup/DoubleScore.h"
+#include "game/entities/powerup/Bomb.h"
 
 using namespace vulture;
 
@@ -53,6 +54,9 @@ Player::Player(Ref<Terrain> terrain) :
 	scene->addHitbox(m_PowerUpHitbox);
 
 	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& event) { onPowerUpEntered(event); });
+
+	EventBus::addCallback([this] (const ExplosionStarted&) { m_CanSpawnExplosion = false; });
+	EventBus::addCallback([this] (const ExplosionFinished&) { m_CanSpawnExplosion = true; });
 
 	/*************
 	 * FACTORIES *
@@ -233,22 +237,30 @@ void Player::onPowerUpEntered(const HitBoxEntered& e)
 	{
 		case PowerUpType::HealthUp:
 		{
-			auto* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
-			m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
-			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
+			if (m_Stats.hp < m_Stats.maxHp) {
+				auto *healthPack = reinterpret_cast<HealthPackData *>(powerUp);
+				m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
+				healthPack->handled = true;
+				EventBus::emit(HealthUpdated{m_Stats.hp, m_Stats.maxHp});
+			}
 			break;
 		}
 		case PowerUpType::DoubleScore:
 		{
 			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+			doubleScore->handled = true;
 			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
 			break;
 		}
 		case PowerUpType::Bomb:
 		{
-			auto p = Random::nextAnnulusPoint(30.0f, 20.0f);
-			auto exp = m_ExplosionFactory->get();
-			exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
+			if (m_CanSpawnExplosion) {
+				auto *bomb = reinterpret_cast<BombData*>(powerUp);
+				auto p = Random::nextAnnulusPoint(20.0f, 10.0f);
+				auto exp = m_ExplosionFactory->get();
+				exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
+				bomb->handled = true;
+			}
 		}
 		default:
 			break;

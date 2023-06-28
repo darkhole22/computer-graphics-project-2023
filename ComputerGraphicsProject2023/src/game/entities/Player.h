@@ -81,6 +81,8 @@ private:
 	bool m_Invincible = false;
 	f32 m_InvincibilityDuration = 1.0f;
 
+	bool m_CanSpawnExplosion = true;
+
 	Ref<Terrain> m_Terrain;
 
 	Camera* m_Camera;

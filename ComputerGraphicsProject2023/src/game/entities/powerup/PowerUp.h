@@ -17,6 +17,8 @@ class PowerUpData
 public:
 	virtual PowerUpType getType() const;
 
+	bool handled = false;
+
 	virtual ~PowerUpData();
 };
 
@@ -36,15 +38,10 @@ public:
 		m_Hitbox->collisionMask = PLAYER_MASK;
 		m_Hitbox->transform = m_GameObject->transform;
 		m_Hitbox->data = &m_Data;
-		m_Hitbox->addCallback([this] (const HitBoxEntered& e) {
-			m_Status = EntityStatus::DEAD;
-		});
 	}
 
 	void setup(Ref<Terrain> terrain)
 	{
-		m_Status = EntityStatus::ALIVE;
-
 		auto pos = m_GameObject->transform->getPosition();
 		m_BaseHeight = terrain->getHeightAt(pos.x, pos.z) + c_BaseHeightOffset;
 
@@ -60,7 +57,7 @@ public:
 		m_GameObject->transform->setPosition(pos.x, m_BaseHeight + 0.35 * std::sin(m_DeltaHeight), pos.z);
 		m_GameObject->transform->setRotation(0, m_DeltaAngle, 0);
 
-		return m_Status;
+		return m_Data.handled ? EntityStatus::DEAD : EntityStatus::ALIVE;
 	}
 
 	~PowerUp()
@@ -69,7 +66,6 @@ public:
 	}
 private:
 	Ref<HitBox> m_Hitbox;
-	EntityStatus m_Status = EntityStatus::ALIVE;
 	T m_Data;
 
 	f32 m_DeltaHeight = 0.0f;

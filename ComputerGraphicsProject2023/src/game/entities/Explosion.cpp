@@ -61,6 +61,7 @@ void Explosion::setup(glm::vec3 initialPosition)
 
 	world->pointLight.position = m_GameObject->transform->getPosition();
 	m_Audio.play();
+	EventBus::emit(ExplosionStarted{});
 }
 
 EntityStatus Explosion::update(float dt)
@@ -70,6 +71,7 @@ EntityStatus Explosion::update(float dt)
 
 Explosion::~Explosion()
 {
+	EventBus::emit(ExplosionFinished{});
 	Application::getScene()->removeHitbox(m_Hitbox);
 }
 

@@ -6,6 +6,8 @@
 
 #include "Factory.h"
 #include "CollisionMask.h"
+#include "game/EventBus.h"
+#include "game/events/GameEvents.h"
 
 using namespace vulture;
 
