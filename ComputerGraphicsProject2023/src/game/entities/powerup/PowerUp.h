@@ -54,7 +54,7 @@ public:
 		m_DeltaAngle += dt;
 
 		auto pos = m_GameObject->transform->getPosition();
-		m_GameObject->transform->setPosition(pos.x, m_BaseHeight + 0.35 * std::sin(m_DeltaHeight), pos.z);
+		m_GameObject->transform->setPosition(pos.x, m_BaseHeight + 0.35f * std::sin(m_DeltaHeight), pos.z);
 		m_GameObject->transform->setRotation(0, m_DeltaAngle, 0);
 
 		return m_Data.handled ? EntityStatus::DEAD : EntityStatus::ALIVE;

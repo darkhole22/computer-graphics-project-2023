@@ -31,6 +31,7 @@ public:
 
 	~Explosion();
 private:
+	Ref<CapsuleCollisionShape> m_Capsule;
 	Ref<HitBox> m_Hitbox;
 	EntityStatus m_Status;
 

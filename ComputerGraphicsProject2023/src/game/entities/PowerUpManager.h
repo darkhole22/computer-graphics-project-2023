@@ -25,7 +25,7 @@ public:
 
 		auto timer = Application::getScene()->makeTimer(cooldown, false);
 		timer->addCallback([=](const TimerTimeoutEvent&) {
-			for (int i = 0; i < amount; i++)
+			for (u32 i = 0; i < amount; i++)
 			{
 				auto p = Random::nextAnnulusPoint(100.f);
 				auto powerUp = factory->get();

@@ -84,6 +84,8 @@ public:
 
 	/**
 	 * @brief Applies a transformation to the capsule collision shape.
+	 * For optimization reason the scaling component of the transform is not applied.
+	 * Use setDimensions instead.
 	 *
 	 * @param transform The transformation to apply.
 	 */
@@ -96,6 +98,14 @@ public:
 	 * @return true if a collision is detected, false otherwise.
 	 */
 	virtual bool testCollision(const Ref<CollisionShape> other) const;
+
+	/**
+	 * @brief Sets the radius and height of the Capsule.
+	 * 
+	 * @param radius the new radius.
+	 * @param height the new height.
+	*/
+	void setDimensions(f32 radius, f32 height);
 
 	/**
 	 * @brief Virtual destructor for proper cleanup of derived classes.

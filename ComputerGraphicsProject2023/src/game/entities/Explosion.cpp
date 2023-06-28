@@ -13,7 +13,8 @@ Explosion::Explosion(Ref<GameObject> gameObject)
 	m_GameObject = gameObject;
 	m_GameObject->setEmissionStrength(1.0f);
 
-	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, 2.0f));
+	m_Capsule = makeRef<CapsuleCollisionShape>(1.0f, 2.0f);
+	m_Hitbox = makeRef<HitBox>(m_Capsule);
 	m_Hitbox->layerMask = EXPLOSION_MASK;
 	m_Hitbox->collisionMask = ENEMY_MASK | PLAYER_MASK;
 }
@@ -30,6 +31,7 @@ void Explosion::setup(glm::vec3 initialPosition)
 	World* world = Application::getScene()->getWorld();
 
 	auto scaleCallback = [this] (f32 scale) {
+		m_Capsule->setDimensions(1.0f * scale, 2.0f * scale);
 		m_GameObject->transform->setScale(scale);
 	};
 

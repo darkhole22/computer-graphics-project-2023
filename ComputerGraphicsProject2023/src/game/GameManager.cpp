@@ -49,6 +49,7 @@ void GameManager::update(f32 dt)
 		m_PowerUpManager.start();
 
 		setGameState(GameState::PLAYING);
+		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 		break;
 	}
 	case GameState::PLAYING:

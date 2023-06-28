@@ -9,8 +9,8 @@ bool testCollisionCapsuleCapsule(const CapsuleCollisionShape* c1, const CapsuleC
 CapsuleCollisionShape::CapsuleCollisionShape(f32 radius, f32 height) :
 	CollisionShape(CollisionShapeType::CAPSULE), m_Radius(radius)
 {
+	setDimensions(radius, height);
 	f32 diameter = m_Radius * 2;
-	m_Height = std::max(height, diameter + 0.001f);
 	f32 vScale = (m_Height - diameter) / 2;
 	m_Tip = glm::vec3(0, 1, 0) * vScale;
 	m_Base = -m_Tip;
@@ -40,6 +40,12 @@ bool CapsuleCollisionShape::testCollision(const Ref<CollisionShape> other) const
 	break;
 	}
 	return false;
+}
+
+void CapsuleCollisionShape::setDimensions(f32 radius, f32 height)
+{
+	m_Radius = radius;
+	m_Height = std::max(height, m_Radius * 2 + 0.001f);
 }
 
 glm::vec3 closestPointOnLineSegment(glm::vec3 a, glm::vec3 b, glm::vec3 point)
