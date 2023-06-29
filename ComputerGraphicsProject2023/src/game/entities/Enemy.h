@@ -19,7 +19,7 @@ public:
 
 	explicit Enemy(Ref<GameObject> gameObject);
 
-	void setup(Ref<Player> player, glm::vec3 spawnLocation);
+	void setup(Ref<Player> player, Ref<Terrain> terrain, glm::vec3 spawnLocation);
 
 	EntityStatus update(f32 dt);
 
@@ -36,6 +36,9 @@ private:
 	Ref<MovementComponent> m_Movement;
 
 	Ref<Player> m_Player;
+	Ref<Terrain> m_Terrain;
+
+	Ref<Tween> m_BobbingTween;
 
 	u32 m_Damage = 1;
 };
