@@ -15,7 +15,7 @@ public:
 	template<typename T>
 	static PowerUpHandler create(Ref<Player> player, Ref<Terrain> terrain, f32 cooldown, u32 amount)
 	{
-		auto factory = makeRef<Factory<T>>(10);
+		auto factory = makeRef<Factory<T>>(5);
 
 		auto updateImpl = [factory] (f32 dt) { factory->update(dt); };
 		auto resetImpl = [factory] () { factory->reset(); };
@@ -26,6 +26,8 @@ public:
 			{
 				auto p = Random::nextAnnulusPoint(100.f);
 				auto powerUp = factory->get();
+				if (!powerUp) break;
+				
 				auto startingLocation = player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 
 				powerUp->m_GameObject->transform->setPosition(startingLocation);

@@ -36,13 +36,15 @@ public:
 	*
 	* @param initialSize The initial size of the GameObjectPool.
 	* @param loadTransform The initial transform of the objects' models.
+ 	* @param growth How many new game objects should be created when the pool is empty and a new one is requested.
 	*/
-	explicit Factory<T>(int initialSize, const glm::mat4& loadTransform = glm::mat4(1))
+	explicit Factory<T>(int initialSize, const glm::mat4& loadTransform = glm::mat4(1), u32 growth = 0)
 	{
 		m_ObjectPool = makeRef<GameObjectPool>(
 				initialSize,
 				T::s_ModelName, T::s_TextureName, T::s_EmissionTextureName, T::s_RoughnessTextureName,
-				loadTransform
+				loadTransform,
+				growth
 		);
 	}
 
@@ -53,17 +55,24 @@ public:
 	 * from the object pool, adding it to the current scene, and creating an entity of type T
 	 * using the acquired GameObject. The created entity is then stored in the active entity set.
 	 *
+	 * If the underlying GameObjectPool is empty and growth was set to 0, nothing happens
+	 * and nullptr is returned.
+	 *
 	 * @return A reference to the created entity of type T.
 	 */
 	Ref<T> get()
 	{
 		auto obj = m_ObjectPool->get();
-		Application::getScene()->addObject(obj);
+		if (obj)
+		{
+			Application::getScene()->addObject(obj);
 
-		auto t = makeRef<T>(obj);
-		m_ActiveEntities.insert(t);
+			auto t = makeRef<T>(obj);
+			m_ActiveEntities.insert(t);
+			return t;
+		}
 
-		return t;
+		return nullptr;
 	}
 
 	/**
