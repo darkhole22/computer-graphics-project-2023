@@ -58,10 +58,20 @@ public:
 		scene->getWorld()->directLight.color = glm::vec4(1.0f);
 		scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
 
-		scene->makeTween()->loop()->addMethodTweener<float>([this](float angle) {
+		auto* directLightTween = scene->makeTween()->loop();
+		directLightTween->addMethodTweener<f32>([this](f32 angle) {
 			constexpr float hAngle = glm::radians(10.0f);
-			scene->getWorld()->directLight.direction = glm::vec3(sin(angle) * cos(hAngle), sin(hAngle), cos(angle) * cos(hAngle));
-		}, 0.0f, glm::radians(360.0f), 10.0f);
+			scene->getWorld()->directLight.color =
+				glm::vec4(1.0f, 0.2f + 0.7f * std::pow(sin(angle), 3.0f), std::pow(sin(angle), 5.0f) * 0.9f, 1.0f);
+			scene->getWorld()->directLight.direction = glm::vec3(cos(angle) * cos(hAngle), sin(angle) * cos(hAngle), sin(hAngle));
+		}, 0.0f, glm::radians(180.0f), 60.0f);
+		directLightTween->addMethodTweener<f32>([this](f32 angle) {
+			constexpr float hAngle = glm::radians(10.0f);
+			f32 decay = 1.0f - std::pow(sin(angle), 5.0f);
+			scene->getWorld()->directLight.color = static_cast<f32>(1.0f - 0.5f * sin(angle)) *
+				glm::vec4(decay * 1.0f, decay * 0.2f, 1.0f - decay, 1.0f);
+			scene->getWorld()->directLight.direction = glm::vec3(cos(angle) * cos(hAngle), sin(angle) * cos(hAngle), sin(hAngle));
+		}, glm::radians(180.0f), 0.0f, 60.0f);
 
 		/***********
 		 * TERRAIN *
