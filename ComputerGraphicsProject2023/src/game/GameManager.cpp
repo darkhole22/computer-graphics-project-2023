@@ -28,7 +28,7 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 			auto enemy = m_EnemyFactory.get();
 			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 
-			enemy->setup(m_Player, startingLocation);
+			enemy->setup(m_Player, m_Terrain, startingLocation);
 		}
 	});
 	m_WaveTimer->pause();
@@ -55,20 +55,12 @@ void GameManager::update(f32 dt)
 	case GameState::PLAYING:
 	{
 		m_EnemyFactory.update(dt);
-
-		for (auto& enemy : m_EnemyFactory)
-		{
-			auto pos = enemy->m_GameObject->transform->getPosition();
-			enemy->m_GameObject->transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + enemy->getFlyingHeight(), pos.z);
-		}
-
 		m_PowerUpManager.update(dt);
 		m_Player->update(dt);
 
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
 			m_WaveTimer->pause();
-
 			m_PowerUpManager.pause();
 
 			setGameState(GameState::PAUSE);
