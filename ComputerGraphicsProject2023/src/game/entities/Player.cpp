@@ -244,6 +244,7 @@ void Player::onPowerUpEntered(const HitBoxEntered& e)
 			if (m_Stats.hp < m_Stats.maxHp) {
 				auto *healthPack = reinterpret_cast<HealthPackData *>(powerUp);
 				m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
+				healthPack->handled = true;
 				EventBus::emit(HealthUpdated{m_Stats.hp, m_Stats.maxHp});
 			}
 			break;
@@ -251,6 +252,7 @@ void Player::onPowerUpEntered(const HitBoxEntered& e)
 		case PowerUpType::DoubleScore:
 		{
 			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+			doubleScore->handled = true;
 			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
 			break;
 		}
@@ -261,6 +263,7 @@ void Player::onPowerUpEntered(const HitBoxEntered& e)
 				auto p = Random::nextAnnulusPoint(20.0f, 10.0f);
 				auto exp = m_ExplosionFactory.get();
 				exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
+				bomb->handled = true;
 			}
 		}
 		default:
