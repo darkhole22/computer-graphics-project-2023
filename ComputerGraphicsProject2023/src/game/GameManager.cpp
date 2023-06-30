@@ -6,7 +6,6 @@ GameManager::GameManager(const TerrainGenerationConfig& terrainConfig) :
 		m_Terrain(makeRef<Terrain>(terrainConfig)), m_Player(makeRef<Player>(m_Terrain)),
 		m_EnemyFactory(15, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
 		m_PowerUpManager(m_Player, m_Terrain),
-		m_GameState(GameState::TITLE),
 		m_DeathAudio("lose")
 {
 	m_Scene = Application::getScene();
@@ -32,6 +31,7 @@ GameManager::GameManager(const TerrainGenerationConfig& terrainConfig) :
 		}
 	});
 	m_WaveTimer->pause();
+
 	setGameState(GameState::TITLE);
 }
 
@@ -56,7 +56,6 @@ void GameManager::update(f32 dt)
 		m_PowerUpManager.start();
 
 		setGameState(GameState::PLAYING);
-		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 		break;
 	}
 	case GameState::PLAYING:
@@ -71,7 +70,6 @@ void GameManager::update(f32 dt)
 			m_PowerUpManager.pause();
 
 			setGameState(GameState::PAUSE);
-			Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 		}
 
 		break;
@@ -80,11 +78,9 @@ void GameManager::update(f32 dt)
 	if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 	{
 		m_WaveTimer->play();
-
 		m_PowerUpManager.start();
 
 		setGameState(GameState::PLAYING);
-		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 	}
 	break;
 	case GameState::GAME_OVER:
@@ -92,7 +88,6 @@ void GameManager::update(f32 dt)
 	{
 		m_DeathAudio.stop();
 		beforeRestart();
-		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
 	}
 	break;
 	}
@@ -109,6 +104,15 @@ void GameManager::setGameState(GameState gameState)
 	{
 		m_GameState = gameState;
 		EventBus::emit(GameStateChanged{ m_GameState });
+	}
+
+	if (m_GameState == GameState::PLAYING)
+	{
+		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
+	}
+	else
+	{
+		Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 	}
 }
 
