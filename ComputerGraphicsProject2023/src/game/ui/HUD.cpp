@@ -75,10 +75,10 @@ HUD::HUD()
 		centerElement(m_TitleScreenSubtitle, 0.0f, m_TitleScreenTitle->getHeight());
 	};
 
-	auto titleTween = Application::getScene()->makeTween();
-	titleTween->loop();
-	titleTween->addMethodTweener<f32>(scaleCallback, 25.0f, 40.0f, 1.0f);
-	titleTween->addMethodTweener<f32>(scaleCallback, 40.0f, 25.0f, 1.0f);
+	m_TitleTween = Application::getScene()->makeTween();
+	m_TitleTween->loop();
+	m_TitleTween->addMethodTweener<f32>(scaleCallback, 25.0f, 40.0f, 1.0f);
+	m_TitleTween->addMethodTweener<f32>(scaleCallback, 40.0f, 25.0f, 1.0f);
 
 
 	/****************
@@ -123,11 +123,6 @@ HUD::HUD()
 
 void HUD::loadingEnded()
 {
-	m_HPText->setVisible(true);
-	m_DashesText->setVisible(true);
-	m_ScoreText->setVisible(true);
-	m_Crosshair->setVisible(true);
-
 	m_TitleScreenTitle->setVisible(true);
 	m_TitleScreenSubtitle->setVisible(true);
 
@@ -205,6 +200,20 @@ void HUD::onGameStateChanged(GameStateChanged event)
 {
 	m_TitleScreenTitle->setVisible(event.gameState == GameState::TITLE);
 	m_TitleScreenSubtitle->setVisible(event.gameState == GameState::TITLE);
+
+	if (m_TitleActive && event.gameState != GameState::TITLE)
+	{
+		m_TitleActive = false;
+
+		m_UIHandler->removeText(m_TitleScreenTitle);
+		m_UIHandler->removeText(m_TitleScreenSubtitle);
+		m_TitleTween->stop();
+
+		m_HPText->setVisible(true);
+		m_DashesText->setVisible(true);
+		m_ScoreText->setVisible(true);
+		m_Crosshair->setVisible(true);
+	}
 
 	m_PauseScreenTitle->setVisible(event.gameState == GameState::PAUSE);
 	m_PauseScreenSubtitle->setVisible(event.gameState == GameState::PAUSE);

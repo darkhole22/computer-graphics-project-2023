@@ -37,6 +37,9 @@ private:
 	Ref<UIText> m_NotificationTitle;
 	Ref<UIText> m_NotificationSubtitle;
 
+	bool m_TitleActive = true;
+	Ref<Tween> m_TitleTween;
+
 	void onHealthUpdated(HealthUpdated event);
 	void onDashesUpdated(DashesUpdated event);
 	void onBulletShot(BulletShot event);
