@@ -1,5 +1,7 @@
 #define VU_LOGGER_TRACE_ENABLED
 
+#include <thread>
+
 #include "vulture/core/Logger.h"
 #include "vulture/util/ScopeTimer.h"
 #include "vulture/core/Application.h"

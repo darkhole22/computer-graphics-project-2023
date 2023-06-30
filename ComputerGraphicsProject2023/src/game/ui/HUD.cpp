@@ -33,7 +33,7 @@ HUD::HUD()
 	EventBus::addCallback([this](DoubleScoreStarted e) { onDoubleScoreStarted(e); });
 	EventBus::addCallback([this](DoubleScoreOver e) { onDoubleScoreOver(e); });
 
-	m_LoadingScreenTitle = m_UIHandler->makeText("loading...");
+	m_LoadingScreenTitle = m_UIHandler->makeText("Loading...");
 	m_LoadingScreenTitle->setSize(30);
 	centerElement(m_LoadingScreenTitle);
 
@@ -57,7 +57,7 @@ HUD::HUD()
 	/****************
 	 * TITLE SCREEN *
 	 ****************/
-	m_TitleScreenTitle = m_UIHandler->makeText("ROBOT WAVE SURVIVOR");
+	m_TitleScreenTitle = m_UIHandler->makeText("ROBOT SURVIVOR");
 	m_TitleScreenTitle->setSize(30);
 	m_TitleScreenSubtitle = m_UIHandler->makeText("Press 'FIRE' to start.");
 
@@ -67,6 +67,19 @@ HUD::HUD()
 	m_TitleScreenTitle->setStroke(0.6f);
 	m_TitleScreenTitle->setVisible(false);
 	m_TitleScreenSubtitle->setVisible(false);
+
+	auto scaleCallback = [this] (f32 scale) {
+		m_TitleScreenTitle->setSize(scale);
+		m_TitleScreenSubtitle->setSize(scale);
+		centerElement(m_TitleScreenTitle);
+		centerElement(m_TitleScreenSubtitle, 0.0f, m_TitleScreenTitle->getHeight());
+	};
+
+	auto titleTween = Application::getScene()->makeTween();
+	titleTween->loop();
+	titleTween->addMethodTweener<f32>(scaleCallback, 25.0f, 40.0f, 1.0f);
+	titleTween->addMethodTweener<f32>(scaleCallback, 40.0f, 25.0f, 1.0f);
+
 
 	/****************
 	 * PAUSE SCREEN *
