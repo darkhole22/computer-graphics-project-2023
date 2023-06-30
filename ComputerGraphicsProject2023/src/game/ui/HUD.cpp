@@ -33,6 +33,10 @@ HUD::HUD()
 	EventBus::addCallback([this](DoubleScoreStarted e) { onDoubleScoreStarted(e); });
 	EventBus::addCallback([this](DoubleScoreOver e) { onDoubleScoreOver(e); });
 
+	m_LoadingScreenTitle = m_UIHandler->makeText("Loading...");
+	m_LoadingScreenTitle->setSize(30);
+	centerElement(m_LoadingScreenTitle);
+
 	m_HPText = m_UIHandler->makeText("HP: ");
 
 	m_DashesText = m_UIHandler->makeText("Dashes: ");
@@ -44,6 +48,44 @@ HUD::HUD()
 	m_Crosshair = m_UIHandler->makeImage("crosshair");
 	m_Crosshair->setWidth(50);
 	centerElement(m_Crosshair);
+
+	m_HPText->setVisible(false);
+	m_DashesText->setVisible(false);
+	m_ScoreText->setVisible(false);
+	m_Crosshair->setVisible(false);
+
+	m_HPText->setColor(0.33f, 0.33f, 0.33f);
+	m_DashesText->setColor(0.33f, 0.33f, 0.33f);
+	m_ScoreText->setColor(0.33f, 0.33f, 0.33f);
+
+	/****************
+	 * TITLE SCREEN *
+	 ****************/
+	m_TitleScreenTitle = m_UIHandler->makeText("ROBOT SURVIVOR");
+	m_TitleScreenTitle->setSize(30);
+	m_TitleScreenSubtitle = m_UIHandler->makeText("Press 'FIRE' to start.");
+
+	centerElement(m_TitleScreenTitle);
+	centerElement(m_TitleScreenSubtitle, 0.0f, m_TitleScreenTitle->getHeight());
+
+	m_TitleScreenTitle->setStroke(0.6f);
+	m_TitleScreenTitle->setVisible(false);
+	m_TitleScreenSubtitle->setVisible(false);
+
+	m_TitleScreenSubtitle->setColor(0.33f, 0.33f, 0.33f);
+
+	auto scaleCallback = [this] (f32 scale) {
+		m_TitleScreenTitle->setSize(scale);
+		m_TitleScreenSubtitle->setSize(scale * 0.8f);
+		centerElement(m_TitleScreenTitle);
+		centerElement(m_TitleScreenSubtitle, 0.0f, m_TitleScreenTitle->getHeight());
+	};
+
+	m_TitleTween = Application::getScene()->makeTween();
+	m_TitleTween->loop();
+	m_TitleTween->addMethodTweener<f32>(scaleCallback, 25.0f, 40.0f, 1.0f);
+	m_TitleTween->addMethodTweener<f32>(scaleCallback, 40.0f, 25.0f, 1.0f);
+
 
 	/****************
 	 * PAUSE SCREEN *
@@ -83,6 +125,18 @@ HUD::HUD()
 	m_NotificationTitle->setStroke(0.6f);
 	m_NotificationTitle->setVisible(false);
 	m_NotificationSubtitle->setVisible(false);
+}
+
+void HUD::loadingEnded()
+{
+	m_TitleScreenTitle->setVisible(true);
+	m_TitleScreenSubtitle->setVisible(true);
+
+	if (m_LoadingScreenTitle)
+	{
+		m_UIHandler->removeText(m_LoadingScreenTitle);
+		m_LoadingScreenTitle.reset();
+	}
 }
 
 void HUD::onHealthUpdated(HealthUpdated event)
@@ -150,6 +204,25 @@ void HUD::onBulletShot(BulletShot event)
 
 void HUD::onGameStateChanged(GameStateChanged event)
 {
+	if (event.gameState == GameState::TITLE)
+	{
+		m_TitleScreenTitle->setVisible(true);
+		m_TitleScreenSubtitle->setVisible(true);
+	}
+	else if (m_TitleActive)
+	{
+		m_TitleActive = false;
+
+		m_UIHandler->removeText(m_TitleScreenTitle);
+		m_UIHandler->removeText(m_TitleScreenSubtitle);
+		m_TitleTween->stop();
+
+		m_HPText->setVisible(true);
+		m_DashesText->setVisible(true);
+		m_ScoreText->setVisible(true);
+		m_Crosshair->setVisible(true);
+	}
+
 	m_PauseScreenTitle->setVisible(event.gameState == GameState::PAUSE);
 	m_PauseScreenSubtitle->setVisible(event.gameState == GameState::PAUSE);
 

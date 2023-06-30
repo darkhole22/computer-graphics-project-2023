@@ -12,15 +12,21 @@ class HUD
 public:
 	HUD();
 
+	void loadingEnded();
 private:
 	UIHandler* m_UIHandler;
 	Window* m_Window;
+
+	Ref<UIText> m_LoadingScreenTitle;
 
 	Ref<UIText> m_HPText;
 	Ref<UIText> m_DashesText;
 	Ref<UIText> m_ScoreText;
 
 	Ref<UIImage> m_Crosshair;
+
+	Ref<UIText> m_TitleScreenTitle;
+	Ref<UIText> m_TitleScreenSubtitle;
 
 	Ref<UIText> m_PauseScreenTitle;
 	Ref<UIText> m_PauseScreenSubtitle;
@@ -30,6 +36,9 @@ private:
 
 	Ref<UIText> m_NotificationTitle;
 	Ref<UIText> m_NotificationSubtitle;
+
+	bool m_TitleActive = true;
+	Ref<Tween> m_TitleTween;
 
 	void onHealthUpdated(HealthUpdated event);
 	void onDashesUpdated(DashesUpdated event);

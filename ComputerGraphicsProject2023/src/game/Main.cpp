@@ -1,11 +1,14 @@
 #define VU_LOGGER_TRACE_ENABLED
 
+#include <thread>
+
 #include "vulture/core/Logger.h"
 #include "vulture/util/ScopeTimer.h"
 #include "vulture/core/Application.h"
 #include "game/ui/DebugUI.h"
 #include "GameManager.h"
 #include "terrain/Terrain.h"
+#include "vulture/core/Job.h"
 
 using namespace vulture;
 
@@ -21,7 +24,6 @@ public:
 	Ref<HUD> m_HUD = nullptr;
 
 	Ref<GameManager> gameManager = nullptr;
-	Ref<Terrain> terrain = nullptr;
 
 #if 1
 	String skyboxName = "desert";
@@ -73,18 +75,27 @@ public:
 			scene->getWorld()->directLight.direction = glm::vec3(cos(angle) * cos(hAngle), sin(angle) * cos(hAngle), sin(hAngle));
 		}, glm::radians(180.0f), 0.0f, 60.0f);
 
-		/***********
-		 * TERRAIN *
-		 ***********/
-		TerrainGenerationConfig terrainConfig{};
-		terrainConfig.noiseScale = 2;
-		terrainConfig.heightScale = 250;
-		terrain = makeRef<Terrain>(terrainConfig);
 
-		/**************
-		 * GAME LOGIC *
-		 **************/
-		gameManager = makeRef<GameManager>(terrain);
+		Job::submit([](void*)->bool {
+			using namespace std::chrono_literals;
+
+			std::this_thread::sleep_for(100ms);
+			return true;
+		}, nullptr, [this](bool, void*) {
+			/***********
+			 * TERRAIN *
+			 ***********/
+			TerrainGenerationConfig terrainConfig{};
+			terrainConfig.noiseScale = 2;
+			terrainConfig.heightScale = 250;
+
+			/**************
+			 * GAME LOGIC *
+			 **************/
+			gameManager = makeRef<GameManager>(terrainConfig);
+
+			m_HUD->loadingEnded();
+		});
 	}
 
 	void update(float dt) override
@@ -96,13 +107,8 @@ public:
 			useSkybox = !useSkybox;
 		}
 
-		gameManager->update(dt);
+		if (gameManager) gameManager->update(dt);
 		m_DebugUI->update(dt);
-
-		auto cameraPos = scene->getCamera()->position;
-		terrain->setReferencePosition({ cameraPos.x, cameraPos.z });
-
-		terrain->update(dt);
 	}
 
 	~TestGame()

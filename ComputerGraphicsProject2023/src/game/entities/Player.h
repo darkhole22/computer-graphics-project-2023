@@ -91,7 +91,7 @@ private:
 	f32 c_CameraHeight = 1.5f;
 
 	Ref<Tween> m_FiringTween;
-	f32 m_BobbingHeight = 1.0f;
+	f32 m_BobbingHeight = -0.4f;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
 	AudioPlayer m_GunAudio;

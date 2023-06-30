@@ -65,6 +65,15 @@ Player::Player(Ref<Terrain> terrain) :
 	m_BulletFactory = makeRef<Factory<Bullet>>(10, glm::mat4(1.0f), 1);
 	reset();
 	m_Movement = makeRef<MovementComponent>(transform);
+
+	/********************
+	 * INITIAL POSITION *
+	 ********************/
+	auto pos = transform->getPosition();
+	transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
+						   m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
+
+	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
 }
 
 void Player::update(f32 dt)
