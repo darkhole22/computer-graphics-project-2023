@@ -54,6 +54,10 @@ HUD::HUD()
 	m_ScoreText->setVisible(false);
 	m_Crosshair->setVisible(false);
 
+	m_HPText->setColor(0.33f, 0.33f, 0.33f);
+	m_DashesText->setColor(0.33f, 0.33f, 0.33f);
+	m_ScoreText->setColor(0.33f, 0.33f, 0.33f);
+
 	/****************
 	 * TITLE SCREEN *
 	 ****************/
@@ -68,9 +72,11 @@ HUD::HUD()
 	m_TitleScreenTitle->setVisible(false);
 	m_TitleScreenSubtitle->setVisible(false);
 
+	m_TitleScreenSubtitle->setColor(0.33f, 0.33f, 0.33f);
+
 	auto scaleCallback = [this] (f32 scale) {
 		m_TitleScreenTitle->setSize(scale);
-		m_TitleScreenSubtitle->setSize(scale);
+		m_TitleScreenSubtitle->setSize(scale * 0.8f);
 		centerElement(m_TitleScreenTitle);
 		centerElement(m_TitleScreenSubtitle, 0.0f, m_TitleScreenTitle->getHeight());
 	};
