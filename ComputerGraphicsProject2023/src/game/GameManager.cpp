@@ -4,7 +4,7 @@ namespace game {
 
 GameManager::GameManager(Ref<Terrain> terrain) :
 		m_Terrain(terrain), m_Player(makeRef<Player>(terrain)),
-		m_EnemyFactory(50, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
+		m_EnemyFactory(15, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
 		m_PowerUpManager(m_Player, terrain),
 		m_GameState(GameState::SETUP),
 		m_DeathAudio("lose")
@@ -26,8 +26,9 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 		{
 			auto p = Random::nextAnnulusPoint(100.f);
 			auto enemy = m_EnemyFactory.get();
-			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
+			if (!enemy) break;
 
+			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 			enemy->setup(m_Player, m_Terrain, startingLocation);
 		}
 	});
@@ -49,7 +50,7 @@ void GameManager::update(f32 dt)
 		m_PowerUpManager.start();
 
 		setGameState(GameState::PLAYING);
-		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
+		Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 		break;
 	}
 	case GameState::PLAYING:

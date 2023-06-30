@@ -27,6 +27,7 @@ public:
 	 * @param emissionTextureName Name of the emission color texture.
 	 * @param roughnessTextureName Name of the roughness texture.
 	 * @param loadTransform Initial model transform.
+	 * @param growth How many new game objects should be created when the pool is empty and a new one is requested.
 	 */
 	GameObjectPool(
 		u32 initialSize,
@@ -34,13 +35,16 @@ public:
 	   	const String& baseTextureName,
 	   	const String& emissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME,
 	   	const String& roughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME,
-		const glm::mat4& loadTransform = glm::mat4(1));
+		const glm::mat4& loadTransform = glm::mat4(1),
+		u32 growth = 0);
 
 	/**
 	 * @brief Retrieves a GameObject instance from the pool.
 	 *
-	 * This method retrieves a GameObject instance from the pool. If the pool is empty,
-	 * a new GameObject instance is created and returned.
+	 * This method retrieves a GameObject instance from the pool.
+	 *
+	 * If the pool is empty and growth > 0, a new GameObject instance is created and returned.
+	 * Otherwise, nullptr is returned.
 	 *
 	 * @return A reference to a GameObject instance.
 	 */
@@ -63,6 +67,8 @@ private:
 	String m_TextureName;
 	String m_RoughnessTextureName;
 	String m_EmissionTextureName;
+
+	u32 m_Growth;
 
 	std::queue<Ref<GameObject>> m_ObjectQueue;
 };

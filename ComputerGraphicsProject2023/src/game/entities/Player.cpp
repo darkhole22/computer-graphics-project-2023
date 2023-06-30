@@ -11,7 +11,8 @@ namespace game {
 
 Player::Player(Ref<Terrain> terrain) :
 	m_GunAudio("shot"), m_DamageAudio("hurt"),
-	transform(makeRef<Transform>()), m_Terrain(terrain), m_ExplosionFactory(1)
+	transform(makeRef<Transform>()), m_Terrain(terrain),
+	m_ExplosionFactory(1)
 {
 	auto scene = Application::getScene();
 	m_Camera = scene->getCamera();
@@ -61,8 +62,7 @@ Player::Player(Ref<Terrain> terrain) :
 	/*************
 	 * FACTORIES *
 	 *************/
-	m_BulletFactory = makeRef<Factory<Bullet>>(10);
-
+	m_BulletFactory = makeRef<Factory<Bullet>>(10, glm::mat4(1.0f), 1);
 	reset();
 	m_Movement = makeRef<MovementComponent>(transform);
 }
@@ -262,6 +262,8 @@ void Player::onPowerUpEntered(const HitBoxEntered& e)
 				auto *bomb = reinterpret_cast<BombData*>(powerUp);
 				auto p = Random::nextAnnulusPoint(20.0f, 10.0f);
 				auto exp = m_ExplosionFactory.get();
+				if (!exp) break;
+
 				exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
 				bomb->handled = true;
 			}
