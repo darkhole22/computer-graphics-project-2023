@@ -119,12 +119,11 @@ void GameManager::setGameState(GameState gameState)
 void GameManager::onGameOver()
 {
 	m_WaveTimer->reset(false);
-	Application::getWindow()->setCursorMode(CursorMode::NORMAL);
-
 	m_PowerUpManager.pause();
 
 	if (m_GameState != GameState::GAME_OVER)
 		m_DeathAudio.play();
+
 	setGameState(GameState::GAME_OVER);
 }
 
