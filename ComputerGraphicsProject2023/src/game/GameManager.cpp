@@ -2,18 +2,17 @@
 
 namespace game {
 
-GameManager::GameManager(Ref<Terrain> terrain) :
-		m_Terrain(terrain), m_Player(makeRef<Player>(terrain)),
+GameManager::GameManager(const TerrainGenerationConfig& terrainConfig) :
+		m_Terrain(makeRef<Terrain>(terrainConfig)), m_Player(makeRef<Player>(m_Terrain)),
 		m_EnemyFactory(15, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
-		m_PowerUpManager(m_Player, terrain),
-		m_GameState(GameState::SETUP),
+		m_PowerUpManager(m_Player, m_Terrain),
+		m_GameState(GameState::TITLE),
 		m_DeathAudio("lose")
 {
 	m_Scene = Application::getScene();
 
 	EventBus::addCallback([this](HealthUpdated event) {
 		if (event.hp != 0) return;
-		Application::getWindow()->setCursorMode(CursorMode::NORMAL);
 		onGameOver();
 	});
 
@@ -33,12 +32,19 @@ GameManager::GameManager(Ref<Terrain> terrain) :
 		}
 	});
 	m_WaveTimer->pause();
+	setGameState(GameState::TITLE);
 }
 
 void GameManager::update(f32 dt)
 {
 	switch (m_GameState)
 	{
+	case GameState::TITLE:
+	if (Input::isActionJustPressed("FIRE"))
+	{
+		setGameState(GameState::SETUP);
+	}
+	break;
 	case GameState::SETUP:
 	{
 		m_Score = 0;
@@ -90,6 +96,11 @@ void GameManager::update(f32 dt)
 	}
 	break;
 	}
+
+	auto cameraPos = m_Scene->getCamera()->position;
+	m_Terrain->setReferencePosition({ cameraPos.x, cameraPos.z });
+
+	m_Terrain->update(dt);
 }
 
 void GameManager::setGameState(GameState gameState)

@@ -19,7 +19,7 @@ namespace game {
 class GameManager
 {
 public:
-	explicit GameManager(Ref<Terrain> terrain);
+	explicit GameManager(const TerrainGenerationConfig& terrainConfig);
 
 	void update(f32 dt);
 

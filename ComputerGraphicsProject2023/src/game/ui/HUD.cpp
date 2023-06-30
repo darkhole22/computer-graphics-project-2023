@@ -33,6 +33,10 @@ HUD::HUD()
 	EventBus::addCallback([this](DoubleScoreStarted e) { onDoubleScoreStarted(e); });
 	EventBus::addCallback([this](DoubleScoreOver e) { onDoubleScoreOver(e); });
 
+	m_LoadingScreenTitle = m_UIHandler->makeText("loading...");
+	m_LoadingScreenTitle->setSize(30);
+	centerElement(m_LoadingScreenTitle);
+
 	m_HPText = m_UIHandler->makeText("HP: ");
 
 	m_DashesText = m_UIHandler->makeText("Dashes: ");
@@ -44,6 +48,25 @@ HUD::HUD()
 	m_Crosshair = m_UIHandler->makeImage("crosshair");
 	m_Crosshair->setWidth(50);
 	centerElement(m_Crosshair);
+
+	m_HPText->setVisible(false);
+	m_DashesText->setVisible(false);
+	m_ScoreText->setVisible(false);
+	m_Crosshair->setVisible(false);
+
+	/****************
+	 * TITLE SCREEN *
+	 ****************/
+	m_TitleScreenTitle = m_UIHandler->makeText("ROBOT WAVE SURVIVOR");
+	m_TitleScreenTitle->setSize(30);
+	m_TitleScreenSubtitle = m_UIHandler->makeText("Press 'FIRE' to start.");
+
+	centerElement(m_TitleScreenTitle);
+	centerElement(m_TitleScreenSubtitle, 0.0f, m_TitleScreenTitle->getHeight());
+
+	m_TitleScreenTitle->setStroke(0.6f);
+	m_TitleScreenTitle->setVisible(false);
+	m_TitleScreenSubtitle->setVisible(false);
 
 	/****************
 	 * PAUSE SCREEN *
@@ -83,6 +106,23 @@ HUD::HUD()
 	m_NotificationTitle->setStroke(0.6f);
 	m_NotificationTitle->setVisible(false);
 	m_NotificationSubtitle->setVisible(false);
+}
+
+void HUD::loadingEnded()
+{
+	m_HPText->setVisible(true);
+	m_DashesText->setVisible(true);
+	m_ScoreText->setVisible(true);
+	m_Crosshair->setVisible(true);
+
+	m_TitleScreenTitle->setVisible(true);
+	m_TitleScreenSubtitle->setVisible(true);
+
+	if (m_LoadingScreenTitle)
+	{
+		m_UIHandler->removeText(m_LoadingScreenTitle);
+		m_LoadingScreenTitle.reset();
+	}
 }
 
 void HUD::onHealthUpdated(HealthUpdated event)
@@ -150,6 +190,9 @@ void HUD::onBulletShot(BulletShot event)
 
 void HUD::onGameStateChanged(GameStateChanged event)
 {
+	m_TitleScreenTitle->setVisible(event.gameState == GameState::TITLE);
+	m_TitleScreenSubtitle->setVisible(event.gameState == GameState::TITLE);
+
 	m_PauseScreenTitle->setVisible(event.gameState == GameState::PAUSE);
 	m_PauseScreenSubtitle->setVisible(event.gameState == GameState::PAUSE);
 
