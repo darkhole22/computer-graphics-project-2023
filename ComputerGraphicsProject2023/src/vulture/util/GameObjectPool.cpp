@@ -35,7 +35,7 @@ Ref<GameObject> GameObjectPool::get()
 	if (m_Growth <= 0) return nullptr;
 
 	// Instantiate m_Growth new game objects
-	for (int i = 0; i < m_Growth - 1; i++)
+	for (u32 i = 0; i < m_Growth; i++)
 	{
 		auto allocated = makeRef<GameObject>(m_ModelName, m_TextureName, m_EmissionTextureName, m_RoughnessTextureName);
 		m_ObjectQueue.push(allocated);
