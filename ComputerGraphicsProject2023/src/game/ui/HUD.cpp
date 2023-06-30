@@ -198,10 +198,12 @@ void HUD::onBulletShot(BulletShot event)
 
 void HUD::onGameStateChanged(GameStateChanged event)
 {
-	m_TitleScreenTitle->setVisible(event.gameState == GameState::TITLE);
-	m_TitleScreenSubtitle->setVisible(event.gameState == GameState::TITLE);
-
-	if (m_TitleActive && event.gameState != GameState::TITLE)
+	if (event.gameState == GameState::TITLE)
+	{
+		m_TitleScreenTitle->setVisible(true);
+		m_TitleScreenSubtitle->setVisible(true);
+	}
+	else if (m_TitleActive)
 	{
 		m_TitleActive = false;
 
