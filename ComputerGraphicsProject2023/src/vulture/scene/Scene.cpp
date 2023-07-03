@@ -31,16 +31,16 @@ Scene::Scene() :
 	m_Camera(m_DescriptorsPool), m_Skybox(m_DescriptorsPool), m_UIHandler(m_DescriptorsPool), m_World(m_DescriptorsPool)
 {
 	// Create the default Phong GameObject DSL.
-	gameObjectDSL = Ref<DescriptorSetLayout>(new DescriptorSetLayout());
-	gameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-	gameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-	gameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-	gameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-	gameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
-	gameObjectDSL->create();
+	m_GameObjectDSL = Ref<DescriptorSetLayout>(new DescriptorSetLayout());
+	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_GameObjectDSL->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_GameObjectDSL->create();
 
 	// Create default Phong pipeline.
-	gameObjectPipeline = makePipeline("res/shaders/Phong_vert.spv", "res/shaders/Phong_frag.spv", gameObjectDSL);
+	m_GameObjectPipeline = makePipeline("res/shaders/Phong_vert.spv", "res/shaders/Phong_frag.spv", m_GameObjectDSL);
 
 	setModified();
 
@@ -89,7 +89,7 @@ void Scene::render(FrameContext target, float dt)
 	}
 
 	// Update all GameObjects in the scene.
-	for (const auto& it : gameObjects)
+	for (const auto& it : m_GameObjects)
 	{
 		it.second->update(dt);
 	}
@@ -166,30 +166,30 @@ void Scene::removeObject(PipelineHandle pipeline, ObjectHandle obj)
 
 void Scene::addObject(Ref<GameObject> obj)
 {
-	auto& p = m_ObjectLists.at(gameObjectPipeline);
+	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 
 	p.addObject(
 		obj->m_Handle,
 		RenderableObject(
 			obj->m_Model,
 			m_DescriptorsPool.getDescriptorSet(
-				gameObjectDSL,
-				{obj->m_ModelUniform, *obj->m_TextureSampler, *obj->m_EmissionTextureSampler, *obj->m_RoughnessTextureSampler, obj->m_ObjectUniform }
+					m_GameObjectDSL,
+					{obj->m_ModelUniform, *obj->m_TextureSampler, *obj->m_EmissionTextureSampler, *obj->m_RoughnessTextureSampler, obj->m_ObjectUniform }
 			)
 		)
 	);
-	gameObjects[obj->m_Handle] = obj;
+	m_GameObjects[obj->m_Handle] = obj;
 
 	setModified();
 }
 
 void Scene::removeObject(Ref<GameObject> obj)
 {
-	auto it = gameObjects.find(obj->m_Handle);
-	if (it == gameObjects.end()) return;
-	gameObjects.erase(it);
+	auto it = m_GameObjects.find(obj->m_Handle);
+	if (it == m_GameObjects.end()) return;
+	m_GameObjects.erase(it);
 
-	auto& p = m_ObjectLists.at(gameObjectPipeline);
+	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
 	p.removeObject(obj->m_Handle);
 
 	setModified();
