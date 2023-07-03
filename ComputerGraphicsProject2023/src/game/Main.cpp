@@ -1,52 +1,37 @@
 #define VU_LOGGER_TRACE_ENABLED
-
-#include <thread>
-
 #include "vulture/core/Logger.h"
-#include "vulture/util/ScopeTimer.h"
 #include "vulture/core/Application.h"
-#include "game/ui/DebugUI.h"
-#include "GameManager.h"
-#include "terrain/Terrain.h"
+#include "vulture/util/ScopeTimer.h"
 #include "vulture/core/Job.h"
 
-using namespace vulture;
+#include "game/GameManager.h"
+#include "game/ui/DebugUI.h"
+#include "game/terrain/Terrain.h"
 
 namespace game {
+
+using namespace vulture;
 
 class TestGame : public Game
 {
 public:
-	Window* window = nullptr;
-	Scene* scene = nullptr;
-
-	Ref<DebugUI> m_DebugUI = nullptr;
-	Ref<HUD> m_HUD = nullptr;
-
-	Ref<GameManager> gameManager = nullptr;
-
-#if 1
-	String skyboxName = "desert";
-#else
-	String skyboxName = "rural";
-#endif
 
 	void setup() override
 	{
 		/**********
 		 *  SETUP *
 		 **********/
-		window = Application::getWindow();
-		window->setCursorMode(CursorMode::NORMAL);
+		m_Window = Application::getWindow();
+		m_Window->setCursorMode(CursorMode::NORMAL);
 
-		scene = Application::getScene();
+		m_Scene = Application::getScene();
 		EventBus::init();
 		setupInputActions();
 
 		/**********
 		 * SKYBOX *
 		 **********/
-		scene->setSkybox(skyboxName);
+		m_Scene->setSkybox(SKYBOX_NAME);
 
 		/**********
 		 *   UI   *
@@ -57,25 +42,11 @@ public:
 		/*********
 		 * LIGHT *
 		 *********/
-		scene->getWorld()->directLight.color = glm::vec4(1.0f);
-		scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
+		setupLight();
 
-		auto* directLightTween = scene->makeTween()->loop();
-		directLightTween->addMethodTweener<f32>([this](f32 angle) {
-			constexpr float hAngle = glm::radians(10.0f);
-			scene->getWorld()->directLight.color =
-				glm::vec4(1.0f, 0.2f + 0.7f * std::pow(sin(angle), 3.0f), std::pow(sin(angle), 5.0f) * 0.9f, 1.0f);
-			scene->getWorld()->directLight.direction = glm::vec3(cos(angle) * cos(hAngle), sin(angle) * cos(hAngle), sin(hAngle));
-		}, 0.0f, glm::radians(180.0f), 60.0f);
-		directLightTween->addMethodTweener<f32>([this](f32 angle) {
-			constexpr float hAngle = glm::radians(10.0f);
-			f32 decay = 1.0f - std::pow(sin(angle), 5.0f);
-			scene->getWorld()->directLight.color = static_cast<f32>(1.0f - 0.5f * sin(angle)) *
-				glm::vec4(decay * 1.0f, decay * 0.2f, 1.0f - decay, 1.0f);
-			scene->getWorld()->directLight.direction = glm::vec3(cos(angle) * cos(hAngle), sin(angle) * cos(hAngle), sin(hAngle));
-		}, glm::radians(180.0f), 0.0f, 60.0f);
-
-
+		/***********
+		 * LOADING *
+		 ***********/
 		Job::submit([](void*)->bool {
 			using namespace std::chrono_literals;
 
@@ -92,7 +63,7 @@ public:
 			/**************
 			 * GAME LOGIC *
 			 **************/
-			gameManager = makeRef<GameManager>(terrainConfig);
+			m_GameManager = makeRef<GameManager>(terrainConfig);
 
 			m_HUD->loadingEnded();
 		});
@@ -103,21 +74,51 @@ public:
 		if (Input::isActionJustPressed("TOGGLE_SKYBOX"))
 		{
 			static bool useSkybox = false;
-			scene->setSkybox(useSkybox ? skyboxName : "rural");
+			m_Scene->setSkybox(useSkybox ? SKYBOX_NAME : "");
 			useSkybox = !useSkybox;
 		}
 
-		if (gameManager) gameManager->update(dt);
+		if (m_GameManager) m_GameManager->update(dt);
 		m_DebugUI->update(dt);
 	}
 
 	~TestGame()
 	{
-		gameManager.reset();
+		m_GameManager.reset();
 		EventBus::cleanup();
 	}
 private:
-	static void setupInputActions()
+	static inline const String SKYBOX_NAME = "desert";
+
+	Window* m_Window = nullptr;
+	Scene* m_Scene = nullptr;
+
+	Ref<DebugUI> m_DebugUI = nullptr;
+	Ref<HUD> m_HUD = nullptr;
+	Ref<GameManager> m_GameManager = nullptr;
+
+	void setupLight()
+	{
+		m_Scene->getWorld()->directLight.color = glm::vec4(1.0f);
+		m_Scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
+
+		auto* directLightTween = m_Scene->makeTween()->loop();
+		directLightTween->addMethodTweener<f32>([this](f32 angle) {
+			constexpr float hAngle = glm::radians(10.0f);
+			m_Scene->getWorld()->directLight.color =
+				glm::vec4(1.0f, 0.2f + 0.7f * std::pow(sin(angle), 3.0f), std::pow(sin(angle), 5.0f) * 0.9f, 1.0f);
+			m_Scene->getWorld()->directLight.direction = glm::vec3(cos(angle) * cos(hAngle), sin(angle) * cos(hAngle), sin(hAngle));
+		}, 0.0f, glm::radians(180.0f), 60.0f);
+		directLightTween->addMethodTweener<f32>([this](f32 angle) {
+			constexpr float hAngle = glm::radians(10.0f);
+			f32 decay = 1.0f - std::pow(sin(angle), 5.0f);
+			m_Scene->getWorld()->directLight.color = static_cast<f32>(1.0f - 0.5f * sin(angle)) *
+				glm::vec4(decay * 1.0f, decay * 0.2f, 1.0f - decay, 1.0f);
+			m_Scene->getWorld()->directLight.direction = glm::vec3(cos(angle) * cos(hAngle), sin(angle) * cos(hAngle), sin(hAngle));
+		}, glm::radians(180.0f), 0.0f, 60.0f);
+	}
+
+	void setupInputActions()
 	{
 		/**********************************************
 		 *                   UI                       *
@@ -260,22 +261,6 @@ private:
 				GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_Y}}
 		};
 		Input::setAction("TOGGLE_SKYBOX", toggleSkyboxAction);
-
-		/**********************************************
-		 *                 TERRAIN                    *
-		 **********************************************/
-
-		InputAction terrainDownAction{};
-		terrainDownAction.keyboardBindings = {
-				KeyboardBinding{{GLFW_KEY_K}},
-		};
-		Input::setAction("TERRAIN_DOWN", terrainDownAction);
-
-		InputAction terrainUpAction{};
-		terrainUpAction.keyboardBindings = {
-				KeyboardBinding{{GLFW_KEY_L}},
-		};
-		Input::setAction("TERRAIN_UP", terrainUpAction);
 	}
 };
 
@@ -283,6 +268,8 @@ private:
 
 int main()
 {
+	using namespace vulture;
+
 	Logger logger("output.log");
 	try
 	{

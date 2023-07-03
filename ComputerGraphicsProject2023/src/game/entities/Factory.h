@@ -1,15 +1,15 @@
 #pragma once
 
-#include <unordered_set>
-
-#include "vulture/util/GameObjectPool.h"
 #include "vulture/core/Core.h"
+#include "vulture/util/GameObjectPool.h"
 
-using namespace vulture;
+#include <unordered_set>
 
 namespace game {
 
-enum EntityStatus
+using namespace vulture;
+
+enum class EntityStatus
 {
 	ALIVE,
 	DEAD
@@ -38,7 +38,7 @@ public:
 	* @param loadTransform The initial transform of the objects' models.
  	* @param growth How many new game objects should be created when the pool is empty and a new one is requested.
 	*/
-	explicit Factory<T>(int initialSize, const glm::mat4& loadTransform = glm::mat4(1), u32 growth = 0)
+	explicit Factory<T>(i32 initialSize, const glm::mat4& loadTransform = glm::mat4(1), u32 growth = 0)
 	{
 		m_ObjectPool = makeRef<GameObjectPool>(
 				initialSize,
@@ -85,8 +85,8 @@ public:
 	 */
 	void remove(Ref<T> t)
 	{
-		m_ObjectPool->put(t->m_GameObject);
-		Application::getScene()->removeObject(t->m_GameObject);
+		m_ObjectPool->put(t->gameObject);
+		Application::getScene()->removeObject(t->gameObject);
 
 		auto it = m_ActiveEntities.find(t);
 		m_ActiveEntities.erase(it);
@@ -128,8 +128,8 @@ public:
 	{
 		for (auto& t : m_ActiveEntities)
 		{
-			m_ObjectPool->put(t->m_GameObject);
-			Application::getScene()->removeObject(t->m_GameObject);
+			m_ObjectPool->put(t->gameObject);
+			Application::getScene()->removeObject(t->gameObject);
 		}
 
 		m_ActiveEntities.clear();

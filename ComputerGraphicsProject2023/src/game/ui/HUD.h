@@ -3,9 +3,9 @@
 #include "game/EventBus.h"
 #include "vulture/core/Application.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 class HUD
 {

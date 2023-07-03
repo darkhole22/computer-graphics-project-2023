@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Factory.h"
 #include "vulture/core/Application.h"
-#include "CollisionMask.h"
+
+#include "game/entities/Factory.h"
+#include "game/entities/CollisionMask.h"
 
 namespace game {
+
+using namespace vulture;
 
 class Bullet
 {
@@ -14,10 +17,7 @@ public:
 	static const String s_EmissionTextureName;
 	static const String s_RoughnessTextureName;
 
-
-	Ref<GameObject> m_GameObject;
-
-	EntityStatus status;
+	Ref<GameObject> gameObject;
 
 	explicit Bullet(Ref<GameObject> gameObject);
 
@@ -30,7 +30,8 @@ private:
 	const float c_Speed = 30.0f;
 	const float c_Range = 30.0f;
 
-	u32 m_HitsLeft;
+	EntityStatus m_Status;
+	u32 m_HitsLeft = 0;
 
 	Ref<HitBox> m_Hitbox;
 

@@ -4,14 +4,14 @@
 #include "vulture/scene/GameObject.h"
 #include "vulture/audio/AudioPlayer.h"
 
-#include "Factory.h"
-#include "CollisionMask.h"
+#include "game/entities/Factory.h"
+#include "game/entities/CollisionMask.h"
 #include "game/EventBus.h"
 #include "game/events/GameEvents.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 class Explosion
 {
@@ -21,7 +21,7 @@ public:
 	static const String s_EmissionTextureName;
 	static const String s_RoughnessTextureName;
 
-	Ref<GameObject> m_GameObject;
+	Ref<GameObject> gameObject;
 
 	explicit Explosion(Ref<GameObject> gameObject);
 

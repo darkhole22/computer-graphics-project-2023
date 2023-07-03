@@ -16,7 +16,7 @@ PowerUpManager::PowerUpManager(Ref<Player> player, Ref<Terrain> terrain) :
 
 void PowerUpManager::start()
 {
-	for (auto& h: m_Handlers)
+	for (auto& h : m_Handlers)
 	{
 		h.play();
 	}
@@ -24,7 +24,7 @@ void PowerUpManager::start()
 
 void PowerUpManager::pause()
 {
-	for (auto& h: m_Handlers)
+	for (auto& h : m_Handlers)
 	{
 		h.pause();
 	}
@@ -32,7 +32,7 @@ void PowerUpManager::pause()
 
 void PowerUpManager::update(f32 dt)
 {
-	for (auto& h: m_Handlers)
+	for (auto& h : m_Handlers)
 	{
 		h.update(dt);
 	}
@@ -40,10 +40,36 @@ void PowerUpManager::update(f32 dt)
 
 void PowerUpManager::reset()
 {
-	for (auto& h: m_Handlers)
+	for (auto& h : m_Handlers)
 	{
 		h.reset();
 	}
+}
+
+void PowerUpHandler::pause()
+{
+	m_Timer->pause();
+}
+
+void PowerUpHandler::play()
+{
+	m_Timer->play();
+}
+
+void PowerUpHandler::update(f32 dt)
+{
+	m_UpdateImpl(dt);
+}
+
+void PowerUpHandler::reset()
+{
+	m_Timer->reset();
+	m_ResetImpl();
+}
+
+PowerUpHandler::~PowerUpHandler()
+{
+	m_ResetImpl();
 }
 
 } // namespace game

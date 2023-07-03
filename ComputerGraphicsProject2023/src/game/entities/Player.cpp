@@ -1,17 +1,27 @@
 #include "Player.h"
 
+#include "vulture/event/Event.h"
+#include "vulture/core/Input.h"
+#include "vulture/core/Application.h"
+#include "vulture/util/Random.h"
 #include "vulture/core/Logger.h"
+
+#include "game/EventBus.h"
+#include "game/entities/CollisionMask.h"
 #include "game/entities/powerup/HealthPack.h"
 #include "game/entities/powerup/DoubleScore.h"
 #include "game/entities/powerup/Bomb.h"
 
-using namespace vulture;
+#include <utility>
+#include <algorithm>
 
 namespace game {
 
+using namespace vulture;
+
 Player::Player(Ref<Terrain> terrain) :
+	m_Terrain(terrain), m_Transform(makeRef<Transform>()),
 	m_GunAudio("shot"), m_DamageAudio("hurt"),
-	transform(makeRef<Transform>()), m_Terrain(terrain),
 	m_ExplosionFactory(1)
 {
 	auto scene = Application::getScene();
@@ -33,8 +43,8 @@ Player::Player(Ref<Terrain> terrain) :
 	/**********
 	 * HITBOX *
 	 **********/
-	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, c_CameraHeight));
-	m_Hitbox->transform = transform;
+	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, m_CameraHeight));
+	m_Hitbox->transform = m_Transform;
 
 	m_Hitbox->layerMask = PLAYER_MASK;
 	m_Hitbox->collisionMask = ENEMY_MASK | EXPLOSION_MASK;
@@ -46,8 +56,8 @@ Player::Player(Ref<Terrain> terrain) :
 	/*************
 	 * POWER UPS *
 	 *************/
-	m_PowerUpHitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.5f, c_CameraHeight));
-	m_PowerUpHitbox->transform = transform;
+	m_PowerUpHitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.5f, m_CameraHeight));
+	m_PowerUpHitbox->transform = m_Transform;
 
 	m_PowerUpHitbox->layerMask = PLAYER_MASK;
 	m_PowerUpHitbox->collisionMask = POWER_UP_MASK;
@@ -56,24 +66,24 @@ Player::Player(Ref<Terrain> terrain) :
 
 	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& event) { onPowerUpEntered(event); });
 
-	EventBus::addCallback([this] (const ExplosionStarted&) { m_CanSpawnExplosion = false; });
-	EventBus::addCallback([this] (const ExplosionFinished&) { m_CanSpawnExplosion = true; });
+	EventBus::addCallback([this](const ExplosionStarted&) { m_CanSpawnExplosion = false; });
+	EventBus::addCallback([this](const ExplosionFinished&) { m_CanSpawnExplosion = true; });
 
 	/*************
 	 * FACTORIES *
 	 *************/
 	m_BulletFactory = makeRef<Factory<Bullet>>(10, glm::mat4(1.0f), 1);
 	reset();
-	m_Movement = makeRef<MovementComponent>(transform);
+	m_Movement = makeRef<MovementComponent>(m_Transform);
 
 	/********************
 	 * INITIAL POSITION *
 	 ********************/
-	auto pos = transform->getPosition();
-	transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
-						   m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
+	auto pos = m_Transform->getPosition();
+	m_Transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
+							 m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
 
-	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+	m_Camera->position = m_Transform->getPosition() + glm::vec3(0.0f, m_CameraHeight, 0.0f);
 }
 
 void Player::update(f32 dt)
@@ -104,22 +114,22 @@ void Player::update(f32 dt)
 		* c_Speed * m_Stats.dashSpeed * dt;
 
 	// Move the player
-	transform->rotate(0.0f, -rotation.x, 0.0f);
+	m_Transform->rotate(0.0f, -rotation.x, 0.0f);
 	m_Movement->move(movement.x, 0.0f, movement.y);
 
-	auto pos = transform->getPosition();
+	auto pos = m_Transform->getPosition();
 	auto slope = m_Terrain->getSlopeAt(pos.x, pos.z);
 	if (glm::length(slope) > c_MaxSlope)
 	{
-		transform->translate(-glm::vec3(slope.x, 0, slope.y) * c_SlopeSpeed * dt);
+		m_Transform->translate(-glm::vec3(slope.x, 0, slope.y) * c_SlopeSpeed * dt);
 	}
-	pos = transform->getPosition();
-	transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
-						   m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
+	pos = m_Transform->getPosition();
+	m_Transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
+							 m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
 
 	// Move the camera
 	m_Camera->rotate(-rotation.x, rotation.y, 0.0f);
-	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+	m_Camera->position = m_Transform->getPosition() + glm::vec3(0.0f, m_CameraHeight, 0.0f);
 
 	if (Input::isActionJustPressed("FIRE"))
 	{
@@ -138,10 +148,10 @@ void Player::update(f32 dt)
 
 void Player::reset()
 {
-	*transform = Transform();
+	*m_Transform = Transform();
 
 	m_Camera->reset();
-	m_Camera->position = transform->getPosition() + glm::vec3(0.0f, c_CameraHeight, 0.0f);
+	m_Camera->position = m_Transform->getPosition() + glm::vec3(0.0f, m_CameraHeight, 0.0f);
 
 	m_Stats = PlayerStats{};
 	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
@@ -165,7 +175,7 @@ void Player::updateFiringTween()
 	m_FiringTween->addCallbackTweener([this]() {
 		auto bullet = m_BulletFactory->get();
 
-		bullet->setup(*transform, m_Camera->direction, m_Stats.maxBulletHits);
+		bullet->setup(*m_Transform, m_Camera->direction, m_Stats.maxBulletHits);
 
 		m_GunAudio.play();
 		EventBus::emit(BulletShot{ m_Stats.fireCooldown });
@@ -183,11 +193,11 @@ void Player::updateFiringTween()
 	}
 }
 
-void Player::onHitBoxEntered(const HitBoxEntered& e)
+void Player::onHitBoxEntered(const HitBoxEntered& event)
 {
 	if (m_Invincible || m_Godmode || m_Stats.hp == 0) return;
 
-	u32 damage = e.data != nullptr ? *reinterpret_cast<u32*>(e.data) : 1;
+	u32 damage = event.data != nullptr ? *reinterpret_cast<u32*>(event.data) : 1;
 
 	m_Stats.hp = std::max<i32>(m_Stats.hp - damage, 0);
 	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
@@ -243,42 +253,44 @@ void Player::onEnemyKilled(const EnemyDied& event)
 	}
 }
 
-void Player::onPowerUpEntered(const HitBoxEntered& e)
+void Player::onPowerUpEntered(const HitBoxEntered& event)
 {
-	auto* powerUp = reinterpret_cast<PowerUpData*>(e.data);
+	auto* powerUp = reinterpret_cast<PowerUpData*>(event.data);
 	switch (powerUp->getType())
 	{
-		case PowerUpType::HealthUp:
+	case PowerUpType::HealthUp:
+	{
+		if (m_Stats.hp < m_Stats.maxHp)
 		{
-			if (m_Stats.hp < m_Stats.maxHp) {
-				auto *healthPack = reinterpret_cast<HealthPackData *>(powerUp);
-				m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
-				healthPack->handled = true;
-				EventBus::emit(HealthUpdated{m_Stats.hp, m_Stats.maxHp});
-			}
-			break;
+			auto* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
+			m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
+			healthPack->setHandled(true);
+			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 		}
-		case PowerUpType::DoubleScore:
+		break;
+	}
+	case PowerUpType::DoubleScore:
+	{
+		auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+		doubleScore->setHandled(true);
+		EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
+		break;
+	}
+	case PowerUpType::Bomb:
+	{
+		if (m_CanSpawnExplosion)
 		{
-			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
-			doubleScore->handled = true;
-			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
-			break;
-		}
-		case PowerUpType::Bomb:
-		{
-			if (m_CanSpawnExplosion) {
-				auto *bomb = reinterpret_cast<BombData*>(powerUp);
-				auto p = Random::nextAnnulusPoint(20.0f, 10.0f);
-				auto exp = m_ExplosionFactory.get();
-				if (!exp) break;
+			auto* bomb = reinterpret_cast<BombData*>(powerUp);
+			auto p = Random::nextAnnulusPoint(20.0f, 10.0f);
+			auto exp = m_ExplosionFactory.get();
+			if (!exp) break;
 
-				exp->setup(transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
-				bomb->handled = true;
-			}
+			exp->setup(m_Transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
+			bomb->setHandled(true);
 		}
-		default:
-			break;
+	}
+	default:
+	break;
 	}
 }
 

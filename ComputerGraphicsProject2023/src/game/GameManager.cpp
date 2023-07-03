@@ -1,15 +1,18 @@
 #include "GameManager.h"
 
+#include "vulture/util/ScopeTimer.h"
+#include "vulture/util/Random.h"
+#include "vulture/core/Input.h"
+
 namespace game {
 
 GameManager::GameManager(const TerrainGenerationConfig& terrainConfig) :
-		m_Terrain(makeRef<Terrain>(terrainConfig)), m_Player(makeRef<Player>(m_Terrain)),
-		m_EnemyFactory(15, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
-		m_PowerUpManager(m_Player, m_Terrain),
-		m_DeathAudio("lose")
+	m_Scene(Application::getScene()), m_Terrain(makeRef<Terrain>(terrainConfig)),
+	m_Player(makeRef<Player>(m_Terrain)),
+	m_EnemyFactory(m_EnemyWaveSize, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
+	m_PowerUpManager(m_Player, m_Terrain),
+	m_DeathAudio("lose")
 {
-	m_Scene = Application::getScene();
-
 	EventBus::addCallback([this](HealthUpdated event) {
 		if (event.hp != 0) return;
 		onGameOver();
@@ -20,14 +23,14 @@ GameManager::GameManager(const TerrainGenerationConfig& terrainConfig) :
 
 	m_WaveTimer = m_Scene->makeTimer(20, false);
 	m_WaveTimer->addCallback([this](const TimerTimeoutEvent&) {
-		for (int i = 0; i < 10; i++)
+		for (u32 i = 0; i < m_EnemyWaveSize; i++)
 		{
-			auto p = Random::nextAnnulusPoint(100.f);
+			auto spawnPointOffset = Random::nextAnnulusPoint(100.0f);
 			auto enemy = m_EnemyFactory.get();
 			if (!enemy) break;
 
-			auto startingLocation = m_Player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
-			enemy->setup(m_Player, m_Terrain, startingLocation);
+			auto spawnPoint = m_Player->getPosition() + glm::vec3(spawnPointOffset.x, 0.0f, spawnPointOffset.y);
+			enemy->setup(m_Player, m_Terrain, spawnPoint);
 		}
 	});
 	m_WaveTimer->pause();
@@ -100,25 +103,19 @@ void GameManager::update(f32 dt)
 
 void GameManager::setGameState(GameState gameState)
 {
-	if (gameState != m_GameState)
-	{
-		m_GameState = gameState;
-		EventBus::emit(GameStateChanged{ m_GameState });
-	}
+	if (gameState == m_GameState) return;
 
-	if (m_GameState == GameState::PLAYING)
-	{
-		Application::getWindow()->setCursorMode(CursorMode::DISABLED);
-	}
-	else
-	{
-		Application::getWindow()->setCursorMode(CursorMode::NORMAL);
-	}
+	m_GameState = gameState;
+	EventBus::emit(GameStateChanged{ m_GameState });
+
+	Application::getWindow()->setCursorMode(m_GameState == GameState::PLAYING ?
+											CursorMode::DISABLED :
+											CursorMode::NORMAL);
 }
 
 void GameManager::onGameOver()
 {
-	m_WaveTimer->reset(false);
+	m_WaveTimer->reset();
 	m_PowerUpManager.pause();
 
 	if (m_GameState != GameState::GAME_OVER)

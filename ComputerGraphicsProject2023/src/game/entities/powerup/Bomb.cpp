@@ -15,4 +15,14 @@ PowerUpType BombData::getType() const
 	return PowerUpType::Bomb;
 }
 
+bool BombData::isHandled() const
+{
+	return m_Handled;
+}
+
+void BombData::setHandled(bool handled)
+{
+	m_Handled = handled;
+}
+
 } // namespace game

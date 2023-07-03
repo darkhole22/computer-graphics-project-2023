@@ -173,8 +173,8 @@ void Scene::addObject(Ref<GameObject> obj)
 		RenderableObject(
 			obj->m_Model,
 			m_DescriptorsPool.getDescriptorSet(
-				m_GameObjectDSL,
-				{obj->m_ModelUniform, *obj->m_TextureSampler, *obj->m_EmissionTextureSampler, *obj->m_RoughnessTextureSampler, obj->m_ObjectUniform }
+					m_GameObjectDSL,
+					{obj->m_ModelUniform, *obj->m_TextureSampler, *obj->m_EmissionTextureSampler, *obj->m_RoughnessTextureSampler, obj->m_ObjectUniform }
 			)
 		)
 	);

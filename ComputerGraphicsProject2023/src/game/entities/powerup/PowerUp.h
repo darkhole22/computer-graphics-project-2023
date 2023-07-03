@@ -1,11 +1,16 @@
 #pragma once
 
 #include "vulture/core/Core.h"
-#include "game/entities/Factory.h"
+
 #include "game/terrain/Terrain.h"
+#include "game/entities/Factory.h"
 #include "game/entities/CollisionMask.h"
 
+#include <type_traits>
+
 namespace game {
+
+using namespace vulture;
 
 enum class PowerUpType
 {
@@ -16,8 +21,8 @@ class PowerUpData
 {
 public:
 	virtual PowerUpType getType() const;
-
-	bool handled = false;
+	virtual bool isHandled() const;
+	virtual void setHandled(bool handled);
 
 	virtual ~PowerUpData();
 };
@@ -26,23 +31,25 @@ template <typename T>
 class PowerUp
 {
 public:
-	Ref<GameObject> m_GameObject;
+	static_assert(std::is_base_of_v<PowerUpData, T>);
+
+	Ref<GameObject> gameObject;
 
 	explicit PowerUp(Ref<GameObject> gameObject)
-		: m_GameObject(gameObject)
+		: gameObject(gameObject)
 	{
 		// This requires all power-ups to have the same size.
 		// It's not a problem as we want them to be roughly equal in size.
 		m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.0f, 2.0f));
 		m_Hitbox->layerMask = POWER_UP_MASK;
 		m_Hitbox->collisionMask = PLAYER_MASK;
-		m_Hitbox->transform = m_GameObject->transform;
+		m_Hitbox->transform = gameObject->transform;
 		m_Hitbox->data = &m_Data;
 	}
 
 	void setup(Ref<Terrain> terrain)
 	{
-		auto pos = m_GameObject->transform->getPosition();
+		auto pos = gameObject->transform->getPosition();
 		m_BaseHeight = terrain->getHeightAt(pos.x, pos.z) + c_BaseHeightOffset;
 
 		Application::getScene()->addHitbox(m_Hitbox);
@@ -53,11 +60,11 @@ public:
 		m_DeltaHeight += dt;
 		m_DeltaAngle += dt;
 
-		auto pos = m_GameObject->transform->getPosition();
-		m_GameObject->transform->setPosition(pos.x, m_BaseHeight + 0.35f * std::sin(m_DeltaHeight), pos.z);
-		m_GameObject->transform->setRotation(0, m_DeltaAngle, 0);
+		auto pos = gameObject->transform->getPosition();
+		gameObject->transform->setPosition(pos.x, m_BaseHeight + 0.35f * std::sin(m_DeltaHeight), pos.z);
+		gameObject->transform->setRotation(0, m_DeltaAngle, 0);
 
-		return m_Data.handled ? EntityStatus::DEAD : EntityStatus::ALIVE;
+		return m_Data.isHandled() ? EntityStatus::DEAD : EntityStatus::ALIVE;
 	}
 
 	~PowerUp()

@@ -3,9 +3,9 @@
 #include "vulture/util/Types.h"
 #include "vulture/util/Transform.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 class MovementComponent
 {
@@ -26,7 +26,6 @@ public:
 		auto upDir = glm::normalize(m_Transform->getRotation() * glm::vec3(0.0f, 1.0f, 0.0f));
 		auto rightDir = glm::normalize(glm::cross(frontDir, upDir));
 
-		// m_Transform->translate(frontDir * movement.x + upDir * movement.y + rightDir * movement.z);
 		m_Transform->translate(m_Transform->getRotation() * movement);
 	}
 
@@ -56,8 +55,6 @@ public:
 
 			glm::quat q = glm::quat(glm::cos(angle / 2), v * glm::sin(angle / 2));
 
-			// m_Transform->setRotation(q);
-			// m_Transform->setRotation(glm::inverse(m_Transform->getRotation()) * direction);
 			m_Transform->rotate(q);
 		}
 	}

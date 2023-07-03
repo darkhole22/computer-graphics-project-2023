@@ -14,6 +14,16 @@ PowerUpType HealthPackData::getType() const
 	return PowerUpType::HealthUp;
 }
 
+bool HealthPackData::isHandled() const
+{
+	return m_Handled;
+}
+
+void HealthPackData::setHandled(bool handled)
+{
+	m_Handled = handled;
+}
+
 u32 HealthPackData::getHealth() const
 {
 	return m_Health;

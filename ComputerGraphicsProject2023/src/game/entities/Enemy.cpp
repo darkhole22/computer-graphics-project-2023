@@ -7,17 +7,17 @@ const String Enemy::s_TextureName = "hand-robot";
 const String Enemy::s_EmissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME;
 const String Enemy::s_RoughnessTextureName = "hand-robot";
 
-Enemy::Enemy(Ref<GameObject> gameObject) : m_GameObject(gameObject)
+Enemy::Enemy(Ref<GameObject> gameObject) : gameObject(gameObject)
 {
 	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.9f, 1.8f));
-	m_GameObject->transform->setScale(0.5f);
+	gameObject->transform->setScale(0.5f);
 
-	m_Movement = makeRef<MovementComponent>(m_GameObject->transform);
+	m_Movement = makeRef<MovementComponent>(gameObject->transform);
 
 	m_Hitbox->layerMask = ENEMY_MASK;
 	m_Hitbox->collisionMask = PLAYER_BULLET_MASK | EXPLOSION_MASK;
 	m_Hitbox->data = &m_Damage;
-	m_Hitbox->transform = m_GameObject->transform;
+	m_Hitbox->transform = gameObject->transform;
 
 	m_Hitbox->addCallback([this](const HitBoxEntered& e) {
 		EventBus::emit(EnemyDied{});
@@ -38,19 +38,19 @@ void Enemy::setup(Ref<Player> player, Ref<Terrain> terrain, glm::vec3 spawnLocat
 
 	m_Terrain = terrain;
 
-	m_GameObject->transform->setPosition(spawnLocation);
+	gameObject->transform->setPosition(spawnLocation);
 
 	Application::getScene()->addHitbox(m_Hitbox);
 }
 
 EntityStatus Enemy::update(f32 dt)
 {
-	auto target = m_Player->transform->getPosition();
-	m_Movement->lookAt({ target.x, m_GameObject->transform->getPosition().y, target.z });
+	auto target = m_Player->getPosition();
+	m_Movement->lookAt({ target.x, gameObject->transform->getPosition().y, target.z });
 	m_Movement->move(c_Speed * dt, 0, 0);
 
-	auto pos = m_GameObject->transform->getPosition();
-	m_GameObject->transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + getFlyingHeight(), pos.z);
+	auto pos = gameObject->transform->getPosition();
+	gameObject->transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) + getFlyingHeight(), pos.z);
 
 	return m_Status;
 }

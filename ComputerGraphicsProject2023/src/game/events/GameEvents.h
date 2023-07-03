@@ -4,9 +4,9 @@
 #include "vulture/event/Event.h"
 #include "vulture/util/Types.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 struct GameStateChanged
 {
