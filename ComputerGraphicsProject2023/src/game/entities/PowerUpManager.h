@@ -74,7 +74,7 @@ inline PowerUpHandler PowerUpHandler::create(Ref<Player> player, Ref<Terrain> te
 
 			auto startingLocation = player->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 
-			powerUp->m_GameObject->transform->setPosition(startingLocation);
+			powerUp->gameObject->transform->setPosition(startingLocation);
 			powerUp->setup(terrain);
 		}
 	});

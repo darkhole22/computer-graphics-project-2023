@@ -8,10 +8,9 @@ const String Explosion::s_EmissionTextureName = "explosion";
 const String Explosion::s_RoughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME;
 
 Explosion::Explosion(Ref<GameObject> gameObject)
-	: m_Audio("explosion")
+	: m_Audio("explosion"), gameObject(gameObject)
 {
-	m_GameObject = gameObject;
-	m_GameObject->setEmissionStrength(1.0f);
+	gameObject->setEmissionStrength(1.0f);
 
 	m_Capsule = makeRef<CapsuleCollisionShape>(1.0f, 2.0f);
 	m_Hitbox = makeRef<HitBox>(m_Capsule);
@@ -23,8 +22,8 @@ void Explosion::setup(glm::vec3 initialPosition)
 {
 	m_Status = EntityStatus::ALIVE;
 
-	m_Hitbox->transform = m_GameObject->transform;
-	m_GameObject->transform->setPosition(initialPosition);
+	m_Hitbox->transform = gameObject->transform;
+	gameObject->transform->setPosition(initialPosition);
 
 	Application::getScene()->addHitbox(m_Hitbox);
 
@@ -32,7 +31,7 @@ void Explosion::setup(glm::vec3 initialPosition)
 
 	auto scaleCallback = [this] (f32 scale) {
 		m_Capsule->setDimensions(1.0f * scale, 2.0f * scale);
-		m_GameObject->transform->setScale(scale);
+		gameObject->transform->setScale(scale);
 	};
 
 	auto rednessCallback = [world](f32 r) {
@@ -61,7 +60,7 @@ void Explosion::setup(glm::vec3 initialPosition)
 
 	tween->addCallbackTweener([this] () { m_Status = EntityStatus::DEAD; });
 
-	world->pointLight.position = m_GameObject->transform->getPosition();
+	world->pointLight.position = gameObject->transform->getPosition();
 	m_Audio.play();
 	EventBus::emit(ExplosionStarted{});
 }

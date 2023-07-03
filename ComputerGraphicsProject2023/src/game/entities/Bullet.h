@@ -17,7 +17,7 @@ public:
 	static const String s_EmissionTextureName;
 	static const String s_RoughnessTextureName;
 
-	Ref<GameObject> m_GameObject;
+	Ref<GameObject> gameObject;
 
 	explicit Bullet(Ref<GameObject> gameObject);
 

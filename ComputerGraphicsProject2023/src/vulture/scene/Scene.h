@@ -97,7 +97,7 @@ private:
 	std::vector<bool> m_FrameModified;
 	std::unordered_map<PipelineHandle, SceneObjectList> m_ObjectLists;
 
-	std::unordered_map<ObjectHandle, Ref<GameObject>> m_GameObjects;
+	std::unordered_map<ObjectHandle, Ref<GameObject>> gameObjects;
 
 	PipelineHandle m_NextPipelineHandle = 0;
 
@@ -108,8 +108,8 @@ private:
 
 	std::vector<std::function<void()>> m_DeferredFunctions;
 
-	Ref<DescriptorSetLayout> m_GameObjectDSL;
-	PipelineHandle m_GameObjectPipeline;
+	Ref<DescriptorSetLayout> gameObjectDSL;
+	PipelineHandle gameObjectPipeline;
 
 	void recordCommandBuffer(FrameContext& target);
 	void updateUniforms(FrameContext& target);

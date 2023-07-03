@@ -85,8 +85,8 @@ public:
 	 */
 	void remove(Ref<T> t)
 	{
-		m_ObjectPool->put(t->m_GameObject);
-		Application::getScene()->removeObject(t->m_GameObject);
+		m_ObjectPool->put(t->gameObject);
+		Application::getScene()->removeObject(t->gameObject);
 
 		auto it = m_ActiveEntities.find(t);
 		m_ActiveEntities.erase(it);
@@ -128,8 +128,8 @@ public:
 	{
 		for (auto& t : m_ActiveEntities)
 		{
-			m_ObjectPool->put(t->m_GameObject);
-			Application::getScene()->removeObject(t->m_GameObject);
+			m_ObjectPool->put(t->gameObject);
+			Application::getScene()->removeObject(t->gameObject);
 		}
 
 		m_ActiveEntities.clear();
