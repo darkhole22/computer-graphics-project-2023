@@ -4,8 +4,8 @@
 #include "vulture/scene/GameObject.h"
 #include "vulture/audio/AudioPlayer.h"
 
-#include "Factory.h"
-#include "CollisionMask.h"
+#include "game/entities/Factory.h"
+#include "game/entities/CollisionMask.h"
 #include "game/EventBus.h"
 #include "game/events/GameEvents.h"
 

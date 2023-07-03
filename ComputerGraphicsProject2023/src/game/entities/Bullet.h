@@ -17,10 +17,7 @@ public:
 	static const String s_EmissionTextureName;
 	static const String s_RoughnessTextureName;
 
-
 	Ref<GameObject> m_GameObject;
-
-	EntityStatus status;
 
 	explicit Bullet(Ref<GameObject> gameObject);
 
@@ -33,7 +30,8 @@ private:
 	const float c_Speed = 30.0f;
 	const float c_Range = 30.0f;
 
-	u32 m_HitsLeft;
+	EntityStatus m_Status;
+	u32 m_HitsLeft = 0;
 
 	Ref<HitBox> m_Hitbox;
 

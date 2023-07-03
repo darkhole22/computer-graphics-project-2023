@@ -20,7 +20,7 @@ Bullet::Bullet(Ref<GameObject> gameObject)
 
 		if (m_HitsLeft <= 0)
 		{
-			status = EntityStatus::DEAD;
+			m_Status = EntityStatus::DEAD;
 		}
 	});
 }
@@ -31,10 +31,10 @@ void Bullet::setup(Transform startingTransform, glm::vec3 direction, u32 maxHits
 	m_GameObject->transform->translate(0.0f, 1.5f, 0.0f);
 	m_GameObject->transform->setScale(0.1f);
 
-	auto angle = sin(direction.y);
+	auto angle = std::sin(direction.y);
 	m_GameObject->transform->rotate(0.0f, 0.0f, -glm::radians(90.0f) + angle);
 
-	status = EntityStatus::ALIVE;
+	m_Status = maxHits > 0 ? EntityStatus::ALIVE : EntityStatus::DEAD;
 
 	m_StartingPosition = startingTransform.getPosition();
 	m_Direction = direction;
@@ -54,7 +54,7 @@ EntityStatus Bullet::update(float dt)
 		return EntityStatus::DEAD;
 	}
 
-	return status;
+	return m_Status;
 }
 
 Bullet::~Bullet()

@@ -3,10 +3,10 @@
 #include "vulture/scene/Camera.h"
 #include "vulture/audio/AudioPlayer.h"
 
-#include "game/entities/Factory.h"
-#include "game/entities/Bullet.h"
 #include "game/terrain/Terrain.h"
 #include "game/components/MovementComponent.h"
+#include "game/entities/Factory.h"
+#include "game/entities/Bullet.h"
 #include "game/entities/Explosion.h"
 
 namespace game {
