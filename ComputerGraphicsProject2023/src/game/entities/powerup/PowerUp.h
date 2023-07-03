@@ -1,9 +1,12 @@
 #pragma once
 
 #include "vulture/core/Core.h"
-#include "game/entities/Factory.h"
+
 #include "game/terrain/Terrain.h"
+#include "game/entities/Factory.h"
 #include "game/entities/CollisionMask.h"
+
+#include <type_traits>
 
 namespace game {
 
@@ -18,8 +21,8 @@ class PowerUpData
 {
 public:
 	virtual PowerUpType getType() const;
-
-	bool handled = false;
+	virtual bool isHandled() const;
+	virtual void setHandled(bool handled);
 
 	virtual ~PowerUpData();
 };
@@ -28,6 +31,8 @@ template <typename T>
 class PowerUp
 {
 public:
+	static_assert(std::is_base_of_v<PowerUpData, T>);
+
 	Ref<GameObject> m_GameObject;
 
 	explicit PowerUp(Ref<GameObject> gameObject)
@@ -59,7 +64,7 @@ public:
 		m_GameObject->transform->setPosition(pos.x, m_BaseHeight + 0.35f * std::sin(m_DeltaHeight), pos.z);
 		m_GameObject->transform->setRotation(0, m_DeltaAngle, 0);
 
-		return m_Data.handled ? EntityStatus::DEAD : EntityStatus::ALIVE;
+		return m_Data.isHandled() ? EntityStatus::DEAD : EntityStatus::ALIVE;
 	}
 
 	~PowerUp()

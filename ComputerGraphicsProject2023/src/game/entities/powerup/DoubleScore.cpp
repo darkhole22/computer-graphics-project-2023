@@ -14,6 +14,16 @@ PowerUpType DoubleScoreData::getType() const
 	return PowerUpType::DoubleScore;
 }
 
+bool DoubleScoreData::isHandled() const
+{
+	return m_Handled;
+}
+
+void DoubleScoreData::setHandled(bool handled)
+{
+	m_Handled = handled;
+}
+
 f32 DoubleScoreData::getDuration() const
 {
 	return m_Duration;

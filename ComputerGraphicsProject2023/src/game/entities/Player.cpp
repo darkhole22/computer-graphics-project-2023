@@ -264,7 +264,7 @@ void Player::onPowerUpEntered(const HitBoxEntered& event)
 		{
 			auto* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
 			m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
-			healthPack->handled = true;
+			healthPack->setHandled(true);
 			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 		}
 		break;
@@ -272,7 +272,7 @@ void Player::onPowerUpEntered(const HitBoxEntered& event)
 	case PowerUpType::DoubleScore:
 	{
 		auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
-		doubleScore->handled = true;
+		doubleScore->setHandled(true);
 		EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
 		break;
 	}
@@ -286,7 +286,7 @@ void Player::onPowerUpEntered(const HitBoxEntered& event)
 			if (!exp) break;
 
 			exp->setup(m_Transform->getPosition() + glm::vec3(p.x, 2.5f, p.y));
-			bomb->handled = true;
+			bomb->setHandled(true);
 		}
 	}
 	default:
