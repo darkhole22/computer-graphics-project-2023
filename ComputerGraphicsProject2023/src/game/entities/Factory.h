@@ -5,9 +5,10 @@
 #include "vulture/util/GameObjectPool.h"
 #include "vulture/core/Core.h"
 
-using namespace vulture;
 
 namespace game {
+
+using namespace vulture;
 
 enum EntityStatus
 {

@@ -5,6 +5,8 @@
 
 namespace game {
 
+using namespace vulture;
+
 class Enemy
 {
 public:
