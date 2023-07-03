@@ -1,23 +1,13 @@
 #pragma once
 
-#include <utility>
-#include <algorithm>
-
-#include "vulture/core/Core.h"
-#include "vulture/core/Input.h"
-#include "vulture/core/Application.h"
-#include "vulture/event/Event.h"
 #include "vulture/scene/Camera.h"
-
-#include "CollisionMask.h"
-#include "Factory.h"
-#include "Bullet.h"
-#include "game/terrain/Terrain.h"
-#include "game/EventBus.h"
-#include "game/components/MovementComponent.h"
-#include "vulture/util/Random.h"
 #include "vulture/audio/AudioPlayer.h"
-#include "Explosion.h"
+
+#include "game/entities/Factory.h"
+#include "game/entities/Bullet.h"
+#include "game/terrain/Terrain.h"
+#include "game/components/MovementComponent.h"
+#include "game/entities/Explosion.h"
 
 namespace game {
 
@@ -57,15 +47,13 @@ struct PlayerStats
 class Player
 {
 public:
-	Ref<Transform> transform;
-	Ref<HitBox> m_Hitbox;
-	Ref<HitBox> m_PowerUpHitbox;
-
 	Player(Ref<Terrain> terrain);
 
 	void update(f32 dt);
 
 	void reset();
+
+	inline glm::vec3 getPosition() const { return m_Transform->getPosition(); }
 
 	~Player();
 private:
@@ -74,35 +62,35 @@ private:
 	const f32 c_MaxSlope = 0.6f;
 	const f32 c_RotSpeed = 4.0f;
 
-	Ref<MovementComponent> m_Movement;
+	Ref<Terrain> m_Terrain;
+	Camera* m_Camera;
+	f32 m_CameraHeight = 1.5f;
 
 	PlayerStats m_Stats;
 
-	bool m_Godmode = false;
-
+	Ref<Transform> m_Transform;
+	Ref<MovementComponent> m_Movement;
+	Ref<HitBox> m_Hitbox;
+	Ref<HitBox> m_PowerUpHitbox;
+	f32 m_BobbingHeight = -0.4f;
 	bool m_Invincible = false;
 	f32 m_InvincibilityDuration = 1.0f;
 
-	bool m_CanSpawnExplosion = true;
-
-	Ref<Terrain> m_Terrain;
-
-	Camera* m_Camera;
-	f32 c_CameraHeight = 1.5f;
-
-	Ref<Tween> m_FiringTween;
-	f32 m_BobbingHeight = -0.4f;
+	bool m_Godmode = false;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
+	Ref<Tween> m_FiringTween;
+
 	AudioPlayer m_GunAudio;
 	AudioPlayer m_DamageAudio;
 
 	Factory<Explosion> m_ExplosionFactory;
+	bool m_CanSpawnExplosion = true;
 
 	void updateFiringTween();
 
-	void onHitBoxEntered(const HitBoxEntered& e);
-	void onPowerUpEntered(const HitBoxEntered& e);
+	void onHitBoxEntered(const HitBoxEntered& event);
+	void onPowerUpEntered(const HitBoxEntered& event);
 
 	void onEnemyKilled(const EnemyDied& event);
 };

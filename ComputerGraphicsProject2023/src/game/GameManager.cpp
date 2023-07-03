@@ -2,6 +2,7 @@
 
 #include "vulture/util/ScopeTimer.h"
 #include "vulture/util/Random.h"
+#include "vulture/core/Input.h"
 
 namespace game {
 
@@ -28,7 +29,7 @@ GameManager::GameManager(const TerrainGenerationConfig& terrainConfig) :
 			auto enemy = m_EnemyFactory.get();
 			if (!enemy) break;
 
-			auto spawnPoint = m_Player->transform->getPosition() + glm::vec3(spawnPointOffset.x, 0.0f, spawnPointOffset.y);
+			auto spawnPoint = m_Player->getPosition() + glm::vec3(spawnPointOffset.x, 0.0f, spawnPointOffset.y);
 			enemy->setup(m_Player, m_Terrain, spawnPoint);
 		}
 	});

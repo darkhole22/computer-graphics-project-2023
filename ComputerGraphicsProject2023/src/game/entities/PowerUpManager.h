@@ -28,7 +28,7 @@ public:
 				auto powerUp = factory->get();
 				if (!powerUp) break;
 				
-				auto startingLocation = player->transform->getPosition() + glm::vec3(p.x, 0.0f, p.y);
+				auto startingLocation = player->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 
 				powerUp->m_GameObject->transform->setPosition(startingLocation);
 				powerUp->setup(terrain);

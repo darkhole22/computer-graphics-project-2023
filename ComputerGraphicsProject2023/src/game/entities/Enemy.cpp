@@ -45,7 +45,7 @@ void Enemy::setup(Ref<Player> player, Ref<Terrain> terrain, glm::vec3 spawnLocat
 
 EntityStatus Enemy::update(f32 dt)
 {
-	auto target = m_Player->transform->getPosition();
+	auto target = m_Player->getPosition();
 	m_Movement->lookAt({ target.x, m_GameObject->transform->getPosition().y, target.z });
 	m_Movement->move(c_Speed * dt, 0, 0);
 
