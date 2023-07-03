@@ -15,6 +15,8 @@
 
 namespace game {
 
+using namespace vulture;
+
 class GameManager
 {
 public:

@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Factory.h"
 #include "vulture/core/Application.h"
-#include "CollisionMask.h"
+
+#include "game/entities/Factory.h"
+#include "game/entities/CollisionMask.h"
 
 namespace game {
+
+using namespace vulture;
 
 class Bullet
 {

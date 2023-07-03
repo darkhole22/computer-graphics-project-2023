@@ -39,23 +39,27 @@ void exampleMethod(int startPosition)
 }
 ```
 
-### 2.4 Class variables
+### 2.4 Private class variables
 - Use *CamelCase*
 - Use type prefix
 - Start with capital letter
 - Do not use abbreviations
 
 Type prefixes:
-1) `m_` for member variables
+1) `m_` for private member variables
 2) `s_` for static variables
 3) `c_` for constant variables
 
 Exception:
-For variables that are static and constant use *UPPER_CASE*.
+- For public member variables dont use any prefix and start with a lower case letter.
+- For variables that are static and constant use *UPPER_CASE*.
 
 ```C++
 class ExampleClassName
 {
+public:
+int publicMemberVariable;
+private
 int m_MemberVariable;
 static int s_StaticVariable;
 const int c_ConstVariable;
@@ -66,6 +70,8 @@ static const int STATIC_CONST_VARIABLE;
 ## 3. Namespaces & Fully Static Classes
 Avoid nested namespace.
 Use namespaces to encapsulate entire sub project. Use Fully Static Classes to encapsulate functionality (eg. Logger).
+
+**DO NOT USE** `using namespace` in the global scope within header files.
 
 ## 4. Enums
 Use `enum class`(C++) instead of `enum`(C) unless you need to directly manipulate the data represented by the enumerators.

@@ -8,9 +8,9 @@
 #include "game/ui/DebugUI.h"
 #include "game/terrain/Terrain.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 class TestGame : public Game
 {
@@ -268,6 +268,8 @@ private:
 
 int main()
 {
+	using namespace vulture;
+
 	Logger logger("output.log");
 	try
 	{

@@ -3,9 +3,9 @@
 #include "vulture/util/Types.h"
 #include "vulture/util/Transform.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 class MovementComponent
 {

@@ -9,9 +9,9 @@
 #include "game/EventBus.h"
 #include "game/events/GameEvents.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 class Explosion
 {

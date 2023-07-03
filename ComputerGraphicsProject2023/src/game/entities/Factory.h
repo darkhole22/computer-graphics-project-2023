@@ -1,16 +1,15 @@
 #pragma once
 
-#include <unordered_set>
-
-#include "vulture/util/GameObjectPool.h"
 #include "vulture/core/Core.h"
+#include "vulture/util/GameObjectPool.h"
 
+#include <unordered_set>
 
 namespace game {
 
 using namespace vulture;
 
-enum EntityStatus
+enum class EntityStatus
 {
 	ALIVE,
 	DEAD
@@ -39,7 +38,7 @@ public:
 	* @param loadTransform The initial transform of the objects' models.
  	* @param growth How many new game objects should be created when the pool is empty and a new one is requested.
 	*/
-	explicit Factory<T>(int initialSize, const glm::mat4& loadTransform = glm::mat4(1), u32 growth = 0)
+	explicit Factory<T>(i32 initialSize, const glm::mat4& loadTransform = glm::mat4(1), u32 growth = 0)
 	{
 		m_ObjectPool = makeRef<GameObjectPool>(
 				initialSize,

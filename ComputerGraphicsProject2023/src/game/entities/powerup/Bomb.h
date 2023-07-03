@@ -2,7 +2,6 @@
 
 #include "PowerUp.h"
 
-
 namespace game {
 
 using namespace vulture;

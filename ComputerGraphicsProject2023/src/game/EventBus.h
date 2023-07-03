@@ -5,9 +5,9 @@
 #include "game/events/PlayerEvents.h"
 #include "game/events/EnemyEvents.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 /**
  * @brief A singleton Event Bus for all events related to game logic.

@@ -9,6 +9,8 @@
 
 namespace game {
 
+using namespace vulture;
+
 class PowerUpHandler
 {
 public:

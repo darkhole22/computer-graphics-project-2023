@@ -6,9 +6,9 @@
 
 #include "game/EventBus.h"
 
-using namespace vulture;
-
 namespace game {
+
+using namespace vulture;
 
 class DebugUI
 {

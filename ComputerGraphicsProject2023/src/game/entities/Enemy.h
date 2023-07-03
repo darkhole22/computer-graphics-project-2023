@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Player.h"
-#include "Factory.h"
 
 namespace game {
 
@@ -15,9 +14,7 @@ public:
 	static const String s_EmissionTextureName;
 	static const String s_RoughnessTextureName;
 
-
 	Ref<GameObject> m_GameObject;
-	Ref<HitBox> m_Hitbox;
 
 	explicit Enemy(Ref<GameObject> gameObject);
 
@@ -28,21 +25,19 @@ public:
 	inline f32 getFlyingHeight() { return m_FlyingHeight; }
 
 	~Enemy();
-
 private:
 	const f32 c_Speed = 4.0f;
-
-	EntityStatus m_Status = EntityStatus::ALIVE;
-	f32 m_FlyingHeight = 1.0f;
-
-	Ref<MovementComponent> m_Movement;
 
 	Ref<Player> m_Player;
 	Ref<Terrain> m_Terrain;
 
-	Ref<Tween> m_BobbingTween;
-
+	EntityStatus m_Status = EntityStatus::ALIVE;
 	u32 m_Damage = 1;
+
+	Ref<MovementComponent> m_Movement;
+	f32 m_FlyingHeight = 1.0f;
+	Ref<Tween> m_BobbingTween;
+	Ref<HitBox> m_Hitbox;
 };
 
 } // namespace game

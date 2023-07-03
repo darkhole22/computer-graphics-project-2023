@@ -7,6 +7,8 @@
 
 namespace game {
 
+using namespace vulture;
+
 enum class PowerUpType
 {
 	None, HealthUp, DoubleScore, Bomb
