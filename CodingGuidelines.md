@@ -1,15 +1,15 @@
 # Coding Guidelines
 
 ## 1. General
-The objective of this *Coding Guidelines* are:
-- coherent code style across files
-- avoid errors/bugs, especially the ones caused by C++ quirks
+The objectives of these **Coding Guidelines** are to:
+- Enforce a coherent code style across files
+- Avoid errors and bugs, especially those caused by C++ quirks
 
 ## 2. Naming Conventions
 
 ### 2.1 Classes & Structs
 - Use *CamelCase*
-- Start with capital letter
+- Start with a capital letter
 - Do not use abbreviations
 
 ```C++
@@ -19,7 +19,7 @@ class ExampleClassName
 
 ### 2.2 Namespaces
 - Do not use capital letters
-- If the name is composed by more than one word simply concatenate them.
+- If the name is composed by more than one word, simply concatenate them.
 
 ```C++
 namespace vulture{}
@@ -29,8 +29,8 @@ namespace gamename{}
 
 ### 2.3 Local variables, Parameters & Methods
 - Use *CamelCase*
-- Start with lower case letter
-- avoid abbreviations (except for trivial case)
+- Start with a lower case letter
+- Avoid abbreviations (except for trivial case)
 
 ```C++
 void exampleMethod(int startPosition)
@@ -41,8 +41,8 @@ void exampleMethod(int startPosition)
 
 ### 2.4 Private class variables
 - Use *CamelCase*
-- Use type prefix
-- Start with capital letter
+- Use type prefixes
+- Start with a capital letter
 - Do not use abbreviations
 
 Type prefixes:
@@ -51,8 +51,8 @@ Type prefixes:
 3) `c_` for constant variables
 
 Exception:
-- For public member variables dont use any prefix and start with a lower case letter.
-- For variables that are static and constant use *UPPER_CASE*.
+- For public member variables, don't use any prefix and start with a lower case letter.
+- For variables that are static and constant, use *UPPER_CASE*.
 
 ```C++
 class ExampleClassName
@@ -69,7 +69,7 @@ static const int STATIC_CONST_VARIABLE;
 
 ## 3. Namespaces & Fully Static Classes
 Avoid nested namespace.
-Use namespaces to encapsulate entire sub project. Use Fully Static Classes to encapsulate functionality (eg. Logger).
+Use namespaces to encapsulate an entire subproject. Use Fully Static Classes to encapsulate functionality (eg. Logger).
 
 **DO NOT USE** `using namespace` in the global scope within header files.
 
