@@ -25,9 +25,6 @@ Terrain::Terrain(const TerrainGenerationConfig& config) :
 
 void Terrain::update(f32 dt)
 {
-	f32 dh = Input::getAxis("TERRAIN_DOWN", "TERRAIN_UP") * 0.2f * dt;
-
-	m_VertexUniform->rockLevel = std::clamp(m_VertexUniform->rockLevel + dh, 0.0f, 1.0f);
 }
 
 void Terrain::setReferencePosition(glm::vec2 position)

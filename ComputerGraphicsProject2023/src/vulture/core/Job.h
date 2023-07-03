@@ -3,6 +3,7 @@
 #include "vulture/core/Core.h"
 
 #include <functional>
+#include <thread>
 
 namespace vulture {
 
