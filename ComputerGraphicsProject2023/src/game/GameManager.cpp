@@ -53,8 +53,6 @@ void GameManager::update(f32 dt)
 		m_Score = 0;
 		EventBus::emit(ScoreUpdated{ m_Score });
 
-		m_DoubleScoreActive = false;
-
 		m_WaveTimer->play();
 		m_PowerUpManager.start();
 
@@ -90,7 +88,11 @@ void GameManager::update(f32 dt)
 	if (Input::isActionJustPressed("RESTART"))
 	{
 		m_DeathAudio.stop();
-		beforeRestart();
+		m_EnemyFactory.reset();
+		m_PowerUpManager.reset();
+		m_Player->reset();
+
+		setGameState(GameState::SETUP);
 	}
 	break;
 	}
@@ -124,27 +126,19 @@ void GameManager::onGameOver()
 	setGameState(GameState::GAME_OVER);
 }
 
-void GameManager::beforeRestart()
-{
-	m_EnemyFactory.reset();
-	m_PowerUpManager.reset();
-	m_Player->reset();
-
-	setGameState(GameState::SETUP);
-}
-
 void GameManager::onEnemyDied(EnemyDied event)
 {
-	m_Score += m_DoubleScoreActive ? 200 : 100;
+	m_Score += m_Player->getDoubleScoreActive() ? 200 : 100;
 	EventBus::emit(ScoreUpdated{ m_Score });
 }
 
 void GameManager::onDoubleScoreStarted(DoubleScoreStarted e)
 {
-	m_DoubleScoreActive = true;
 	m_Scene->makeTimer(e.duration)->addCallback([this](const TimerTimeoutEvent&) {
-		m_DoubleScoreActive = false;
-		EventBus::emit(DoubleScoreOver{});
+		if (m_Player->getDoubleScoreActive())
+		{
+			EventBus::emit(DoubleScoreOver{});
+		}
 	});
 }
 

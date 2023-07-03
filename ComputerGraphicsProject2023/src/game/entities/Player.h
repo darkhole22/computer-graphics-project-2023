@@ -47,7 +47,7 @@ struct PlayerStats
 class Player
 {
 public:
-	Player(Ref<Terrain> terrain);
+	explicit Player(Ref<Terrain> terrain);
 
 	void update(f32 dt);
 
@@ -55,37 +55,42 @@ public:
 
 	inline glm::vec3 getPosition() const { return m_Transform->getPosition(); }
 
+	inline bool getDoubleScoreActive() { return m_DoubleScoreActive; }
+
 	~Player();
 private:
 	const f32 c_Speed = 10.0f;
 	const f32 c_SlopeSpeed = 20.0f;
 	const f32 c_MaxSlope = 0.6f;
 	const f32 c_RotSpeed = 4.0f;
+	f32 m_BobbingHeight = -0.4f;
 
 	Ref<Terrain> m_Terrain;
+
 	Camera* m_Camera;
 	f32 m_CameraHeight = 1.5f;
 
 	PlayerStats m_Stats;
+	bool m_Invincible = false;
+	f32 m_InvincibilityDuration = 1.0f;
+	bool m_Godmode = false;
 
 	Ref<Transform> m_Transform;
 	Ref<MovementComponent> m_Movement;
+
 	Ref<HitBox> m_Hitbox;
 	Ref<HitBox> m_PowerUpHitbox;
-	f32 m_BobbingHeight = -0.4f;
-	bool m_Invincible = false;
-	f32 m_InvincibilityDuration = 1.0f;
-
-	bool m_Godmode = false;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
 	Ref<Tween> m_FiringTween;
 
-	AudioPlayer m_GunAudio;
-	AudioPlayer m_DamageAudio;
-
 	Factory<Explosion> m_ExplosionFactory;
 	bool m_CanSpawnExplosion = true;
+
+	bool m_DoubleScoreActive = false;
+
+	AudioPlayer m_GunAudio;
+	AudioPlayer m_DamageAudio;
 
 	void updateFiringTween();
 
