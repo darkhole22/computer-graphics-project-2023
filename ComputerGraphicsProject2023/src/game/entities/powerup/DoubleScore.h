@@ -17,7 +17,7 @@ public:
 
 	virtual ~DoubleScoreData() = default;
 private:
-	f32 m_Duration = 20.0f;
+	f32 m_Duration = 10.0f;
 	bool m_Handled = false;
 };
 

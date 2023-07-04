@@ -38,15 +38,12 @@ private:
 
 	GameState m_GameState;
 	u32 m_Score;
-	bool m_DoubleScoreActive;
 
 	AudioPlayer m_DeathAudio;
 
 	void setGameState(GameState gameState);
 
 	void onGameOver();
-
-	void beforeRestart();
 
 	void onEnemyDied(EnemyDied event);
 	void onDoubleScoreStarted(DoubleScoreStarted event);

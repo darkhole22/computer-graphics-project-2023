@@ -1,10 +1,8 @@
 #include "Player.h"
 
-#include "vulture/event/Event.h"
 #include "vulture/core/Input.h"
 #include "vulture/core/Application.h"
 #include "vulture/util/Random.h"
-#include "vulture/core/Logger.h"
 
 #include "game/EventBus.h"
 #include "game/entities/CollisionMask.h"
@@ -12,7 +10,6 @@
 #include "game/entities/powerup/DoubleScore.h"
 #include "game/entities/powerup/Bomb.h"
 
-#include <utility>
 #include <algorithm>
 
 namespace game {
@@ -69,6 +66,8 @@ Player::Player(Ref<Terrain> terrain) :
 	EventBus::addCallback([this](const ExplosionStarted&) { m_CanSpawnExplosion = false; });
 	EventBus::addCallback([this](const ExplosionFinished&) { m_CanSpawnExplosion = true; });
 
+	EventBus::addCallback([this](const DoubleScoreOver&) { m_DoubleScoreActive = false; });
+
 	/*************
 	 * FACTORIES *
 	 *************/
@@ -81,7 +80,7 @@ Player::Player(Ref<Terrain> terrain) :
 	 ********************/
 	auto pos = m_Transform->getPosition();
 	m_Transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
-							 m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
+									m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
 
 	m_Camera->position = m_Transform->getPosition() + glm::vec3(0.0f, m_CameraHeight, 0.0f);
 }
@@ -125,7 +124,7 @@ void Player::update(f32 dt)
 	}
 	pos = m_Transform->getPosition();
 	m_Transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
-							 m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
+									m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);
 
 	// Move the camera
 	m_Camera->rotate(-rotation.x, rotation.y, 0.0f);
@@ -156,6 +155,8 @@ void Player::reset()
 	m_Stats = PlayerStats{};
 	EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 	EventBus::emit(DashesUpdated{ m_Stats.dashesLeft, m_Stats.maxDashes });
+
+	m_DoubleScoreActive = false;
 
 	m_BulletFactory->reset();
 	m_ExplosionFactory.reset();
@@ -271,9 +272,13 @@ void Player::onPowerUpEntered(const HitBoxEntered& event)
 	}
 	case PowerUpType::DoubleScore:
 	{
-		auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
-		doubleScore->setHandled(true);
-		EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
+		if (!m_DoubleScoreActive)
+		{
+			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+			doubleScore->setHandled(true);
+			m_DoubleScoreActive = true;
+			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
+		}
 		break;
 	}
 	case PowerUpType::Bomb:
