@@ -19,9 +19,17 @@ The **key features** of Vulture are:
 - Dynamic **Skybox** support
 - **UI** capabilities with **Image** and **Text** rendering
 - A configurable **Input System** with M&K and Gamepad support
+- A functional **Collision System** with collisions and layer masks support
 
+### :cloud: Dynamic Skybox
 
-TODO Specific Descriptions
+Setting up a Skybox with Vulture is easy! Just place your cubemap texture files in a `res/textures` folder and run the following code:
+
+```cpp
+Application::getScene()->setSkybox(skyboxName);
+```
+
+Your skybox will be asynchronously loaded and rendered, and it can be easily swapped out at runtime by calling the same method again, but with a different skybox name!
 
 ### :video_game: Input System
 
