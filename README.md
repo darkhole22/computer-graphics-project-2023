@@ -2,11 +2,32 @@
 
 This repository contains the final project developed for the **Computer Graphics** course (2023 Ed.) at **Politecnico di Milano**.
 
-TODO Course Description
+The course objective is to teach basic concepts about *3D Computer Graphics*, focusing on **real time rendering** and **Vulkan**.
 
-TODO Project Goal
+In particular, the course topics are:
+- Basic Transformations
+- Basic Lightning and Shading models
+- Texture mapping, normals and projection
+- Rendering pipeline and software architectures for 3D graphics
 
-TODO Project Structure
+The project goal is to put all of these concepts together by building an interactive real time 3D application.
+
+Our project is split in two main parts:
+- **Robot Survivor** is the actual game we developed as the project delivery.
+- **Vulture** is a simple game engine that we developed along the way to ease the development of the game and use complex features.
+  - *Note:* The development of a game engine is largely outside of the course's scope; we mainly built it to gain a deeper understanding of how Vulkan works and **for fun**.
+
+## :robot: Robot Survivor
+
+**Robot Survivor** is a first person shooter in which you have to survive incoming waves of enemy robots on a procedurally generated alien planet.
+
+TODO Game Screenshot
+
+By destroying enemies, you can level up and obtain random upgrades to help you live longer!
+
+Walking around, you'll be able to find powerful *pick-ups*!
+
+TODO Pick-ups Screenshots
 
 ## :volcano: Vulture
 
@@ -147,7 +168,7 @@ void onHitboxEntered(const HitBoxEntered& event) {
 
 Finally, to remove a hitbox, simply run `Application::getScene()->removeHitbox(hitbox)`.
 
-*Note*: As of right now, Vulture only implements Capsule collision shapes, but more can be easily added.
+*Note:* As of right now, Vulture only implements Capsule collision shapes, but more can be easily added.
 
 ### :hourglass_flowing_sand: Tweens, Timers and Jobs
 
@@ -177,19 +198,6 @@ Job::submit(longRunningTask, data, cleanupCallback);
 ### Why this name?
 
 [Mount Vulture](https://en.wikipedia.org/wiki/Monte_Vulture) is an extinct Italian volcano! :volcano:
-
-
-## :robot: Robot Survivor
-
-**Robot Survivor** is a first person shooter in which you have to survive incoming waves of enemy robots on a procedurally generated alien planet.
-
-TODO Game Screenshot
-
-By destroying enemies, you can level up and obtain random upgrades to help you live longer!
-
-Walking around, you'll be able to find powerful *pick-ups*!
-
-TODO Pick-ups Screenshots
 
 ## License
 
