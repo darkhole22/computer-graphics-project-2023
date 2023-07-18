@@ -15,11 +15,11 @@ Vulture is our toy **Vulkan** game engine written on top of the famous [Vulkan T
 The **key features** of Vulture are:
 - Multi-pipeline support
 - Render varying amounts of dynamically instantiated objects
-- **Tweens**, **Timers** and **asynchronous jobs**
 - Dynamic **Skybox** support
 - **UI** capabilities with **Image** and **Text** rendering
 - A configurable **Input System** with M&K and Gamepad support
 - A functional **Collision System** with collisions and layer masks support
+- **Tweens**, **Timers** and **Asynchronous Jobs**
 
 ### :world_map: Dynamic Scene
 
@@ -40,6 +40,17 @@ The Scene also provides a more complete API to create GameObjects that use custo
 
 Moreover, Vulture provides useful utilities to handle objects, such as a **Game Object Pool**.
 
+### :cloud: Dynamic Skybox
+
+Setting up a Skybox with Vulture is easy! Just place your cubemap texture files in a `res/textures` folder and run the following code:
+
+```cpp
+Application::getScene()->setSkybox(skyboxName);
+```
+
+Your skybox will be asynchronously loaded and rendered, and it can be easily swapped out at runtime by calling the same method again, but with a different skybox name!
+
+
 ### :sunny: User Interfaces
 
 Vulture provides the tools to create simple User Interfaces.
@@ -57,16 +68,6 @@ To add an image, it works exactly the same way:
 ```cpp
 Ref<UIImage> image = Application::getScene()->getUIHandler()->makeImage(imageName);
 ```
-
-### :cloud: Dynamic Skybox
-
-Setting up a Skybox with Vulture is easy! Just place your cubemap texture files in a `res/textures` folder and run the following code:
-
-```cpp
-Application::getScene()->setSkybox(skyboxName);
-```
-
-Your skybox will be asynchronously loaded and rendered, and it can be easily swapped out at runtime by calling the same method again, but with a different skybox name!
 
 ### :video_game: Input System
 
