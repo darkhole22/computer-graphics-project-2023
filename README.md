@@ -129,7 +129,7 @@ Finally, to remove a hitbox, simply run `Application::getScene()->removeHitbox(h
 
 *Note*: As of right now, Vulture only implements Capsule collision shapes, but more can be easily added.
 
-### :hourglass_flowing_sand: Tweens, Timers and Job
+### :hourglass_flowing_sand: Tweens, Timers and Jobs
 
 **Tweens** are a very lightweight and powerful tool to animate *everything*.
 
