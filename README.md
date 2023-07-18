@@ -21,6 +21,25 @@ The **key features** of Vulture are:
 - A configurable **Input System** with M&K and Gamepad support
 - A functional **Collision System** with collisions and layer masks support
 
+### :world_map: Dynamic Scene
+
+For the sake of simplicity, Vulture only supports a single scene, that is accessed as *singleton* through `Application::getScene()`.
+
+The scene can manage a dynamic amount of **Game Objects**, that can be instantiated or destroyed at any time.
+
+```
+// To add a new object
+Ref<GameObject> object = makeRef<GameObject>(modelName, textureName);
+Application::getScene()->addObject(object);
+
+// To remove an existing object
+Application::getScene()->removeObject(object);
+```
+
+The Scene also provides a more complete API to create GameObjects that use custom *emission* and *roughness* textures, or even **custom shaders**.
+
+Moreover, Vulture provides useful utilities to handle objects, such as a **Game Object Pool**.
+
 ### :sunny: User Interfaces
 
 Vulture provides the tools to create simple User Interfaces.
