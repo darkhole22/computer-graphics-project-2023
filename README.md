@@ -12,9 +12,52 @@ TODO Project Structure
 
 Vulture is our toy **Vulkan** game engine written on top of the famous [Vulkan Tutorial](https://vulkan-tutorial.com).
 
-TODO Engine Features
+The **key features** of Vulture are:
+- Multi-pipeline support
+- Render varying amounts of dynamically instantiated objects
+- **Tweens**, **Timers** and **asynchronous jobs**
+- Dynamic **Skybox** support
+- **UI** capabilities with **Image** and **Text** rendering
+- A configurable **Input System** with M&K and Gamepad support
+
 
 TODO Specific Descriptions
+
+### :video_game: Input System
+
+Vulture features a powerful input system that lets you define device-agnostic actions and associated bindings.
+
+```c++
+InputAction fireAction{};
+
+fireAction.keyboardBindings = {
+  KeyboardBinding{{GLFW_KEY_SPACE}}
+};
+fireAction.mouseBindings = {
+  MouseBinding{{GLFW_MOUSE_BUTTON_1}}
+};
+fireAction.gamepadButtonBindings = {
+  GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER}},
+  GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_X}}
+};
+
+Input::setAction("FIRE", fireAction);
+```
+
+You can also define more complex key combinations for your actions!
+
+```c++
+InputAction runAction{};
+
+runAction.keyboardBindings = {
+  KeyboardBinding{{GLFW_KEY_W, GLFW_KEY_LEFT_SHIFT}}
+};
+
+Input::setAction("RUN", runAction);
+
+```
+
+After defining your actions, you can query the Input System with methods like `Input::isActionPressed`, `Input::isActionJustPressed`, `Input::isActionReleased`, or `Input::getActionStrength`.
 
 ### Why this name?
 
