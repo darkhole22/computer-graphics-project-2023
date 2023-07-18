@@ -29,6 +29,8 @@ Walking around, you'll be able to find powerful *pick-ups*!
 
 TODO Pick-ups Screenshots
 
+TODO Day-Night Cycle GIF
+
 ## :volcano: Vulture
 
 Vulture is our toy **Vulkan** game engine written on top of the famous [Vulkan Tutorial](https://vulkan-tutorial.com).
