@@ -67,6 +67,48 @@ Input::setAction("RUN", runAction);
 
 After defining your actions, you can query the Input System with methods like `Input::isActionPressed`, `Input::isActionJustPressed`, `Input::isActionReleased`, or `Input::getActionStrength`.
 
+### :collision: Collision System
+
+Vulture provides a simple way to manage **hitboxes**!
+
+Look at this example for a reference on how you can setup a hitbox for your game object:
+
+```cpp
+// Create a hitbox with a Capsule shape
+Ref<HitBox> hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(radius, height));
+
+// Sets the hitbox transform
+hitbox->transform = gameObject->transform
+
+// Define the Layer and Collision masks
+hitbox->layerMask = BitMask::BIT0;
+hitbox->collisionMask = BitMask::BIT1 | BitMask::BIT2;
+
+// Add a collision callback
+hitbox->addCallback([] (const HitBoxEntered& e)) {
+  // Handle collision
+}
+
+// Add the hitbox to the scene
+Application::getScene()->addHitbox();
+```
+
+Moreover, hitboxes can hold arbitrary data that can be accessed from objects that collide with them to implement more complex logic.
+
+```cpp
+// When initializing the hitbox
+int damage = 1;
+hitbox->data = &damage;
+
+// When handling collision with that hitbox
+void onHitboxEntered(const HitBoxEntered& event) {
+  int damage = *reinterpret_cast<int*>(event.data);
+  // Handle collision
+}
+```
+
+Finally, to remove a hitbox, simply run `Application::getScene()->removeHitbox(hitbox)`.
+
 ### Why this name?
 
 [Mount Vulture](https://en.wikipedia.org/wiki/Monte_Vulture) is an extinct Italian volcano! :volcano:
