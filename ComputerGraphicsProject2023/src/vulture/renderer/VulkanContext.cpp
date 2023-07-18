@@ -33,13 +33,13 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 	void* pUserData);
 
-static bool createInstace(const char* name);
+static bool createInstance(const char* name);
 static bool pickPhysicalDevice();
 static bool createDevice();
 
 bool VulkanContext::init(const String& applicationName, const Window& window)
 {
-	if (!createInstace(applicationName.cString()))
+	if (!createInstance(applicationName.cString()))
 		return false;
 
 	ASSERT_VK_SUCCESS(glfwCreateWindowSurface(vulkanData.instance, window.getHandle(), vulkanData.allocator, &vulkanData.surface),
@@ -183,7 +183,7 @@ inline bool checkIfItHasExtension(const char* extension, const std::vector<VkExt
 	return false;
 }
 
-bool createInstace(const char* name)
+bool createInstance(const char* name)
 {
 	VUTRACE("Begin creating Vulkan instance.");
 #if VALIDATION_LAYER

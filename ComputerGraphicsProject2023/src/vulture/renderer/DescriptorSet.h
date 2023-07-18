@@ -136,7 +136,6 @@ public:
 	/*
 	* @brief Constructor of a DescriptorPool
 	*
-	* @param device - The logical device on witch the pool will be allocated.
 	* @param frameCount - The number of framebuffers.
 	*/
 	explicit DescriptorPool(u32 frameCount);

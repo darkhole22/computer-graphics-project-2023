@@ -9,8 +9,6 @@ namespace vulture {
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
-// struct SwapChainRecreatedEvent{};
-
 class SwapChain
 {
 public:

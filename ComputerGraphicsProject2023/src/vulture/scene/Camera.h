@@ -36,17 +36,17 @@ public:
 	/*
 	* @brief A float that holds the roll rotation.
 	*/
-	float roll;
+	f32 roll;
 
 	/*
 	* @brief Maximum vertical angle the camera can be rotated by.
 	*/
-	float maxVerticalAngle = glm::radians(85.0f);
+	f32 maxVerticalAngle = glm::radians(85.0f);
 
 	/*
 	* @brief Maximum vertical angle the camera can be rotated by.
 	*/
-	float maxRollAngle = glm::radians(45.0f);
+	f32 maxRollAngle = glm::radians(45.0f);
 
 	/*
 	* @brief Translates the camera relatively to its look-direction.
@@ -62,7 +62,7 @@ public:
 	* @param y: translation amount over the y (relative) axis.
 	* @param z: translation amount over the z (relative) axis.
 	*/
-	inline void translate(float x, float y, float z) { translate(glm::vec3(x, y, z)); };
+	inline void translate(f32 x, f32 y, f32 z) { translate(glm::vec3(x, y, z)); };
 
 	/*
 	* @brief Rotates the camera.
@@ -78,14 +78,14 @@ public:
 	* @param y: rotation amount over the y axis.
 	* @param z: rotation amount over the z axis.
 	*/
-	inline void rotate(float x, float y, float z) { rotate(glm::vec3(x, y, z)); };
+	inline void rotate(f32 x, f32 y, f32 z) { rotate(glm::vec3(x, y, z)); };
 
 	/*
 	* @brief Rolls the camera without changing the up direction.
 	*
 	* @param rotation: angles around the front axis.
 	*/
-	void addRoll(float rotation);
+	void addRoll(f32 rotation);
 
 	enum class Projection
 	{
@@ -119,7 +119,7 @@ public:
 	* 
 	* @returns The current size of the camera's projection plane in world units.
 	*/
-	inline float getSize() const { return m_Size; }
+	inline f32 getSize() const { return m_Size; }
 
 	/*
 	* @brief Sets the size of the camera's projection in the x-direction for an orthogonal projection.
@@ -127,49 +127,49 @@ public:
 	* 
 	* @param size: The new size of the camera's projection plane in world units.
 	*/
-	void setSize(float size);
+	void setSize(f32 size);
 
 	/*
 	* @brief Returns the vertical field of view (vFOV) of the camera's projection.
 	* 
 	* @returns The current vFOV.
 	*/
-	inline float getFov() const { return m_Fov; }
+	inline f32 getFov() const { return m_Fov; }
 
 	/*
 	* @brief Sets the vertical field of view (vFOV) of the camera's projection.
 	* 
 	* @param fov: The new vFOV.
 	*/
-	void setFov(float fov);
+	void setFov(f32 fov);
 
 	/*
 	* @brief Returns the distance to the camera's near plane.
 	* 
 	* @returns The distance to the near plane.
 	*/
-	inline float getNearPlane() const { return m_NearPlane; }
+	inline f32 getNearPlane() const { return m_NearPlane; }
 
 	/*
 	* @brief Sets the distance to the camera's near plane.
 	* 
 	* @param nearPlane: The new distance to the near plane.
 	*/
-	void setNearPlane(float nearPlane);
+	void setNearPlane(f32 nearPlane);
 
 	/*
 	* @brief Returns the distance to the camera's far plane.
 	* 
 	* @returns The distance to the far plane.
 	*/
-	inline float getFarPlane() const { return m_FarPlane; }
+	inline f32 getFarPlane() const { return m_FarPlane; }
 
 	/*
 	* @brief Sets the distance to the camera's far plane.
 	* 
 	* @param farPlane: The new distance to the far plane.
 	*/
-	void setFarPlane(float farPlane);
+	void setFarPlane(f32 farPlane);
 
 	inline glm::mat4 getProjectionMatrix() const { return m_Uniform->proj; }
 
@@ -190,11 +190,11 @@ private:
 
 	// Projection member variables
 	Projection m_Projection = Projection::PERSPECTIVE;
-	float m_Fov = glm::radians(45.0f);
-	float m_Size = 5.0f;
-	float m_NearPlane = 0.05f;
-	float m_FarPlane = 50.0f;
-	float m_AspectRatio = 1.0f;
+	f32 m_Fov = glm::radians(45.0f);
+	f32 m_Size = 5.0f;
+	f32 m_NearPlane = 0.05f;
+	f32 m_FarPlane = 50.0f;
+	f32 m_AspectRatio = 1.0f;
 
 	// Initial Transform
 	const glm::vec3 c_InitialPosition = { 0.0f, 0.0f, 0.0f };
@@ -203,7 +203,7 @@ private:
 	const f32 c_InitialRoll = 0.0f;
 
 	// Functions used by the scene
-	void update(float dt);
+	void update(f32 dt);
 	inline DescriptorSetLayout* getDescriptorSetLayout() { return m_DescriptorSetLayout.get(); }
 	inline const DescriptorSet& getDescriptorSet() { return *m_DescriptorSet; }
 	inline void map(uint32_t index) { m_DescriptorSet->map(index); }

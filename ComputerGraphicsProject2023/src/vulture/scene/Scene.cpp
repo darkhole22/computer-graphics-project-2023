@@ -73,7 +73,7 @@ void stepUtil(std::unordered_set<Ref<T>>& set, f32 dt, bool& looping)
 	looping = false;
 }
 
-void Scene::render(FrameContext target, float dt)
+void Scene::render(FrameContext target, f32 dt)
 {
 	if (target.updated())
 	{
@@ -95,12 +95,12 @@ void Scene::render(FrameContext target, float dt)
 	}
 
 	auto [width, height] = target.getExtent();
-	float aspectRatio = static_cast<float>(width) / height;
+	f32 aspectRatio = static_cast<f32>(width) / height;
 	m_Camera.m_AspectRatio = aspectRatio;
 	m_Camera.update(dt);
 
-	m_UIHandler.m_ScreenUniform->width = static_cast<float>(width);
-	m_UIHandler.m_ScreenUniform->height = static_cast<float>(height);
+	m_UIHandler.m_ScreenUniform->width = static_cast<f32>(width);
+	m_UIHandler.m_ScreenUniform->height = static_cast<f32>(height);
 	m_UIHandler.update(dt);
 
 	stepUtil(m_Tweens, dt, m_TweenLoopFlag);

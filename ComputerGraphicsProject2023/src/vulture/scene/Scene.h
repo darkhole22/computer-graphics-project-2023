@@ -51,7 +51,7 @@ class Scene
 public:
 	Scene();
 
-	void render(FrameContext target, float dt);
+	void render(FrameContext target, f32 dt);
 
 	void addObject(Ref<GameObject> obj);
 	void removeObject(Ref<GameObject> obj);

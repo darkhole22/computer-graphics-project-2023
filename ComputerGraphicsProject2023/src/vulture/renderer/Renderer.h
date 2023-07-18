@@ -35,19 +35,12 @@ public:
 
 	static FrameContext getFrameContext();
 
-	// bind pipeline / shaders
-	// render skybox
-	// render object
+	static void waitIdle();
 
-	// update descriptor sets
-
-	static void waitIdle(); // { m_Device.waitIdle(); }
-
-	static const RenderPass& getRenderPass();// { return m_RenderPass; }
+	static const RenderPass& getRenderPass();
 	static inline DescriptorPool makeDescriptorPool() { return DescriptorPool(getImageCount()); }
-	// inline Ref<DescriptorSetLayout> makeDescriptorSetLayout() const { return Ref<DescriptorSetLayout>(new DescriptorSetLayout(m_Device)); }
+	
 	template <class T> static inline Uniform<T> makeUniform() { return Uniform<T>(getImageCount()); }
-	// inline Ref<Texture> makeTexture(const String& path) const { return Ref<Texture>(new Texture(m_Device, path)); }
 
 	static inline const VertexLayout getVertexLayout()
 	{

@@ -37,7 +37,7 @@ void Camera::rotate(glm::vec3 rotation)
 	glm::vec3 right = glm::normalize(glm::cross(direction, up));
 	glm::vec3 front = glm::normalize(glm::cross(up, right));
 
-	float pitch = std::asin(glm::dot(glm::cross(front, direction), right));
+	f32 pitch = std::asin(glm::dot(glm::cross(front, direction), right));
 	pitch = std::clamp(pitch + rotation.y, -maxVerticalAngle, maxVerticalAngle);
 
 	direction = glm::vec3(
@@ -47,36 +47,36 @@ void Camera::rotate(glm::vec3 rotation)
 	up = glm::vec3(glm::rotate(glm::mat4(1.0f), rotation.z, front) * glm::vec4(up, 1.0f));
 }
 
-void Camera::addRoll(float rotation)
+void Camera::addRoll(f32 rotation)
 {
 	roll = std::clamp(roll + rotation, -maxRollAngle, maxRollAngle);
 }
 
-void Camera::setSize(float size)
+void Camera::setSize(f32 size)
 {
 	if (size <= 0) return;
 
 	m_Size = size;
 }
 
-void Camera::setFov(float fov)
+void Camera::setFov(f32 fov)
 {
 	if (fov < 1 || fov > 179) return;
 
 	m_Fov = glm::radians(fov);
 }
 
-void Camera::setNearPlane(float nearPlane)
+void Camera::setNearPlane(f32 nearPlane)
 {
 	m_NearPlane = nearPlane;
 }
 
-void Camera::setFarPlane(float farPlane)
+void Camera::setFarPlane(f32 farPlane)
 {
 	m_FarPlane = farPlane;
 }
 
-void Camera::update(float dt)
+void Camera::update(f32 dt)
 {
 	updateView();
 	updateProjection();
@@ -91,8 +91,8 @@ void Camera::updateProjection()
 	}
 	else
 	{
-		float hHeight = m_Size / 2;
-		float hWidth = hHeight * m_AspectRatio;
+		f32 hHeight = m_Size / 2;
+		f32 hWidth = hHeight * m_AspectRatio;
 		m_Uniform->proj = glm::ortho(-hWidth, hWidth, hHeight, -hHeight, m_NearPlane, m_FarPlane);
 	}
 }

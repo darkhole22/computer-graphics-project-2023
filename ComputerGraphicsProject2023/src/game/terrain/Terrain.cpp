@@ -64,7 +64,6 @@ void Terrain::setReferencePosition(glm::vec2 position)
 						vectorCoordY += count;
 					}
 
-					// newChunks[y * count + x] = makeRef<TerrainChunk>(this, chunkPosition);
 					auto& chunk = m_Chunks[vectorCoordY * count + vectorCoordX];
 					chunk->update(chunkPosition);
 					newChunks[y * count + x] = chunk;
