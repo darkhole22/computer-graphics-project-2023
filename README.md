@@ -2,17 +2,31 @@
 
 This repository contains the final project developed for the **Computer Graphics** course (2023 Ed.) at **Politecnico di Milano**.
 
+TODO Course Description
+
+TODO Project Goal
+
+TODO Project Structure
+
 ## Vulture
 
 Vulture is our toy **Vulkan** game engine written on top of the famous [Vulkan Tutorial](https://vulkan-tutorial.com).
 
+TODO Engine Features
+
+TODO Specific Descriptions
+
 ## Robot Survivor
 
-**Robot Survivor** is a first person shooter in which you have to survive incoming waves of enemy robots on an alien planet.
+**Robot Survivor** is a first person shooter in which you have to survive incoming waves of enemy robots on a procedurally generated alien planet.
+
+TODO Game Screenshot
 
 By destroying enemies, you can level up and obtain random upgrades to help you live longer!
 
-Walking around the procedurally generated world, you'll be able to find powerful *pick-ups*!
+Walking around, you'll be able to find powerful *pick-ups*!
+
+TODO Pick-ups Screenshots
 
 ## License
 
