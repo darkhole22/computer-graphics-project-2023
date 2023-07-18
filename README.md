@@ -21,6 +21,24 @@ The **key features** of Vulture are:
 - A configurable **Input System** with M&K and Gamepad support
 - A functional **Collision System** with collisions and layer masks support
 
+### :sunny: User Interfaces
+
+Vulture provides the tools to create simple User Interfaces.
+
+To add some text, just run:
+
+```cpp
+Ref<UIText> text = Application::getScene()->getUIHandler()->makeText("My Text");
+```
+
+Text can be customized however you like: you can change its font, color, size, visibility and much more; and you can even animate it thanks to Vulture's **Tweens**!
+
+To add an image, it works exactly the same way:
+
+```cpp
+Ref<UIImage> image = Application::getScene()->getUIHandler()->makeImage(imageName);
+```
+
 ### :cloud: Dynamic Skybox
 
 Setting up a Skybox with Vulture is easy! Just place your cubemap texture files in a `res/textures` folder and run the following code:
@@ -108,6 +126,8 @@ void onHitboxEntered(const HitBoxEntered& event) {
 ```
 
 Finally, to remove a hitbox, simply run `Application::getScene()->removeHitbox(hitbox)`.
+
+*Note*: As of right now, Vulture only implements Capsule collision shapes, but more can be easily added.
 
 ### Why this name?
 
