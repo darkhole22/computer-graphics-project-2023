@@ -1,13 +1,11 @@
 #include "Bullet.h"
 
-#include <utility>
-
 namespace game {
 
 const String Bullet::s_ModelName = "bullet";
-const String Bullet::s_TextureName = "bullet"; // TODO The texture seems to be broken
+const String Bullet::s_TextureName = "bullet";
 const String Bullet::s_EmissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME;
-const String Bullet::s_RoughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME;
+const String Bullet::s_RoughnessTextureName = "bullet";
 
 Bullet::Bullet(Ref<GameObject> gameObject)
 	: gameObject(gameObject)
@@ -30,7 +28,6 @@ void Bullet::setup(Transform startingTransform, glm::vec3 direction, u32 maxHits
 {
 	gameObject->transform = makeRef<Transform>(startingTransform);
 	gameObject->transform->translate(0.0f, 1.5f, 0.0f);
-	gameObject->transform->setScale(0.1f);
 
 	auto angle = std::sin(direction.y);
 	gameObject->transform->rotate(0.0f, 0.0f, -glm::radians(90.0f) + angle);
