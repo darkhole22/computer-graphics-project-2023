@@ -4,7 +4,7 @@ This repository contains the final project developed for the **Computer Graphics
 
 ## Vulture
 
-Vulture is our toy game engine written on top of **Vulkan**.
+Vulture is our toy **Vulkan** game engine written on top of the famous [Vulkan Tutorial](https://vulkan-tutorial.com).
 
 ## Robot Survivor
 
@@ -16,4 +16,4 @@ Walking around the procedurally generated world, you'll be able to find powerful
 
 ## License
 
-This project is licensed under the [[MIT License]](LICENSE). Feel free to use, modify and distribute the code as per the terms of the license.
+This project is licensed under the [MIT License](LICENSE). Feel free to use, modify and distribute the code as per the terms of the license.
