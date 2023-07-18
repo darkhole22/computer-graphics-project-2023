@@ -16,6 +16,11 @@ TODO Engine Features
 
 TODO Specific Descriptions
 
+### Why this name?
+
+[Mount Vulture](https://en.wikipedia.org/wiki/Monte_Vulture) is an extinct Italian volcano! :volcano:
+
+
 ## Robot Survivor
 
 **Robot Survivor** is a first person shooter in which you have to survive incoming waves of enemy robots on a procedurally generated alien planet.
