@@ -8,7 +8,7 @@ TODO Project Goal
 
 TODO Project Structure
 
-## Vulture
+## :volcano: Vulture
 
 Vulture is our toy **Vulkan** game engine written on top of the famous [Vulkan Tutorial](https://vulkan-tutorial.com).
 
@@ -27,7 +27,7 @@ TODO Specific Descriptions
 
 Vulture features a powerful input system that lets you define device-agnostic actions and associated bindings.
 
-```c++
+```cpp
 InputAction fireAction{};
 
 fireAction.keyboardBindings = {
@@ -46,7 +46,7 @@ Input::setAction("FIRE", fireAction);
 
 You can also define more complex key combinations for your actions!
 
-```c++
+```cpp
 InputAction runAction{};
 
 runAction.keyboardBindings = {
@@ -64,7 +64,7 @@ After defining your actions, you can query the Input System with methods like `I
 [Mount Vulture](https://en.wikipedia.org/wiki/Monte_Vulture) is an extinct Italian volcano! :volcano:
 
 
-## Robot Survivor
+## :robot: Robot Survivor
 
 **Robot Survivor** is a first person shooter in which you have to survive incoming waves of enemy robots on a procedurally generated alien planet.
 
