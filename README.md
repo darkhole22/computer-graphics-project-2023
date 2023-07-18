@@ -129,6 +129,31 @@ Finally, to remove a hitbox, simply run `Application::getScene()->removeHitbox(h
 
 *Note*: As of right now, Vulture only implements Capsule collision shapes, but more can be easily added.
 
+### :hourglass_flowing_sand: Tweens, Timers and Job
+
+**Tweens** are a very lightweight and powerful tool to animate *everything*.
+
+TODO Tween Example + GIF 
+
+**Timers** provide a simple API to run actions after a certain amount of time.
+
+```cpp
+// Print "Hello, World" after 1 second
+Application::getScene()->makeTimer(1.0f)->addCallback([] (TimerTimeoutEvent e) {
+  std::cout << "Hello, World!" << std::endl;
+});
+```
+
+You can also define looping timers by explicitly passing a second argument `oneShot` to `Scene::makeTimer`.
+
+**Jobs** can be used to run asynchronous long running tasks that may span multiple frames.
+
+You can submit a new job by providing a function to run asynchronously and a function to run on the main thread once the task has finished executing.
+
+```cpp
+Job::submit(longRunningTask, data, cleanupCallback);
+```
+
 ### Why this name?
 
 [Mount Vulture](https://en.wikipedia.org/wiki/Monte_Vulture) is an extinct Italian volcano! :volcano:
