@@ -100,6 +100,12 @@ public:
 	 */
 	void drawIndexed(u32 count);
 
+	/**
+	 * @brief Destructor for the FrameContext class.
+	 *
+	 * When destroyed, the frame is submitted to the SwapChain for rendering, even in case
+	 * something unexpected occurs.
+	 */
 	~FrameContext();
 
 	friend class Renderer;
