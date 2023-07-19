@@ -214,6 +214,25 @@ Job::submit(longRunningTask, data, cleanupCallback);
 
 [Mount Vulture](https://en.wikipedia.org/wiki/Monte_Vulture) is an extinct Italian volcano! :volcano:
 
+### How to build
+
+This project uses [**premake5**](https://premake.github.io/docs/Using-Premake) as a build system.
+To build first download the source code from github:
+
+```
+git clone --recurse-submodules https://github.com/darkhole22/computer-graphics-project-2023.git
+```
+
+Then launch premake to generate the project on your preferred configuration:
+
+```
+premake5 vs2022 // Visual studio
+premake5 gmake2 // Make
+```
+
+And as the last step just launch the build process from the target platform.
+The binary will be placed in `bin\'buildconfig'\ComputerGraphicsProject2023\`.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE). Feel free to use, modify and distribute the code as per the terms of the license.
