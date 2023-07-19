@@ -1,17 +1,17 @@
 #include "GameManager.h"
 
-#include "vulture/util/ScopeTimer.h"
-#include "vulture/util/Random.h"
 #include "vulture/core/Input.h"
+#include "vulture/util/Random.h"
+#include "vulture/util/ScopeTimer.h"
 
 namespace game {
 
 GameManager::GameManager(const TerrainGenerationConfig& terrainConfig) :
-	m_Scene(Application::getScene()), m_Terrain(makeRef<Terrain>(terrainConfig)),
+	m_Scene(Application::getScene()),
+	m_Terrain(makeRef<Terrain>(terrainConfig)),
 	m_Player(makeRef<Player>(m_Terrain)),
 	m_EnemyFactory(m_EnemyWaveSize, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
-	m_PowerUpManager(m_Player, m_Terrain),
-	m_DeathAudio("lose")
+	m_PowerUpManager(m_Player, m_Terrain), m_DeathAudio("lose")
 {
 	EventBus::addCallback([this](HealthUpdated event) {
 		if (event.hp != 0) return;
@@ -29,7 +29,8 @@ GameManager::GameManager(const TerrainGenerationConfig& terrainConfig) :
 			auto enemy = m_EnemyFactory.get();
 			if (!enemy) break;
 
-			auto spawnPoint = m_Player->getPosition() + glm::vec3(spawnPointOffset.x, 0.0f, spawnPointOffset.y);
+			auto spawnPoint = m_Player->getPosition() +
+				glm::vec3(spawnPointOffset.x, 0.0f, spawnPointOffset.y);
 			enemy->setup(m_Player, m_Terrain, spawnPoint);
 		}
 	});
@@ -72,7 +73,6 @@ void GameManager::update(f32 dt)
 
 			setGameState(GameState::PAUSE);
 		}
-
 		break;
 	}
 	case GameState::PAUSE:
@@ -99,7 +99,6 @@ void GameManager::update(f32 dt)
 
 	auto cameraPos = m_Scene->getCamera()->position;
 	m_Terrain->setReferencePosition({ cameraPos.x, cameraPos.z });
-
 	m_Terrain->update(dt);
 }
 
@@ -110,9 +109,9 @@ void GameManager::setGameState(GameState gameState)
 	m_GameState = gameState;
 	EventBus::emit(GameStateChanged{ m_GameState });
 
-	Application::getWindow()->setCursorMode(m_GameState == GameState::PLAYING ?
-											CursorMode::DISABLED :
-											CursorMode::NORMAL);
+	Application::getWindow()->setCursorMode(m_GameState == GameState::PLAYING
+											? CursorMode::DISABLED
+											: CursorMode::NORMAL);
 }
 
 void GameManager::onGameOver()
