@@ -12,11 +12,11 @@ namespace game {
 
 using namespace vulture;
 
-class PowerUpHandler
+class PickUpHandler
 {
 public:
 	template<typename T>
-	static PowerUpHandler create(Ref<Player> player, Ref<Terrain> terrain, f32 cooldown, u32 amount);
+	static PickUpHandler create(Ref<Player> player, Ref<Terrain> terrain, f32 cooldown, u32 amount);
 
 	void update(f32 dt);
 
@@ -24,22 +24,22 @@ public:
 	void pause();
 	void reset();
 
-	~PowerUpHandler();
+	~PickUpHandler();
 private:
 	Ref<Timer> m_Timer;
 
 	std::function<void(f32)> m_UpdateImpl;
 	std::function<void()> m_ResetImpl;
 
-	PowerUpHandler(std::function<void(f32)> updateImpl, std::function<void()> resetImpl, Ref<Timer> timer) :
+	PickUpHandler(std::function<void(f32)> updateImpl, std::function<void()> resetImpl, Ref<Timer> timer) :
 		m_Timer(std::move(timer)), m_UpdateImpl(std::move(updateImpl)), m_ResetImpl(std::move(resetImpl))
 	{}
 };
 
-class PowerUpManager
+class PickUpManager
 {
 public:
-	PowerUpManager(Ref<Player> player, Ref<Terrain> terrain);
+	PickUpManager(Ref<Player> player, Ref<Terrain> terrain);
 
 	void start();
 	void pause();
@@ -48,16 +48,16 @@ public:
 
 	void reset();
 
-	~PowerUpManager() = default;
+	~PickUpManager() = default;
 private:
 	Ref<Player> m_Player;
 	Ref<Terrain> m_Terrain;
 
-	std::vector<PowerUpHandler> m_Handlers;
+	std::vector<PickUpHandler> m_Handlers;
 };
 
 template<typename T>
-inline PowerUpHandler PowerUpHandler::create(Ref<Player> player, Ref<Terrain> terrain, f32 cooldown, u32 amount)
+inline PickUpHandler PickUpHandler::create(Ref<Player> player, Ref<Terrain> terrain, f32 cooldown, u32 amount)
 {
 	auto factory = makeRef<Factory<T>>(5);
 
@@ -69,18 +69,18 @@ inline PowerUpHandler PowerUpHandler::create(Ref<Player> player, Ref<Terrain> te
 		for (u32 i = 0; i < amount; i++)
 		{
 			auto p = Random::nextAnnulusPoint(100.f);
-			auto powerUp = factory->get();
-			if (!powerUp) break;
+			auto pickUp = factory->get();
+			if (!pickUp) break;
 
 			auto startingLocation = player->getPosition() + glm::vec3(p.x, 0.0f, p.y);
 
-			powerUp->gameObject->transform->setPosition(startingLocation);
-			powerUp->setup(terrain);
+			pickUp->gameObject->transform->setPosition(startingLocation);
+			pickUp->setup(terrain);
 		}
 	});
 	timer->pause();
 
-	return PowerUpHandler(updateImpl, resetImpl, timer);
+	return PickUpHandler(updateImpl, resetImpl, timer);
 }
 
 } // namespace game

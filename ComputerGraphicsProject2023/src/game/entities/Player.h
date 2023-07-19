@@ -79,7 +79,7 @@ private:
 	Ref<MovementComponent> m_Movement;
 
 	Ref<HitBox> m_Hitbox;
-	Ref<HitBox> m_PowerUpHitbox;
+	Ref<HitBox> m_PickUpHitbox;
 
 	Ref<Factory<Bullet>> m_BulletFactory;
 	Ref<Tween> m_FiringTween;
@@ -95,7 +95,7 @@ private:
 	void updateFiringTween();
 
 	void onHitBoxEntered(const HitBoxEntered& event);
-	void onPowerUpEntered(const HitBoxEntered& event);
+	void onPickUpEntered(const HitBoxEntered& event);
 
 	void onEnemyKilled(const EnemyDied& event);
 };

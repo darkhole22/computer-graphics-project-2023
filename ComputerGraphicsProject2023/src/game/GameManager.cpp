@@ -10,7 +10,7 @@ GameManager::GameManager(const TerrainGenerationConfig& terrainConfig) :
 	m_Scene(Application::getScene()), m_Terrain(makeRef<Terrain>(terrainConfig)),
 	m_Player(makeRef<Player>(m_Terrain)),
 	m_EnemyFactory(m_EnemyWaveSize, glm::rotate(glm::mat4(1), glm::half_pi<f32>(), glm::vec3(0, 1, 0))),
-	m_PowerUpManager(m_Player, m_Terrain),
+	m_PickUpManager(m_Player, m_Terrain),
 	m_DeathAudio("lose")
 {
 	EventBus::addCallback([this](HealthUpdated event) {
@@ -54,7 +54,7 @@ void GameManager::update(f32 dt)
 		EventBus::emit(ScoreUpdated{ m_Score });
 
 		m_WaveTimer->play();
-		m_PowerUpManager.start();
+		m_PickUpManager.start();
 
 		setGameState(GameState::PLAYING);
 		break;
@@ -62,13 +62,13 @@ void GameManager::update(f32 dt)
 	case GameState::PLAYING:
 	{
 		m_EnemyFactory.update(dt);
-		m_PowerUpManager.update(dt);
+		m_PickUpManager.update(dt);
 		m_Player->update(dt);
 
 		if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 		{
 			m_WaveTimer->pause();
-			m_PowerUpManager.pause();
+			m_PickUpManager.pause();
 
 			setGameState(GameState::PAUSE);
 		}
@@ -79,7 +79,7 @@ void GameManager::update(f32 dt)
 	if (Input::isActionJustPressed("TOGGLE_PAUSE"))
 	{
 		m_WaveTimer->play();
-		m_PowerUpManager.start();
+		m_PickUpManager.start();
 
 		setGameState(GameState::PLAYING);
 	}
@@ -89,7 +89,7 @@ void GameManager::update(f32 dt)
 	{
 		m_DeathAudio.stop();
 		m_EnemyFactory.reset();
-		m_PowerUpManager.reset();
+		m_PickUpManager.reset();
 		m_Player->reset();
 
 		setGameState(GameState::SETUP);
@@ -118,7 +118,7 @@ void GameManager::setGameState(GameState gameState)
 void GameManager::onGameOver()
 {
 	m_WaveTimer->reset();
-	m_PowerUpManager.pause();
+	m_PickUpManager.pause();
 
 	if (m_GameState != GameState::GAME_OVER)
 		m_DeathAudio.play();

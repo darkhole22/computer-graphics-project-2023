@@ -12,30 +12,30 @@ namespace game {
 
 using namespace vulture;
 
-enum class PowerUpType
+enum class PickUpType
 {
 	None, HealthUp, DoubleScore, Bomb
 };
 
-class PowerUpData
+class PickUpData
 {
 public:
-	virtual PowerUpType getType() const;
+	virtual PickUpType getType() const;
 	virtual bool isHandled() const;
 	virtual void setHandled(bool handled);
 
-	virtual ~PowerUpData();
+	virtual ~PickUpData();
 };
 
 template <typename T>
-class PowerUp
+class PickUp
 {
 public:
-	static_assert(std::is_base_of_v<PowerUpData, T>);
+	static_assert(std::is_base_of_v<PickUpData, T>);
 
 	Ref<GameObject> gameObject;
 
-	explicit PowerUp(Ref<GameObject> gameObject)
+	explicit PickUp(Ref<GameObject> gameObject)
 		: gameObject(gameObject)
 	{
 		// This requires all power-ups to have the same size.
@@ -67,7 +67,7 @@ public:
 		return m_Data.isHandled() ? EntityStatus::DEAD : EntityStatus::ALIVE;
 	}
 
-	~PowerUp()
+	~PickUp()
 	{
 		Application::getScene()->removeHitbox(m_Hitbox);
 	}
