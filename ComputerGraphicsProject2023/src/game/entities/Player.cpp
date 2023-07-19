@@ -53,15 +53,15 @@ Player::Player(Ref<Terrain> terrain) :
 	/*************
 	 * POWER UPS *
 	 *************/
-	m_PowerUpHitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.5f, m_CameraHeight));
-	m_PowerUpHitbox->transform = m_Transform;
+	m_PickUpHitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.5f, m_CameraHeight));
+	m_PickUpHitbox->transform = m_Transform;
 
-	m_PowerUpHitbox->layerMask = PLAYER_MASK;
-	m_PowerUpHitbox->collisionMask = POWER_UP_MASK;
+	m_PickUpHitbox->layerMask = PLAYER_MASK;
+	m_PickUpHitbox->collisionMask = POWER_UP_MASK;
 
-	scene->addHitbox(m_PowerUpHitbox);
+	scene->addHitbox(m_PickUpHitbox);
 
-	m_PowerUpHitbox->addCallback([this](const HitBoxEntered& event) { onPowerUpEntered(event); });
+	m_PickUpHitbox->addCallback([this](const HitBoxEntered& event) { onPickUpEntered(event); });
 
 	EventBus::addCallback([this](const ExplosionStarted&) { m_CanSpawnExplosion = false; });
 	EventBus::addCallback([this](const ExplosionFinished&) { m_CanSpawnExplosion = true; });
@@ -254,38 +254,38 @@ void Player::onEnemyKilled(const EnemyDied& event)
 	}
 }
 
-void Player::onPowerUpEntered(const HitBoxEntered& event)
+void Player::onPickUpEntered(const HitBoxEntered& event)
 {
-	auto* powerUp = reinterpret_cast<PowerUpData*>(event.data);
-	switch (powerUp->getType())
+	auto* pickUp = reinterpret_cast<PickUpData*>(event.data);
+	switch (pickUp->getType())
 	{
-	case PowerUpType::HealthUp:
+	case PickUpType::HealthUp:
 	{
 		if (m_Stats.hp < m_Stats.maxHp)
 		{
-			auto* healthPack = reinterpret_cast<HealthPackData*>(powerUp);
+			auto* healthPack = reinterpret_cast<HealthPackData*>(pickUp);
 			m_Stats.hp = std::min<i32>(m_Stats.hp + healthPack->getHealth(), m_Stats.maxHp);
 			healthPack->setHandled(true);
 			EventBus::emit(HealthUpdated{ m_Stats.hp, m_Stats.maxHp });
 		}
 		break;
 	}
-	case PowerUpType::DoubleScore:
+	case PickUpType::DoubleScore:
 	{
 		if (!m_DoubleScoreActive)
 		{
-			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(powerUp);
+			auto* doubleScore = reinterpret_cast<DoubleScoreData*>(pickUp);
 			doubleScore->setHandled(true);
 			m_DoubleScoreActive = true;
 			EventBus::emit(DoubleScoreStarted{ doubleScore->getDuration() });
 		}
 		break;
 	}
-	case PowerUpType::Bomb:
+	case PickUpType::Bomb:
 	{
 		if (m_CanSpawnExplosion)
 		{
-			auto* bomb = reinterpret_cast<BombData*>(powerUp);
+			auto* bomb = reinterpret_cast<BombData*>(pickUp);
 			auto p = Random::nextAnnulusPoint(20.0f, 10.0f);
 			auto exp = m_ExplosionFactory.get();
 			if (!exp) break;

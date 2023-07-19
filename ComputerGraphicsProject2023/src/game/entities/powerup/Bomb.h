@@ -1,26 +1,25 @@
 #pragma once
 
-#include "PowerUp.h"
+#include "PickUp.h"
 
 namespace game {
 
 using namespace vulture;
 
-class BombData : public PowerUpData
+class BombData : public PickUpData
 {
 public:
-	virtual PowerUpType getType() const override;
+	virtual PickUpType getType() const override;
 	virtual bool isHandled() const override;
 	virtual void setHandled(bool handled) override;
 
 	virtual ~BombData() = default;
 private:
-	f32 m_ExplosionRadius = 3.0f;
 	bool m_Handled = false;
 };
 
 
-class Bomb : public PowerUp<BombData>
+class Bomb : public PickUp<BombData>
 {
 public:
 	static const String s_ModelName;

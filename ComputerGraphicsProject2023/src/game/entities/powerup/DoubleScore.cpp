@@ -7,11 +7,11 @@ const String DoubleScore::s_TextureName = "star";
 const String DoubleScore::s_EmissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME;
 const String DoubleScore::s_RoughnessTextureName = DEFAULT_ROUGHNESS_TEXTURE_NAME;
 
-DoubleScore::DoubleScore(Ref<GameObject> gameObject) : PowerUp<DoubleScoreData>(gameObject) {};
+DoubleScore::DoubleScore(Ref<GameObject> gameObject) : PickUp<DoubleScoreData>(gameObject) {};
 
-PowerUpType DoubleScoreData::getType() const
+PickUpType DoubleScoreData::getType() const
 {
-	return PowerUpType::DoubleScore;
+	return PickUpType::DoubleScore;
 }
 
 bool DoubleScoreData::isHandled() const

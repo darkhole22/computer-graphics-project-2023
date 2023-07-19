@@ -1,15 +1,15 @@
 #pragma once
 
-#include "PowerUp.h"
+#include "PickUp.h"
 
 namespace game {
 
 using namespace vulture;
 
-class HealthPackData : public PowerUpData
+class HealthPackData : public PickUpData
 {
 public:
-	virtual PowerUpType getType() const override;
+	virtual PickUpType getType() const override;
 	virtual bool isHandled() const override;
 	virtual void setHandled(bool handled) override;
 
@@ -21,7 +21,7 @@ private:
 	bool m_Handled = false;
 };
 
-class HealthPack : public PowerUp<HealthPackData>
+class HealthPack : public PickUp<HealthPackData>
 {
 public:
 	static const String s_ModelName;

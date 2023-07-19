@@ -9,7 +9,7 @@
 #include "game/entities/Factory.h"
 #include "game/entities/powerup/HealthPack.h"
 #include "game/entities/powerup/DoubleScore.h"
-#include "game/entities/PowerUpManager.h"
+#include "game/entities/PickUpManager.h"
 #include "game/ui/HUD.h"
 #include "game/terrain/Terrain.h"
 
@@ -33,7 +33,7 @@ private:
 	u32 m_EnemyWaveSize = 10;
 	Factory<Enemy> m_EnemyFactory;
 
-	PowerUpManager m_PowerUpManager;
+	PickUpManager m_PickUpManager;
 	Ref<Timer> m_WaveTimer;
 
 	GameState m_GameState;
