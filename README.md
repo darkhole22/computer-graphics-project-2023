@@ -1,14 +1,16 @@
 # Computer Graphics Project 2023
 
-This repository contains the final project developed for the **Computer Graphics** course (2023 Ed.) at **Politecnico di Milano**.
+This repository contains the final project developed for the **Computer Graphics** course held at **Politecnico di Milano** (2022/2023 edition).
 
 The course objective is to teach basic concepts about *3D Computer Graphics*, focusing on **real time rendering** and **Vulkan**.
 
 In particular, the course topics are:
-- Basic Transformations
-- Basic Lightning and Shading models
+- Basic and Advanced Transformations
+- 3D Projections
+- Basic Shaders
+- Lighting and Shading models
 - Texture mapping, normals and projection
-- Rendering pipeline and software architectures for 3D graphics
+- Rendering pipeline, Vulkan and software architectures for 3D graphics
 
 The project goal is to put all of these concepts together by building an interactive real time 3D application.
 
@@ -123,7 +125,6 @@ runAction.keyboardBindings = {
 };
 
 Input::setAction("RUN", runAction);
-
 ```
 
 After defining your actions, you can query the Input System with methods like `Input::isActionPressed`, `Input::isActionJustPressed`, `Input::isActionReleased`, or `Input::getActionStrength`.
@@ -176,7 +177,19 @@ Finally, to remove a hitbox, simply run `Application::getScene()->removeHitbox(h
 
 **Tweens** are a very lightweight and powerful tool to animate *everything*.
 
+Creating tweens is easy, and you can even loop them, chain them or run them in parallel to create complex animations with code!
+
+```cpp
+Ref<Tween> tween = Application::getScene()->makeTween();
+tween->loop(); // Makes the tween loop
+
+tween->addValueTweener(&gameObject.transform.scale, 5.0f, 1.0f) // Scales the object 5x over 1 second
+tween->addValueTweener(&gameObject.transform.scale, 1.0f, 1.0f) // Scales the object to its original size over 1 second
+```
+
 TODO Tween Example + GIF 
+
+Tweens can be used to animate game objects in the world, to animate UIs or even to handle gameplay logic.
 
 **Timers** provide a simple API to run actions after a certain amount of time.
 
