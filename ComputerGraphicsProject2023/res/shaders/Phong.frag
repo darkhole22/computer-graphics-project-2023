@@ -70,8 +70,9 @@ void main() {
 
     // Emission
     vec3 Emission = texture(texEmission, fragTexCoord).rgb;
+    float emissionStrength = step(1.0f, texture(texEmission, fragTexCoord).a) * oubo.emissionStrength;
 
     // Out
     vec3 baseColor = clamp(0.95f * (directLightComponent + pointLightComponent) + 0.05f * Ambient, 0.0f, 1.0f);
-    outColor = vec4(mix(baseColor, Emission, oubo.emissionStrength), 1.0f);
+    outColor = vec4(mix(baseColor, Emission, emissionStrength), 1.0f);
 }
