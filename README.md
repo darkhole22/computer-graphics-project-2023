@@ -2,7 +2,7 @@
 
 This repository contains the final project developed for the **Computer Graphics** course held at **Politecnico di Milano** (2022/2023 edition).
 
-The course objective is to teach basic concepts about *3D Computer Graphics*, focusing on **real time rendering** and **Vulkan**.
+The course objective is to teach basic concepts about **3D Computer Graphics**, focusing on **real time rendering** and **Vulkan**.
 
 In particular, the course topics are:
 - Basic and Advanced Transformations
