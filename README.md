@@ -23,13 +23,13 @@ Our project is split in two main parts:
 
 **Robot Survivor** is a first person shooter in which you have to survive incoming waves of enemy robots on a procedurally generated alien planet.
 
-TODO Game Screenshot
+![Robot Survivors Screenshot](./assets/robot-survivors.png)
 
 By destroying enemies, you can level up and obtain random upgrades to help you live longer!
 
 Walking around, you'll be able to find powerful *pick-ups*!
 
-TODO Pick-ups Screenshots
+![Bomb Explosion](./assets/bomb-pickup.png)
 
 TODO Day-Night Cycle GIF
 
