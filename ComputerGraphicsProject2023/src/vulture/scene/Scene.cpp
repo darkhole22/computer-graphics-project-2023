@@ -75,11 +75,14 @@ void stepUtil(std::unordered_set<Ref<T>>& set, f32 dt, bool& looping)
 
 void Scene::render(FrameContext target, f32 dt)
 {
+	// If the swap chain has been recreated, set frame as modified.
 	if (target.updated())
 	{
 		setModified();
 	}
 
+	// If the number of frames in flight has changed, set frame as modified.
+	// This happens only in very exceptional cases.
 	auto [index, count] = target.getFrameInfo();
 	if (m_FrameModified.size() < count)
 	{
@@ -94,18 +97,22 @@ void Scene::render(FrameContext target, f32 dt)
 		it.second->update(dt);
 	}
 
+	// Update the camera
 	auto [width, height] = target.getExtent();
 	f32 aspectRatio = static_cast<f32>(width) / height;
 	m_Camera.m_AspectRatio = aspectRatio;
 	m_Camera.update(dt);
 
+	// Update UI
 	m_UIHandler.m_ScreenUniform->width = static_cast<f32>(width);
 	m_UIHandler.m_ScreenUniform->height = static_cast<f32>(height);
 	m_UIHandler.update(dt);
 
+	// Tick tweens and timers
 	stepUtil(m_Tweens, dt, m_TweenLoopFlag);
 	stepUtil(m_Timers, dt, m_TimersLoopFlag);
 
+	// Update collision engine
 	m_CollisionEngine.update(dt);
 
 	if (m_FrameModified[index])
@@ -114,14 +121,18 @@ void Scene::render(FrameContext target, f32 dt)
 		m_FrameModified[index] = false;
 	}
 
+	// Update the uniform buffers of every renderable object in the scene
 	updateUniforms(target);
 
+	// Call deferred functions
 	// Moving the functions in a local variable to avoid insertion during the loop.
 	std::vector<std::function<void()>> deferredFunctions = std::move(m_DeferredFunctions);
 	for (auto& fun : deferredFunctions)
 	{
 		fun();
 	}
+
+	// Frame Context goes out of scope here and is destroyed, causing the SwapChain to submit.
 }
 
 PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
@@ -225,6 +236,12 @@ void Scene::callLater(std::function<void()> fun)
 	m_DeferredFunctions.push_back(fun);
 }
 
+/*
+ * The command buffer has to be recorded everytime one of the following happens:
+ * - The number of objects in the scene changes
+ * - The window size changes
+ * - Other rendering-related details change
+ */
 void Scene::recordCommandBuffer(FrameContext& target)
 {
 	target.beginCommandRecording();
