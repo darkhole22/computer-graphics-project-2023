@@ -31,8 +31,6 @@ Walking around, you'll be able to find powerful *pick-ups*!
 
 ![Bomb Explosion](./assets/bomb-pickup.png)
 
-TODO Day-Night Cycle GIF
-
 ## :volcano: Vulture
 
 Vulture is our toy **Vulkan** game engine written on top of the famous [Vulkan Tutorial](https://vulkan-tutorial.com).
@@ -186,8 +184,6 @@ tween->loop(); // Makes the tween loop
 tween->addValueTweener(&gameObject.transform.scale, 5.0f, 1.0f) // Scales the object 5x over 1 second
 tween->addValueTweener(&gameObject.transform.scale, 1.0f, 1.0f) // Scales the object to its original size over 1 second
 ```
-
-TODO Tween Example + GIF 
 
 Tweens can be used to animate game objects in the world, to animate UIs or even to handle gameplay logic.
 
