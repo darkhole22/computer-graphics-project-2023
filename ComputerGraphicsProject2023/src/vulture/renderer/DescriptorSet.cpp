@@ -251,13 +251,13 @@ Ref<DescriptorSet> DescriptorPool::getDescriptorSet(Ref<DescriptorSetLayout> lay
 	if (shouldRecreate)
 		recreate();
 
-	Ref<DescriptorSet> descriprtorSet;
+	Ref<DescriptorSet> descriptorSet;
 
 	do
 	{
 		try
 		{
-			descriprtorSet = Ref<DescriptorSet>(new DescriptorSet(*this, layout, descriptorWrites));
+			descriptorSet = Ref<DescriptorSet>(new DescriptorSet(*this, layout, descriptorWrites));
 			break;
 		}
 		catch (const std::exception&)
@@ -266,9 +266,9 @@ Ref<DescriptorSet> DescriptorPool::getDescriptorSet(Ref<DescriptorSetLayout> lay
 		}
 	} while (true);
 
-	m_Sets.insert(descriprtorSet);
+	m_Sets.insert(descriptorSet);
 
-	return descriprtorSet;
+	return descriptorSet;
 }
 
 void DescriptorPool::cleanup()
