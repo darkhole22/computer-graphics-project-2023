@@ -1,10 +1,14 @@
 #pragma once
 #include "vulture/core/Application.h"
 #include "vulture/scene/Scene.h"
+#include "Tree.h"
 
 namespace game {
 
 using namespace vulture;
+
+constexpr f32 waterLevel = 0.249f;
+constexpr f32 rockLevel = 0.33f;
 
 struct TerrainVertexBufferObject
 {
@@ -27,6 +31,8 @@ public:
 private:
 	Scene* m_Scene = nullptr;
 	Terrain* m_Terrain;
+
+	Ref<Tree> m_Tree;
 
 	Ref<Texture> m_NoiseTexture;
 	Ref<TextureSampler> m_NoiseSampler;

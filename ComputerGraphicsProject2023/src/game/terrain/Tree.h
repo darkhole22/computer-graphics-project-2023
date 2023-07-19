@@ -1,8 +1,22 @@
-//
-// Created by michele on 7/19/23.
-//
+#pragma once
 
-#ifndef COMPUTER_GRAPHICS_PROJECT_2023_TREE_H
-#define COMPUTER_GRAPHICS_PROJECT_2023_TREE_H
+#include "vulture/scene/GameObject.h"
 
-#endif //COMPUTER_GRAPHICS_PROJECT_2023_TREE_H
+namespace game {
+
+using namespace vulture;
+
+class Tree
+{
+public:
+	Ref<GameObject> trunkGameObject;
+	Ref<GameObject> leavesGameObject;
+
+	explicit Tree();
+
+	void setPosition(glm::vec3 position);
+
+	~Tree();
+};
+
+} // namespace game

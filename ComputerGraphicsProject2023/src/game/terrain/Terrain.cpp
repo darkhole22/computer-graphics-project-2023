@@ -4,6 +4,7 @@
 #include "vulture/core/Input.h"
 
 #include "stb_perlin.h"
+#include "vulture/util/Random.h"
 
 namespace game {
 
@@ -169,6 +170,7 @@ TerrainChunk::TerrainChunk(Terrain* terrain, glm::vec2 position) :
 	m_Terrain(terrain)
 {
 	m_Scene = terrain->m_Scene;
+	m_Tree = makeRef<Tree>();
 
 	m_Uniform = Renderer::makeUniform<ModelBufferObject>();
 	glm::vec2 noiseSize = glm::vec2(1, 1) * terrain->m_Config.noiseScale * terrain->m_Config.chunkSize / NOISE_SCALE_MULTIPLIER;
@@ -206,6 +208,12 @@ void TerrainChunk::updateRenderingComponents(const Ref<Texture>& texture, glm::v
 		*m_Terrain->m_SandSampler, *m_Terrain->m_GrassSampler, *m_Terrain->m_RockSampler });
 
 	m_Object = m_Scene->addObject(m_Terrain->m_Pipeline, m_Terrain->m_Model, m_DescriptorSet);
+
+	glm::vec3 translation = glm::column(m_Uniform->model, 3);
+	auto offset = Random::nextAnnulusPoint(20.0f);
+
+	auto h = m_Terrain->getHeightAt(translation.x + offset.x, translation.z + offset.y);
+	m_Tree->setPosition(glm::vec3(translation.x + offset.x, h - 1.0f, translation.z + offset.y));
 }
 
 f32 noiseFunction(f32 x, f32 y)
