@@ -13,6 +13,7 @@ Skybox::Skybox(DescriptorPool& descriptorsPool) :
 	m_DSLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 	m_DSLayout->create();
 
+	// We disable depth testing to ensure that the skybox is always drawn behind every other object.
 	PipelineAdvancedConfig config{};
 	config.useDepthTesting = false;
 
