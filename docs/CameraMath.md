@@ -19,8 +19,8 @@ $\overrightarrow{front} = \|\overrightarrow{up} \times \overrightarrow{right}\|$
 
 Now we can compute the matrix for the change of basis:
 
-$M= \left[ \begin{array}{c|c|c}
-\overrightarrow{right} & \overrightarrow{up} & \overrightarrow{front} \end{array} \right]$
+$$M= \left[ \begin{array}{c|c|c}
+\overrightarrow{right} & \overrightarrow{up} & \overrightarrow{front} \end{array} \right]$$
 
 So given the translation in camera coordinates $\overrightarrow{t'}$ we compute the desired translation $\overrightarrow{t}$.
 
