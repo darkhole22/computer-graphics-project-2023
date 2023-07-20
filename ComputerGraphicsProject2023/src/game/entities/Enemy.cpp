@@ -4,13 +4,14 @@ namespace game {
 
 const String Enemy::s_ModelName = "hand-robot";
 const String Enemy::s_TextureName = "hand-robot";
-const String Enemy::s_EmissionTextureName = DEFAULT_EMISSION_TEXTURE_NAME;
+const String Enemy::s_EmissionTextureName = "hand-robot"; // DEFAULT_EMISSION_TEXTURE_NAME;
 const String Enemy::s_RoughnessTextureName = "hand-robot";
 
 Enemy::Enemy(Ref<GameObject> gameObject) : gameObject(gameObject)
 {
 	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.9f, 1.8f));
 	gameObject->transform->setScale(0.5f);
+	gameObject->setEmissionStrength(1.0f);
 
 	m_Movement = makeRef<MovementComponent>(gameObject->transform);
 

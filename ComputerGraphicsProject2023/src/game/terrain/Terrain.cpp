@@ -2,6 +2,7 @@
 
 #include "vulture/core/Logger.h"
 #include "vulture/core/Input.h"
+#include "vulture/util/Random.h"
 
 #include "stb_perlin.h"
 #include "vulture/util/Random.h"
@@ -15,11 +16,14 @@ static constexpr f32 NOISE_SCALE_MULTIPLIER = 100.0f;
 f32 noiseFunction(f32 x, f32 y);
 glm::vec4 noise(f32 x, f32 y);
 
+static i32 terrainNoiseSeed = 0;
+
 TerrainGenerationConfig TerrainGenerationConfig::defaultConfig{};
 
 Terrain::Terrain(const TerrainGenerationConfig& config) :
 	m_Config(config)
 {
+	terrainNoiseSeed = Random::nextInt();
 	initializeRenderingComponents();
 	initializeChunks();
 }
@@ -116,17 +120,23 @@ void Terrain::initializeRenderingComponents()
 	m_Scene = Application::getScene();
 
 	m_DescriptorSetLayout = makeRef<DescriptorSetLayout>();
+	// Camera Buffer Object
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	// Heightmap Texture
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS);
+	// TerrainBufferObject
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+	// TextureSamplers for the terrain levels
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 	m_DescriptorSetLayout->addBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+
 	m_DescriptorSetLayout->create();
 
 	m_Pipeline = m_Scene->makePipeline("res/shaders/Terrain_vert.spv", "res/shaders/Terrain_frag.spv", m_DescriptorSetLayout);
 
+	// Model is just a flat plane
 	m_Model = Model::getPlane(200, 200);
 	m_VertexUniform = Renderer::makeUniform<TerrainVertexBufferObject>();
 
@@ -218,7 +228,7 @@ void TerrainChunk::updateRenderingComponents(const Ref<Texture>& texture, glm::v
 
 f32 noiseFunction(f32 x, f32 y)
 {
-	f32 h = stb_perlin_noise3_seed(x, y, 0.0f, 0, 0, 0, 420);
+	f32 h = stb_perlin_noise3_seed(x, y, 0.0f, 0, 0, 0, terrainNoiseSeed);
 	h += stb_perlin_ridge_noise3(x, y, 0.0f, 2.0f, 0.5f, 1.0f, 4) * 0.5f;
 	h += 1.5f;
 	h /= 3.0f;
