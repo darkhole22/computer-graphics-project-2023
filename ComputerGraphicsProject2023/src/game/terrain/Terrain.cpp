@@ -218,11 +218,24 @@ void TerrainChunk::updateRenderingComponents(const Ref<Texture>& texture, glm::v
 
 	m_Object = m_Scene->addObject(m_Terrain->m_Pipeline, m_Terrain->m_Model, m_DescriptorSet);
 
-	glm::vec3 translation = glm::column(m_Uniform->model, 3);
-	auto offset = Random::nextAnnulusPoint(20.0f);
+	glm::vec3 chunkPosition = glm::column(m_Uniform->model, 3);
 
-	auto h = m_Terrain->getHeightAt(translation.x + offset.x, translation.z + offset.y);
-	m_Tree->setPosition(glm::vec3(translation.x + offset.x, h - 1.0f, translation.z + offset.y));
+	auto hashX = std::hash<f32>()(chunkPosition.x) ^ std::hash<f32>()(chunkPosition.z);
+	auto hashZ = hashX ^ 0x4269;
+
+	auto offsetX = (hashX % 1024) / 1024.0f * m_Terrain->m_Config.chunkSize;
+	auto offsetZ = (hashZ % 1024) / 1024.0f * m_Terrain->m_Config.chunkSize;
+
+	auto x = chunkPosition.x + offsetX;
+	auto z = chunkPosition.z + offsetZ;
+
+	auto y = m_Terrain->getHeightAt(x, z);
+	if (m_Terrain->isWater(x, z))
+	{
+		y -= 100.0f;
+	}
+
+	m_Tree->setPosition(glm::vec3(x, y - 1.0f, z));
 }
 
 f32 noiseFunction(f32 x, f32 y)
