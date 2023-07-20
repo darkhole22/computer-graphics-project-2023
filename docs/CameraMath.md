@@ -9,7 +9,7 @@ The objective is to translate the camera position by a given amount in camera co
 
 ![Camera Axis](./camera/camera_axis.png)
 
-First we obtain the normalized $\overrightarrow{up}$ and $\overrightarrow{dir}$ (direction) vectors.
+First, we obtain the normalized $\overrightarrow{up}$ and $\overrightarrow{dir}$ (direction) vectors.
 
 Then we compute the $\overrightarrow{right}$ and $\overrightarrow{front}$ vectors.
 
@@ -32,12 +32,12 @@ For reference see the `Camera::rotate` method.
 
 The objective is to compute the new $\overrightarrow{up'}$ and $\overrightarrow{dir'}$ (direction) vectors.
 
-First we compute the basis ($\overrightarrow{right} , \overrightarrow{up} , \overrightarrow{front}$) of the camera coordinate system in world coordinate as seen before.
+First, we compute the basis ($\overrightarrow{right} , \overrightarrow{up} , \overrightarrow{front}$) of the camera coordinate system in world coordinate as seen before.
 
 We need to compute $pitch$, $yaw$ and $roll$ given some constrain from the provided euclidean rotation:
 
 ### Pitch
-First we compute the old pitch between $\overrightarrow{front}$ and $\overrightarrow{dir}$.
+First, we compute the old pitch between $\overrightarrow{front}$ and $\overrightarrow{dir}$.
 
 ![Camera Rotation](./camera/camera_rotation.png)
 
@@ -59,7 +59,7 @@ So finally we can compute the $pitch$ by the inverse function of the sine:
 
 $pitch = \sin^{-1} (\sin (pitch))$.
 
-> **Note** that the inverse function of the cos cannot be used because its co-domain is entirely positive. That is not acceptable because we may kneed negative pitch.
+> **Note** that the inverse function of the cos cannot be used because its co-domain is entirely positive. That is not acceptable because we may need a negative pitch.
 
 Now e can compute the new $pitch$ by adding $\Delta pitch$ and clamping the result.
 
