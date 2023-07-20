@@ -2,6 +2,7 @@
 #include "vulture/core/Application.h"
 #include "vulture/scene/Scene.h"
 #include "Tree.h"
+#include "Rock.h"
 
 namespace game {
 
@@ -33,6 +34,7 @@ private:
 	Terrain* m_Terrain;
 
 	Ref<Tree> m_Tree;
+	Ref<Rock> m_Rock;
 
 	Ref<Texture> m_NoiseTexture;
 	Ref<TextureSampler> m_NoiseSampler;
@@ -42,6 +44,8 @@ private:
 	ObjectHandle m_Object;
 
 	void updateRenderingComponents(const Ref<Texture>& texture, glm::vec2 position);
+
+	glm::vec3 getDecalPosition(size_t seed);
 };
 
 struct TerrainGenerationConfig

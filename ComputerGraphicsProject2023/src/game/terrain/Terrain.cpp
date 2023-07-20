@@ -180,6 +180,7 @@ TerrainChunk::TerrainChunk(Terrain* terrain, glm::vec2 position) :
 {
 	m_Scene = terrain->m_Scene;
 	m_Tree = makeRef<Tree>();
+	m_Rock = makeRef<Rock>();
 
 	m_Uniform = Renderer::makeUniform<ModelBufferObject>();
 	glm::vec2 noiseSize = glm::vec2(1, 1) * terrain->m_Config.noiseScale * terrain->m_Config.chunkSize / NOISE_SCALE_MULTIPLIER;
@@ -218,24 +219,32 @@ void TerrainChunk::updateRenderingComponents(const Ref<Texture>& texture, glm::v
 
 	m_Object = m_Scene->addObject(m_Terrain->m_Pipeline, m_Terrain->m_Model, m_DescriptorSet);
 
+	auto treePosition = getDecalPosition(0x4269);
+	treePosition.y -= 1.0f;
+	m_Tree->setPosition(treePosition);
+
+	auto rockPosition = getDecalPosition(0x1172);
+	rockPosition.y += 0.2f;
+	m_Rock->setPosition(rockPosition);
+}
+
+glm::vec3 TerrainChunk::getDecalPosition(size_t seed)
+{
 	glm::vec3 chunkPosition = glm::column(m_Uniform->model, 3);
 
-	auto hashX = std::hash<f32>()(chunkPosition.x) ^ std::hash<f32>()(chunkPosition.z);
-	auto hashZ = hashX ^ 0x4269;
+	auto hashX = std::hash<f32>()(chunkPosition.x) ^ std::hash<f32>()(chunkPosition.z) ^ seed;
+	auto hashZ = hashX ^ seed;
 
-	auto offsetX = (hashX % 1024ULL) / 1024.0f * m_Terrain->m_Config.chunkSize;
-	auto offsetZ = (hashZ % 1024ULL) / 1024.0f * m_Terrain->m_Config.chunkSize;
+	auto offsetX = (hashX % 1024) / 1024.0f * m_Terrain->m_Config.chunkSize;
+	auto offsetZ = (hashZ % 1024) / 1024.0f * m_Terrain->m_Config.chunkSize;
 
 	auto x = chunkPosition.x + offsetX;
 	auto z = chunkPosition.z + offsetZ;
-
 	auto y = m_Terrain->getHeightAt(x, z);
-	if (m_Terrain->isWater(x, z))
-	{
-		y -= 100.0f;
-	}
 
-	m_Tree->setPosition(glm::vec3(x, y - 1.0f, z));
+	if (m_Terrain->isWater(x, z)) y -= 100.0f;
+
+	return {x, y, z};
 }
 
 f32 noiseFunction(f32 x, f32 y)
