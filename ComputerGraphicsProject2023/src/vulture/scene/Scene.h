@@ -63,9 +63,10 @@ public:
 	 * @param vertexShader The name of the vertex shader to use for rendering.
 	 * @param fragmentShader The  name of the fragment shader to use for rendering.
 	 * @param descriptorSetLayouts The list of descriptor set layouts associated with the rendering pipeline.
+	 * @param config Advanced configurations of the pipeline
 	 */
 	SceneObjectList(const String& vertexShader, const String& fragmentShader,
-					const std::vector<DescriptorSetLayout*>& descriptorSetLayouts);
+					const std::vector<DescriptorSetLayout*>& descriptorSetLayouts, PipelineAdvancedConfig config);
 
 	/**
 	 * @brief Gets the pipeline associated with the scene object list.
@@ -132,11 +133,27 @@ public:
 	void addObject(Ref<GameObject> obj);
 
 	/**
+	 * @brief Adds a game object to the scene using the default Phong pipeline.
+	 *
+	 * @param obj The reference to the game object to be added.
+	 * @param pipelineHandle Pipeline of the object to be added
+	 */
+	void addObject(Ref<GameObject> obj, PipelineHandle pipelineHandle);
+
+	/**
 	 * @brief Removes a game object to the scene.
 	 *
 	 * @param obj The reference to the game object to be removed.
 	 */
 	void removeObject(Ref<GameObject> obj);
+
+	/**
+	 * @brief Removes a game object to the scene.
+	 *
+	 * @param obj The reference to the game object to be removed.
+	 * @param pipelineHandle Pipeline of the object to be removed
+	 */
+	void removeObject(Ref<GameObject> obj, PipelineHandle pipelineHandle);
 
 	/**
 	 * @brief Adds a new object to the scene using a custom pipeline.
@@ -162,9 +179,10 @@ public:
 	 * @param vertexShader The name of the vertex shader to use in the pipeline.
 	 * @param fragmentShader The name of the fragment shader to use in the pipeline.
 	 * @param descriptorSetLayout The descriptor set layout associated with the pipeline.
+	 * @param config Advanced configurations of the pipeline
 	 * @return The handle of the newly created rendering pipeline.
 	 */
-	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout);
+	PipelineHandle makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout, PipelineAdvancedConfig config = PipelineAdvancedConfig::defaultConfig);
 
 	/**
 	* @brief Set the skybox texture for the scene.
@@ -241,6 +259,8 @@ public:
 	 * @return A pointer to the descriptor pool used in the scene.
 	 */
 	DescriptorPool* getDescriptorPool() { return &m_DescriptorsPool; }
+
+	inline Ref<DescriptorSetLayout> getDefaultDSL() { return m_GameObjectDSL; }
 
 	~Scene() = default;
 

@@ -7,15 +7,15 @@ namespace game {
 
 using namespace vulture;
 
-constexpr f32 waterLevel = 0.249f;
-constexpr f32 rockLevel = 0.33f;
+constexpr f32 WATER_LEVEL = 0.249f;
+constexpr f32 ROCK_LEVEL = 0.33f;
 
 struct TerrainVertexBufferObject
 {
 	alignas(4) f32 scale = 50.0f;
-	alignas(4) f32 waterLevel = 0.249f;
+	alignas(4) f32 waterLevel = WATER_LEVEL;
 	alignas(4) f32 sandWidth = 0.0005f;
-	alignas(4) f32 rockLevel = 0.33f;
+	alignas(4) f32 rockLevel = ROCK_LEVEL;
 };
 
 class Terrain;

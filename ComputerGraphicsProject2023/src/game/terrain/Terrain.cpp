@@ -5,7 +5,6 @@
 #include "vulture/util/Random.h"
 
 #include "stb_perlin.h"
-#include "vulture/util/Random.h"
 
 namespace game {
 
