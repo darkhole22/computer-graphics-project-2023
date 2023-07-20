@@ -22,7 +22,7 @@ TerrainGenerationConfig TerrainGenerationConfig::defaultConfig{};
 Terrain::Terrain(const TerrainGenerationConfig& config) :
 	m_Config(config)
 {
-	terrainNoiseSeed = Random::next<i32>();
+	terrainNoiseSeed = Random::nextInt();
 	initializeRenderingComponents();
 	initializeChunks();
 }
