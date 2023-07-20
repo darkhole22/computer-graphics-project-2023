@@ -1,17 +1,22 @@
 #pragma once
 #include "vulture/core/Application.h"
 #include "vulture/scene/Scene.h"
+#include "Tree.h"
+#include "Rock.h"
 
 namespace game {
 
 using namespace vulture;
 
+constexpr f32 WATER_LEVEL = 0.249f;
+constexpr f32 ROCK_LEVEL = 0.33f;
+
 struct TerrainVertexBufferObject
 {
 	alignas(4) f32 scale = 50.0f;
-	alignas(4) f32 waterLevel = 0.249f;
+	alignas(4) f32 waterLevel = WATER_LEVEL;
 	alignas(4) f32 sandWidth = 0.0005f;
-	alignas(4) f32 rockLevel = 0.33f;
+	alignas(4) f32 rockLevel = ROCK_LEVEL;
 };
 
 class Terrain;
@@ -28,6 +33,9 @@ private:
 	Scene* m_Scene = nullptr;
 	Terrain* m_Terrain;
 
+	Ref<Tree> m_Tree;
+	Ref<Rock> m_Rock;
+
 	Ref<Texture> m_NoiseTexture;
 	Ref<TextureSampler> m_NoiseSampler;
 
@@ -36,6 +44,8 @@ private:
 	ObjectHandle m_Object;
 
 	void updateRenderingComponents(const Ref<Texture>& texture, glm::vec2 position);
+
+	glm::vec3 getDecalPosition(size_t seed);
 };
 
 struct TerrainGenerationConfig

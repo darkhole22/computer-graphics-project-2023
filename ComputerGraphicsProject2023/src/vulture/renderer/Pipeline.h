@@ -84,6 +84,7 @@ struct PipelineAdvancedConfig
 	VkCompareOp compareOperator = VK_COMPARE_OP_LESS;
 	bool useAlpha = false;
 	bool useDepthTesting = true;
+	VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
 
 	static const PipelineAdvancedConfig defaultConfig;
 };

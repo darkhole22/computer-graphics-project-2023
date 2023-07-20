@@ -18,8 +18,11 @@ layout(location = 0) out vec4 outColor;
 const float width = 0.5;
 
 void main() {
+    // Distance from the center of the closest line
     float dist = 1.0 - texture(fontAtlas, fragTexCoord).a;
+    // Checks if the fragment is close enough to the closest line
     float alpha = 1.0 - smoothstep(tbo.width, tbo.width + tbo.edge, dist);
+    // Checks if the fragment is close enough to the closest line + border
     float border = 1.0 - smoothstep(tbo.borderWidth, tbo.borderWidth + tbo.edge, dist) - alpha;
     
     outColor = mix(vec4(tbo.color.rgb, alpha), vec4(tbo.borderColor.rgb, border), border) * tbo.visibility;

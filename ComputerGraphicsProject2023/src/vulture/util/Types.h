@@ -8,6 +8,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/vector_angle.hpp>
+#include <glm/gtc/matrix_access.hpp>
 
 namespace vulture {
 

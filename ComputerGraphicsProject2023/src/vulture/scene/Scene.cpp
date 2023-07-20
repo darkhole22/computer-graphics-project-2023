@@ -10,8 +10,9 @@ RenderableObject::RenderableObject(Ref<Model> model, Ref<DescriptorSet> descript
 {}
 
 SceneObjectList::SceneObjectList(const String& vertexShader,
-								 const String& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts) :
-	m_Pipeline(new Pipeline(Renderer::getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout()))
+								 const String& fragmentShader, const std::vector<DescriptorSetLayout*>& descriptorSetLayouts,
+								 PipelineAdvancedConfig config) :
+	m_Pipeline(new Pipeline(Renderer::getRenderPass(), vertexShader, fragmentShader, descriptorSetLayouts, Renderer::getVertexLayout(), config))
 {}
 
 void SceneObjectList::addObject(ObjectHandle handle, const RenderableObject& obj)
@@ -135,7 +136,7 @@ void Scene::render(FrameContext target, f32 dt)
 	// Frame Context goes out of scope here and is destroyed, causing the SwapChain to submit.
 }
 
-PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout)
+PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fragmentShader, Ref<DescriptorSetLayout> descriptorSetLayout, PipelineAdvancedConfig config)
 {
 	PipelineHandle handle = m_NextPipelineHandle++;
 
@@ -144,7 +145,7 @@ PipelineHandle Scene::makePipeline(const String& vertexShader, const String& fra
 	layouts.push_back(m_Camera.getDescriptorSetLayout());
 	layouts.push_back(m_World.getDescriptorSetLayout());
 
-	m_ObjectLists.insert({ handle, SceneObjectList(vertexShader, fragmentShader, layouts) });
+	m_ObjectLists.insert({ handle, SceneObjectList(vertexShader, fragmentShader, layouts, config) });
 
 	return handle;
 }
@@ -177,17 +178,27 @@ void Scene::removeObject(PipelineHandle pipeline, ObjectHandle obj)
 
 void Scene::addObject(Ref<GameObject> obj)
 {
-	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
+	addObject(obj, m_GameObjectPipeline);
+}
 
-	p.addObject(
-		obj->m_Handle,
-		RenderableObject(
-			obj->m_Model,
-			m_DescriptorsPool.getDescriptorSet(
-					m_GameObjectDSL,
-					{obj->m_ModelUniform, *obj->m_TextureSampler, *obj->m_EmissionTextureSampler, *obj->m_RoughnessTextureSampler, obj->m_ObjectUniform }
+void Scene::addObject(Ref<GameObject> obj, PipelineHandle pipelineHandle)
+{
+	auto p = m_ObjectLists.find(pipelineHandle);
+	if (p == m_ObjectLists.end())
+	{
+		VUWARN("Trying to add an object to an invalid pipeline (%li)!", pipelineHandle);
+		return;
+	}
+
+	p->second.addObject(
+			obj->m_Handle,
+			RenderableObject(
+					obj->m_Model,
+					m_DescriptorsPool.getDescriptorSet(
+							m_GameObjectDSL,
+							{obj->m_ModelUniform, *obj->m_TextureSampler, *obj->m_EmissionTextureSampler, *obj->m_RoughnessTextureSampler, obj->m_ObjectUniform }
+					)
 			)
-		)
 	);
 	m_GameObjects[obj->m_Handle] = obj;
 
@@ -196,13 +207,23 @@ void Scene::addObject(Ref<GameObject> obj)
 
 void Scene::removeObject(Ref<GameObject> obj)
 {
+	removeObject(obj, m_GameObjectPipeline);
+}
+
+void Scene::removeObject(Ref<GameObject> obj, PipelineHandle pipelineHandle)
+{
 	auto it = m_GameObjects.find(obj->m_Handle);
 	if (it == m_GameObjects.end()) return;
 	m_GameObjects.erase(it);
 
-	auto& p = m_ObjectLists.at(m_GameObjectPipeline);
-	p.removeObject(obj->m_Handle);
+	auto p = m_ObjectLists.find(pipelineHandle);
+	if (p == m_ObjectLists.end())
+	{
+		VUWARN("Trying to remove an object from an invalid pipeline (%li)!", pipelineHandle);
+		return;
+	}
 
+	p->second.removeObject(obj->m_Handle);
 	setModified();
 }
 

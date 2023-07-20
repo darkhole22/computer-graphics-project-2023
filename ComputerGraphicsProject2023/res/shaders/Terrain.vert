@@ -27,12 +27,15 @@ layout(location = 1) out vec2 fragTexCoord;
 layout(location = 2) out vec3 fragPos;
 
 void main() {
+    // Get heightmap value
     vec4 noise = texture(noiseSampler, inTexCoord);
-    
+
+    // Flattens at water level
     float h0 = clamp(noise.r, tbo.waterLevel, 1.0) * tbo.scale;
     float hx = clamp(noise.g, tbo.waterLevel, 1.0) * tbo.scale;
     float hz = clamp(noise.b, tbo.waterLevel, 1.0) * tbo.scale;
-    
+
+    // Sets actual coord position
     vec4 position = vec4(inPosition, 1.0);
     position.y += h0;
     position = cbo.proj * cbo.view * mbo.model * position;
