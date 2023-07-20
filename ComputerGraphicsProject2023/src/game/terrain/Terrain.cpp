@@ -223,8 +223,8 @@ void TerrainChunk::updateRenderingComponents(const Ref<Texture>& texture, glm::v
 	auto hashX = std::hash<f32>()(chunkPosition.x) ^ std::hash<f32>()(chunkPosition.z);
 	auto hashZ = hashX ^ 0x4269;
 
-	auto offsetX = (hashX % 1024) / 1024.0f * m_Terrain->m_Config.chunkSize;
-	auto offsetZ = (hashZ % 1024) / 1024.0f * m_Terrain->m_Config.chunkSize;
+	auto offsetX = (hashX % 1024ULL) / 1024.0f * m_Terrain->m_Config.chunkSize;
+	auto offsetZ = (hashZ % 1024ULL) / 1024.0f * m_Terrain->m_Config.chunkSize;
 
 	auto x = chunkPosition.x + offsetX;
 	auto z = chunkPosition.z + offsetZ;
