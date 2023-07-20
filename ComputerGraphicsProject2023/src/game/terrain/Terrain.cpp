@@ -2,6 +2,7 @@
 
 #include "vulture/core/Logger.h"
 #include "vulture/core/Input.h"
+#include "vulture/util/Random.h"
 
 #include "stb_perlin.h"
 
@@ -14,11 +15,14 @@ static constexpr f32 NOISE_SCALE_MULTIPLIER = 100.0f;
 f32 noiseFunction(f32 x, f32 y);
 glm::vec4 noise(f32 x, f32 y);
 
+static i32 terrainNoiseSeed = 0;
+
 TerrainGenerationConfig TerrainGenerationConfig::defaultConfig{};
 
 Terrain::Terrain(const TerrainGenerationConfig& config) :
 	m_Config(config)
 {
+	terrainNoiseSeed = Random::next<i32>();
 	initializeRenderingComponents();
 	initializeChunks();
 }
@@ -216,7 +220,7 @@ void TerrainChunk::updateRenderingComponents(const Ref<Texture>& texture, glm::v
 
 f32 noiseFunction(f32 x, f32 y)
 {
-	f32 h = stb_perlin_noise3_seed(x, y, 0.0f, 0, 0, 0, 420);
+	f32 h = stb_perlin_noise3_seed(x, y, 0.0f, 0, 0, 0, terrainNoiseSeed);
 	h += stb_perlin_ridge_noise3(x, y, 0.0f, 2.0f, 0.5f, 1.0f, 4) * 0.5f;
 	h += 1.5f;
 	h /= 3.0f;
