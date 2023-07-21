@@ -27,8 +27,12 @@ UIHandler::UIHandler(DescriptorPool& descriptorsPool)
 	m_ScreenDescriptorSet = m_DescriptorPool->getDescriptorSet(m_ScreenDSLayout, { m_ScreenUniform });
 
 	PipelineAdvancedConfig pipelineConfig{};
+	// We want the HUD elements to be drawn on top of everything else, regardless of the depth value of the new fragment.
+	// By specifying VK_COMPARE_OP_ALWAYS, we effectively disable depth testing for the HUD,
+	// ensuring that it is always drawn on top of other geometry.
 	pipelineConfig.compareOperator = VK_COMPARE_OP_ALWAYS;
-	pipelineConfig.useAlpha = true;
+	// Enable color blending to allow characters to be drawn correctly over other fragments.
+	pipelineConfig.useAlpha = false;
 
 	auto vertexLayout = VertexLayout(sizeof(UIVertex), {
 		{VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(UIVertex, position))},
