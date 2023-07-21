@@ -255,11 +255,11 @@ Texture::Texture(const String& path)
 	stbi_image_free(pixels);
 }
 
-void Texture::loadFromPixelArray(u32 width, u32 heigth, u8* pixels, bool isCubeMap)
+void Texture::loadFromPixelArray(u32 width, u32 height, u8* pixels, bool isCubeMap)
 {
-	VkDeviceSize imageSize = width * 4LL * heigth * (isCubeMap ? 6 : 1);
+	VkDeviceSize imageSize = width * 4LL * height * (isCubeMap ? 6 : 1);
 	if (!isCubeMap)
-		m_MipLevels = static_cast<u32>(std::floor(std::log2(std::max(width, heigth)))) + 1;
+		m_MipLevels = static_cast<u32>(std::floor(std::log2(std::max(width, height)))) + 1;
 	else
 		m_MipLevels = 1;
 
@@ -275,7 +275,7 @@ void Texture::loadFromPixelArray(u32 width, u32 heigth, u8* pixels, bool isCubeM
 		info.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
 	}
 
-	m_Image = Image(width, heigth,
+	m_Image = Image(width, height,
 					VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 					info);
 
@@ -288,15 +288,15 @@ void Texture::loadFromPixelArray(u32 width, u32 heigth, u8* pixels, bool isCubeM
 		m_Image.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, info);
 }
 
-Texture::Texture(u32 width, u32 heigth, u8* pixels, bool isCubeMap)
+Texture::Texture(u32 width, u32 height, u8* pixels, bool isCubeMap)
 {
-	loadFromPixelArray(width, heigth, pixels, isCubeMap);
+	loadFromPixelArray(width, height, pixels, isCubeMap);
 }
 
-Texture::Texture(u32 width, u32 heigth, f32* pixels)
+Texture::Texture(u32 width, u32 height, f32* pixels)
 {
-	VkDeviceSize imageSize = width * 4LL * heigth * sizeof(f32);
-	m_MipLevels = static_cast<u32>(std::floor(std::log2(std::max(width, heigth)))) + 1;
+	VkDeviceSize imageSize = width * 4LL * height * sizeof(f32);
+	m_MipLevels = static_cast<u32>(std::floor(std::log2(std::max(width, height)))) + 1;
 
 	Buffer stagingBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	stagingBuffer.map(pixels);
@@ -305,7 +305,7 @@ Texture::Texture(u32 width, u32 heigth, f32* pixels)
 	info.mipLevels = m_MipLevels;
 	info.format = VK_FORMAT_R32G32B32A32_SFLOAT;
 
-	m_Image = Image(width, heigth,
+	m_Image = Image(width, height,
 					VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 					info);
 

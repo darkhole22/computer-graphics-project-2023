@@ -22,3 +22,5 @@ bin-int/
 **/Makefile
 
 *.log
+
+ComputerGraphicsProject2023/*.natvis
