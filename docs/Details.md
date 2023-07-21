@@ -70,4 +70,13 @@ Moreover, some uniform buffers are shared among multiple shaders:
 
 ## Record Draw calls in Command Buffer
 
+Commands Recording is handled by the [FrameContext](../ComputerGraphicsProject2023/src/vulture/renderer/FrameContext.h) class. It provides methods to bind necessary parameters and draw models. When destroyed, a`FrameContext` will cause the *SwapChain* to submit the current frame.
+
+A `FrameContext` is managed by the `Scene` class, during its `Scene::render` method ([Go to Implementation](../ComputerGraphicsProject2023/src/vulture/scene/Scene.cpp)).
+
+
+
+
+
+
 ## Object Transforms (Matrices)
