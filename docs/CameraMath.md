@@ -7,7 +7,7 @@ For reference see the `Camera::translate` method.
 
 The objective is to translate the camera position by a given amount in camera coordinates.
 
-![Camera Axis](./camera/camera_axis.png)
+![Camera Axis](../assets/camera_axis.png)
 
 First, we obtain the normalized $\overrightarrow{up}$ and $\overrightarrow{dir}$ (direction) vectors.
 
@@ -39,7 +39,7 @@ We need to compute $pitch$, $yaw$ and $roll$ given some constrain from the provi
 ### Pitch
 First, we compute the old pitch between $\overrightarrow{front}$ and $\overrightarrow{dir}$.
 
-![Camera Rotation](./camera/camera_rotation.png)
+![Camera Rotation](../assets/camera_rotation.png)
 
 By the definition of the cross product:
 
