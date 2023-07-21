@@ -2,18 +2,6 @@
 
 layout(set = 0, binding = 1) uniform sampler2D texSampler;
 
-layout(set = 2, binding = 0) uniform WorldBufferObject {
-    vec4 pointLightPosition;
-    vec4 pointLightColor;
-    float pointLightDecay;
-    float pointLightMaxRange;
-
-    vec4 directLightDirection;
-    vec4 directLightColor;
-
-    vec4 cameraPosition;
-} wubo;
-
 layout(set = 0, binding = 2) uniform TerrainBufferObject {
     float scale;
     float waterLevel;
@@ -25,6 +13,18 @@ layout(set = 0, binding = 3) uniform sampler2D waterSampler;
 layout(set = 0, binding = 4) uniform sampler2D sandSampler;
 layout(set = 0, binding = 5) uniform sampler2D grassSampler;
 layout(set = 0, binding = 6) uniform sampler2D rockSampler;
+
+layout(set = 2, binding = 0) uniform WorldBufferObject {
+    vec4 pointLightPosition;
+    vec4 pointLightColor;
+    float pointLightDecay;
+    float pointLightMaxRange;
+
+    vec4 directLightDirection;
+    vec4 directLightColor;
+
+    vec4 cameraPosition;
+} wubo;
 
 layout(location = 0) in vec3 fragNorm;
 layout(location = 1) in vec2 fragTexCoord;

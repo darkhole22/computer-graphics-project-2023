@@ -1,14 +1,14 @@
 #version 450
 
-layout(set = 1, binding = 0) uniform ScreenBufferObject {
-    float width;
-    float height;
-} sbo;
-
 layout(set = 0, binding = 1) uniform TextVertexBufferObject {
     vec2 position;
     float scale;
 } tbo;
+
+layout(set = 1, binding = 0) uniform ScreenBufferObject {
+    float width;
+    float height;
+} sbo;
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec2 inTexCoord;

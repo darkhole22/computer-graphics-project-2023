@@ -32,7 +32,7 @@ UIHandler::UIHandler(DescriptorPool& descriptorsPool)
 	// ensuring that it is always drawn on top of other geometry.
 	pipelineConfig.compareOperator = VK_COMPARE_OP_ALWAYS;
 	// Enable color blending to allow characters to be drawn correctly over other fragments.
-	pipelineConfig.useAlpha = false;
+	pipelineConfig.useAlpha = true;
 
 	auto vertexLayout = VertexLayout(sizeof(UIVertex), {
 		{VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(UIVertex, position))},
