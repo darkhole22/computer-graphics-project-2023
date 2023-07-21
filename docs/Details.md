@@ -74,9 +74,11 @@ Commands Recording is handled by the [FrameContext](../ComputerGraphicsProject20
 
 A `FrameContext` is managed by the `Scene` class, during its `Scene::render` method ([Go to Implementation](../ComputerGraphicsProject2023/src/vulture/scene/Scene.cpp)).
 
+## Matrix Transforms
 
+GameObjects rely on the [vulture::Transform](../ComputerGraphicsProject2023/src/vulture/util/Transform.h) class to handle their World Matrix transformations.
+Some objects also must undergo transformations in their local space, and that is done via the [MovementComponent](../ComputerGraphicsProject2023/src/game/components/MovementComponent.h).
 
+The [vulture::Camera](../ComputerGraphicsProject2023/src/vulture/scene/Camera.h) class manages its transformations in a particular way, detailed in [this document](CameraMath.md).
 
-
-
-## Object Transforms (Matrices)
+**Terrain** also handles its matrix transformations autonomously.
