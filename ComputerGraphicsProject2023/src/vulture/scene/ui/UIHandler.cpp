@@ -48,7 +48,7 @@ UIHandler::UIHandler(DescriptorPool& descriptorsPool)
 
 	m_Font = Font::getDefault();
 
-	UIVertex imageVertecies[4] = {
+	UIVertex imageVertices[4] = {
 		{ {0, 0}, {0, 0} },
 		{ {1, 0}, {1, 0} },
 		{ {0, 1}, {0, 1} },
@@ -59,13 +59,13 @@ UIHandler::UIHandler(DescriptorPool& descriptorsPool)
 	Buffer m_ImageVertexStagingBuffer = Buffer(
 		vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	m_ImageVertexStagingBuffer.map(imageVertecies);
+	m_ImageVertexStagingBuffer.map(imageVertices);
 	m_ImageVertexBuffer = Buffer(
 		vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	m_ImageVertexStagingBuffer.copyToBuffer(vertexBufferSize, m_ImageVertexBuffer);
 
-	u32 imageIndecies[6] = {
+	u32 imageIndices[6] = {
 		0, 2, 1,
 		3, 1, 2
 	};
@@ -74,7 +74,7 @@ UIHandler::UIHandler(DescriptorPool& descriptorsPool)
 	Buffer m_ImageIndexStagingBuffer = Buffer(
 		indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	m_ImageIndexStagingBuffer.map(imageIndecies);
+	m_ImageIndexStagingBuffer.map(imageIndices);
 	m_ImageIndexBuffer = Buffer(
 		indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);

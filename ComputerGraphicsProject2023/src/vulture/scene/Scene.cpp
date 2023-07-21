@@ -103,17 +103,19 @@ void Scene::render(FrameContext target, f32 dt)
 	m_Camera.m_AspectRatio = aspectRatio;
 	m_Camera.update(dt);
 
-	// Update UI
-	m_UIHandler.m_ScreenUniform->width = static_cast<f32>(width);
-	m_UIHandler.m_ScreenUniform->height = static_cast<f32>(height);
-	m_UIHandler.update(dt);
+	// Update collision engine
+	m_CollisionEngine.update(dt);
 
 	// Tick tweens and timers
 	stepUtil(m_Tweens, dt, m_TweenLoopFlag);
 	stepUtil(m_Timers, dt, m_TimersLoopFlag);
 
-	// Update collision engine
-	m_CollisionEngine.update(dt);
+	// Update UI
+	// UI has to be modified after everything else to ensure
+	// correct text centering and repositioning.
+	m_UIHandler.m_ScreenUniform->width = static_cast<f32>(width);
+	m_UIHandler.m_ScreenUniform->height = static_cast<f32>(height);
+	m_UIHandler.update(dt);
 
 	if (m_FrameModified[index])
 	{

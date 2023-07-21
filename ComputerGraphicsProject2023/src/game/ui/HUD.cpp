@@ -20,6 +20,8 @@ HUD::HUD()
 		centerElement(m_NotificationSubtitle, 0.0f, -200.0f + m_NotificationTitle->getHeight());
 
 		centerElement(m_Crosshair);
+
+		if (m_LoadingScreenTitle) centerElement(m_LoadingScreenTitle);
 	});
 
 	EventBus::addCallback([this](HealthUpdated e) { onHealthUpdated(e); });
@@ -119,9 +121,6 @@ HUD::HUD()
 	m_NotificationTitle = m_UIHandler->makeText("Notification Title");
 	m_NotificationSubtitle = m_UIHandler->makeText("Notification Subtitle");
 
-	centerElement(m_NotificationTitle, 0.0f, -200.0f);
-	centerElement(m_NotificationSubtitle, 0.0f, -200.0f + m_NotificationTitle->getHeight());
-
 	m_NotificationTitle->setStroke(0.6f);
 	m_NotificationTitle->setVisible(false);
 	m_NotificationSubtitle->setVisible(false);
@@ -169,12 +168,12 @@ void HUD::showNotification(String title, String subtitle)
 	m_NotificationTitle->setText(title);
 	m_NotificationSubtitle->setText(subtitle);
 
-	m_NotificationTitle->setVisible(true);
-	m_NotificationSubtitle->setVisible(true);
-
 	Application::getScene()->callLater([this]() {
 		centerElement(m_NotificationTitle, 0.0f, -200.0f);
 		centerElement(m_NotificationSubtitle, 0.0f, -200.0f + m_NotificationTitle->getHeight());
+
+		m_NotificationTitle->setVisible(true);
+		m_NotificationSubtitle->setVisible(true);
 	});
 
 	Application::getScene()->makeTimer(1.0f)->addCallback([this](TimerTimeoutEvent) {
