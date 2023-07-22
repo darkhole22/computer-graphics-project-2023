@@ -87,9 +87,7 @@ Player::Player(Ref<Terrain> terrain) :
 
 void Player::update(f32 dt)
 {
-	if (m_Stats.dashesLeft > 0 &&
-		m_Stats.dashSpeed == 1.0f &&
-		Input::isActionJustPressed("DASH"))
+	if (m_Stats.dashesLeft > 0 && m_Stats.dashSpeed == 1.0f && Input::isActionJustPressed("DASH"))
 	{
 		m_Stats.dashSpeed = m_Stats.maxDashSpeed;
 		m_Invincible = true;
@@ -122,6 +120,7 @@ void Player::update(f32 dt)
 	{
 		m_Transform->translate(-glm::vec3(slope.x, 0, slope.y) * c_SlopeSpeed * dt);
 	}
+
 	pos = m_Transform->getPosition();
 	m_Transform->setPosition(pos.x, m_Terrain->getHeightAt(pos.x, pos.z) +
 									m_Terrain->isWater(pos.x, pos.z) * m_BobbingHeight, pos.z);

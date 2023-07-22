@@ -81,6 +81,7 @@ private:
  */
 struct PipelineAdvancedConfig
 {
+	// Comparison operator for depth, stencil, and sampler operations.
 	VkCompareOp compareOperator = VK_COMPARE_OP_LESS;
 	bool useAlpha = false;
 	bool useDepthTesting = true;

@@ -143,8 +143,12 @@ Pipeline::Pipeline(
 	multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
 	multisampling.alphaToOneEnable = VK_FALSE;		// Optional
 
+
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
+	// blendEnable controls whether blending is enabled for the corresponding color attachment.
+	// If blending is not enabled, the source fragment’s color for that attachment is passed through unmodified.
 	if (config.useAlpha)
 	{
 		colorBlendAttachment.blendEnable = VK_TRUE;

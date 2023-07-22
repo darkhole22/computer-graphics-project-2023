@@ -110,9 +110,9 @@ static bool loadModelFromObj(std::vector<Vertex>& vertices, std::vector<u32>& in
 		return false;
 	}
 
-	std::unordered_map < Vertex, u32, VertexHash, decltype([](const Vertex& v1, const Vertex& v2) -> bool {
+	std::unordered_map <Vertex, u32, VertexHash, decltype([](const Vertex& v1, const Vertex& v2) -> bool {
 		return v1.pos == v2.pos && v1.norm == v2.norm && v1.texCoord == v2.texCoord;
-	}) > uniqueVertices{};
+	})> uniqueVertices{};
 
 #ifdef VU_LOGGER_INFO_ENABLED
 	u32 totalVertexCount = 0;

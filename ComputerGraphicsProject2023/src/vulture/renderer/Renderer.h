@@ -93,7 +93,7 @@ public:
 	template <class T> static inline Uniform<T> makeUniform() { return Uniform<T>(getImageCount()); }
 
 	/**
-	 * @brief Gets the VertexLayout used by the Renderer.
+	 * @brief Gets the default VertexLayout used by the Renderer .
 	 *
 	 * @return The VertexLayout associated with the Renderer.
 	 */
