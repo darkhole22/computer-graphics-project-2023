@@ -14,8 +14,8 @@ Tree::Tree()
 			"res/shaders/Phong_vert.spv", "res/shaders/Phong_frag.spv",
 			m_Scene->getDefaultDSL(), config);
 
-	m_TrunkGameObject = makeRef<GameObject>("tree-trunk", "tree-trunk");
-	m_LeavesGameObject = makeRef<GameObject>("tree-leaves", "tree-leaves");
+	m_TrunkGameObject = makeRef<GameObject>("tree-trunk", "tree-trunk", DEFAULT_EMISSION_TEXTURE_NAME, "rough");
+	m_LeavesGameObject = makeRef<GameObject>("tree-leaves", "tree-leaves", DEFAULT_EMISSION_TEXTURE_NAME, "rough");
 
 	m_TrunkGameObject->transform->setScale(0.05f);
 	m_LeavesGameObject->transform->setScale(0.05f);
