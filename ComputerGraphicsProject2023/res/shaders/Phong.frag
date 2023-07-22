@@ -49,6 +49,8 @@ vec3 pointLightModel(vec3 lightColor, vec3 lightPosition, vec3 fragPosition, flo
 void main() {
     vec3 Norm = normalize(fragNorm);
     vec3 CameraDir = normalize(wubo.cameraPosition.xyz - fragPos);
+
+    // We only read the R channel of the roughness textures
     float roughness = texture(texRoughness, fragTexCoord).r * 255.0f;
 
     // Direct Light
