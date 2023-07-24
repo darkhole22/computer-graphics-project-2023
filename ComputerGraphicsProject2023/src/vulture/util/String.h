@@ -271,6 +271,7 @@ public:
 			if (m_Data.data)
 			{
 				strcpy(getDynamicString(), other.cString());
+				getDynamicData()->size = otherLen;
 			}
 			else
 			{
