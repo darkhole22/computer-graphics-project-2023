@@ -108,9 +108,11 @@ void Scene::render(FrameContext target, f32 dt)
 	m_CollisionEngine.update(dt);
 
 	// Tick tweens and timers
-	stepUtil(m_Tweens, dt, m_TweenLoopFlag);
-	stepUtil(m_Timers, dt, m_TimersLoopFlag);
-
+	if (!m_Paused)
+	{
+		stepUtil(m_Tweens, dt, m_TweenLoopFlag);
+		stepUtil(m_Timers, dt, m_TimersLoopFlag);
+	}
 	// Update UI
 	// UI has to be modified after everything else to ensure
 	// correct text centering and repositioning.

@@ -262,6 +262,8 @@ public:
 
 	inline Ref<DescriptorSetLayout> getDefaultDSL() { return m_GameObjectDSL; }
 
+	inline void setPaused(bool paused) { m_Paused = paused; }
+
 	~Scene() = default;
 
 	friend class Application;
@@ -285,6 +287,8 @@ private:
 	bool m_TweenLoopFlag = false;
 	std::unordered_set<Ref<Timer>> m_Timers;
 	bool m_TimersLoopFlag = false;
+
+	bool m_Paused = false;
 
 	std::vector<std::function<void()>> m_DeferredFunctions;
 
