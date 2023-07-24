@@ -26,7 +26,7 @@ public:
 
 	~Enemy();
 private:
-	const f32 c_Speed = 4.0f;
+	const f32 c_Speed = 6.0f;
 
 	Ref<Player> m_Player;
 	Ref<Terrain> m_Terrain;

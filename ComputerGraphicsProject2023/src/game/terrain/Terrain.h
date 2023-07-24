@@ -45,7 +45,7 @@ private:
 
 	void updateRenderingComponents(const Ref<Texture>& texture, glm::vec2 position);
 
-	glm::vec3 getDecalPosition(size_t seed);
+	glm::vec3 getPropPosition(size_t seed);
 };
 
 struct TerrainGenerationConfig

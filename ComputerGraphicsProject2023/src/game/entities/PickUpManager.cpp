@@ -9,9 +9,9 @@ namespace game {
 PickUpManager::PickUpManager(Ref<Player> player, Ref<Terrain> terrain) :
 	m_Player(player), m_Terrain(terrain)
 {
-	m_Handlers.emplace_back(PickUpHandler::create<HealthPack>(player, terrain, 10.0f, 1));
-	m_Handlers.emplace_back(PickUpHandler::create<DoubleScore>(player, terrain, 10.0f, 1));
-	m_Handlers.emplace_back(PickUpHandler::create<Bomb>(player, terrain, 10.0f, 1));
+	m_Handlers.emplace_back(PickUpHandler::create<HealthPack>(player, terrain, 20.0f, 1));
+	m_Handlers.emplace_back(PickUpHandler::create<DoubleScore>(player, terrain, 20.0f, 1));
+	m_Handlers.emplace_back(PickUpHandler::create<Bomb>(player, terrain, 30.0f, 1));
 }
 
 void PickUpManager::start()

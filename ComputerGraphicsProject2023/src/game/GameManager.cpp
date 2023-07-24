@@ -72,6 +72,8 @@ void GameManager::update(f32 dt)
 			m_WaveTimer->pause();
 			m_PickUpManager.pause();
 
+			m_Scene->setPaused(true);
+
 			setGameState(GameState::PAUSE);
 		}
 		break;
@@ -81,6 +83,8 @@ void GameManager::update(f32 dt)
 	{
 		m_WaveTimer->play();
 		m_PickUpManager.start();
+
+		m_Scene->setPaused(false);
 
 		setGameState(GameState::PLAYING);
 	}

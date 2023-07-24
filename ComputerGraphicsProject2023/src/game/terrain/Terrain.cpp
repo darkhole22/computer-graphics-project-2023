@@ -219,16 +219,16 @@ void TerrainChunk::updateRenderingComponents(const Ref<Texture>& texture, glm::v
 
 	m_Object = m_Scene->addObject(m_Terrain->m_Pipeline, m_Terrain->m_Model, m_DescriptorSet);
 
-	auto treePosition = getDecalPosition(0x4269);
+	auto treePosition = getPropPosition(0x4269);
 	treePosition.y -= 1.0f;
 	m_Tree->setPosition(treePosition);
 
-	auto rockPosition = getDecalPosition(0x1172);
+	auto rockPosition = getPropPosition(0x1172);
 	rockPosition.y += 0.2f;
 	m_Rock->setPosition(rockPosition);
 }
 
-glm::vec3 TerrainChunk::getDecalPosition(size_t seed)
+glm::vec3 TerrainChunk::getPropPosition(size_t seed)
 {
 	glm::vec3 chunkPosition = glm::column(m_Uniform->model, 3);
 

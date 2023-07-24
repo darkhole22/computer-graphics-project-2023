@@ -4,6 +4,10 @@
 
 namespace game {
 
+void setupStatsTextStyle(Ref<UIText> text);
+void setupTitleStyle(Ref<UIText> text);
+void setupSubtitleStyle(Ref<UIText> text);
+
 HUD::HUD()
 {
 	m_UIHandler = Application::getScene()->getUIHandle();
@@ -40,41 +44,33 @@ HUD::HUD()
 	centerElement(m_LoadingScreenTitle);
 
 	m_HPText = m_UIHandler->makeText("HP: ");
+	setupStatsTextStyle(m_HPText);
 
 	m_DashesText = m_UIHandler->makeText("Dashes: ");
 	m_DashesText->setPosition({ 20, 50 });
+	setupStatsTextStyle(m_DashesText);
 
 	m_ScoreText = m_UIHandler->makeText("Score: ");
 	m_ScoreText->setPosition({ 20, 80 });
+	setupStatsTextStyle(m_ScoreText);
 
 	m_Crosshair = m_UIHandler->makeImage("crosshair");
 	m_Crosshair->setWidth(50);
 	centerElement(m_Crosshair);
-
-	m_HPText->setVisible(false);
-	m_DashesText->setVisible(false);
-	m_ScoreText->setVisible(false);
 	m_Crosshair->setVisible(false);
-
-	m_HPText->setColor(0.33f, 0.33f, 0.33f);
-	m_DashesText->setColor(0.33f, 0.33f, 0.33f);
-	m_ScoreText->setColor(0.33f, 0.33f, 0.33f);
 
 	/****************
 	 * TITLE SCREEN *
 	 ****************/
 	m_TitleScreenTitle = m_UIHandler->makeText("ROBOT SURVIVOR");
-	m_TitleScreenTitle->setSize(30);
 	m_TitleScreenSubtitle = m_UIHandler->makeText("Press 'FIRE' to start.");
+
+	m_TitleScreenTitle->setSize(30);
+	setupTitleStyle(m_TitleScreenTitle);
+	setupSubtitleStyle(m_TitleScreenSubtitle);
 
 	centerElement(m_TitleScreenTitle);
 	centerElement(m_TitleScreenSubtitle, 0.0f, m_TitleScreenTitle->getHeight());
-
-	m_TitleScreenTitle->setStroke(0.6f);
-	m_TitleScreenTitle->setVisible(false);
-	m_TitleScreenSubtitle->setVisible(false);
-
-	m_TitleScreenSubtitle->setColor(0.33f, 0.33f, 0.33f);
 
 	auto scaleCallback = [this] (f32 scale) {
 		m_TitleScreenTitle->setSize(scale);
@@ -88,32 +84,29 @@ HUD::HUD()
 	m_TitleTween->addMethodTweener<f32>(scaleCallback, 25.0f, 40.0f, 1.0f);
 	m_TitleTween->addMethodTweener<f32>(scaleCallback, 40.0f, 25.0f, 1.0f);
 
-
 	/****************
 	 * PAUSE SCREEN *
 	 ****************/
 	m_PauseScreenTitle = m_UIHandler->makeText("PAUSED");
-	m_PauseScreenSubtitle = m_UIHandler->makeText("Press ESC to Resume.");
+	m_PauseScreenSubtitle = m_UIHandler->makeText("Press ESC/START to Resume");
+
+	setupTitleStyle(m_PauseScreenTitle);
+	setupSubtitleStyle(m_PauseScreenSubtitle);
 
 	centerElement(m_PauseScreenTitle);
 	centerElement(m_PauseScreenSubtitle, 0.0f, m_PauseScreenTitle->getHeight());
-
-	m_PauseScreenTitle->setStroke(0.6f);
-	m_PauseScreenTitle->setVisible(false);
-	m_PauseScreenSubtitle->setVisible(false);
 
 	/********************
 	 * GAME OVER SCREEN *
 	 ********************/
 	m_GameOverTitle = m_UIHandler->makeText("GAME OVER");
-	m_GameOverSubtitle = m_UIHandler->makeText("Press R to Restart");
+	m_GameOverSubtitle = m_UIHandler->makeText("Press R/START to Restart");
+
+	setupTitleStyle(m_GameOverTitle);
+	setupSubtitleStyle(m_GameOverSubtitle);
 
 	centerElement(m_GameOverTitle);
 	centerElement(m_GameOverSubtitle, 0.0f, m_GameOverTitle->getHeight());
-
-	m_GameOverTitle->setStroke(0.6f);
-	m_GameOverTitle->setVisible(false);
-	m_GameOverSubtitle->setVisible(false);
 
 	/********************
 	 *     LEVEL UP     *
@@ -121,9 +114,8 @@ HUD::HUD()
 	m_NotificationTitle = m_UIHandler->makeText("Notification Title");
 	m_NotificationSubtitle = m_UIHandler->makeText("Notification Subtitle");
 
-	m_NotificationTitle->setStroke(0.6f);
-	m_NotificationTitle->setVisible(false);
-	m_NotificationSubtitle->setVisible(false);
+	setupTitleStyle(m_NotificationTitle);
+	setupSubtitleStyle(m_NotificationSubtitle);
 }
 
 void HUD::loadingEnded()
@@ -234,5 +226,26 @@ void HUD::onScoreUpdated(ScoreUpdated event)
 	m_ScoreText->setText(stringFormat("Score: %d", event.score));
 }
 
+void setupStatsTextStyle(Ref<UIText> text)
+{
+	text->setColor(0.22f, 0.22f, 0.22f);
+	text->setStroke(0.5f);
+	text->setVisible(false);
+}
+
+void setupTitleStyle(Ref<UIText> text)
+{
+	text->setStroke(0.6f);
+	text->setBorder(true);
+	text->setBorderColor(0.0f, 0.0f, 0.0f);
+	text->setVisible(false);
+}
+void setupSubtitleStyle(Ref<UIText> text)
+{
+	text->setColor(0.33f, 0.33f, 0.33f);
+	text->setBorder(true);
+	text->setBorderColor(0.0f, 0.0f, 0.0f);
+	text->setVisible(false);
+}
 
 } // namespace game
