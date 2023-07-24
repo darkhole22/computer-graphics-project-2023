@@ -253,21 +253,24 @@ private:
 			KeyboardBinding{{GLFW_KEY_F3}},
 		};
 		toggleInfoAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_BACK}} };
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_BACK, GLFW_GAMEPAD_BUTTON_X}} };
 		Input::setAction("TOGGLE_INFO", toggleInfoAction);
 
 		InputAction toggleGodmodeAction{};
 		toggleGodmodeAction.keyboardBindings = {
 			KeyboardBinding{{GLFW_KEY_F1}},
 		};
+		toggleGodmodeAction.gamepadButtonBindings = {
+			GamepadButtonBinding{ {GLFW_GAMEPAD_BUTTON_BACK, GLFW_GAMEPAD_BUTTON_Y}}
+		};
 		Input::setAction("TOGGLE_GODMODE", toggleGodmodeAction);
 
 		InputAction toggleSkyboxAction{};
 		toggleSkyboxAction.keyboardBindings = {
-			KeyboardBinding{{GLFW_KEY_M}},
+			KeyboardBinding{{GLFW_KEY_F2}},
 		};
 		toggleSkyboxAction.gamepadButtonBindings = {
-			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_Y}} };
+			GamepadButtonBinding{{GLFW_GAMEPAD_BUTTON_BACK, GLFW_GAMEPAD_BUTTON_B}} };
 		Input::setAction("TOGGLE_SKYBOX", toggleSkyboxAction);
 	}
 };

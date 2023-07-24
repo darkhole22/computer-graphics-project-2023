@@ -47,11 +47,10 @@ Player::Player(Ref<Terrain> terrain) :
 	m_Hitbox->collisionMask = ENEMY_MASK | EXPLOSION_MASK;
 
 	scene->addHitbox(m_Hitbox);
-
 	m_Hitbox->addCallback([this](const HitBoxEntered& event) { onHitBoxEntered(event); });
 
 	/*************
-	 * POWER UPS *
+	 * PICK UPS  *
 	 *************/
 	m_PickUpHitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(1.5f, m_CameraHeight));
 	m_PickUpHitbox->transform = m_Transform;
@@ -65,7 +64,6 @@ Player::Player(Ref<Terrain> terrain) :
 
 	EventBus::addCallback([this](const ExplosionStarted&) { m_CanSpawnExplosion = false; });
 	EventBus::addCallback([this](const ExplosionFinished&) { m_CanSpawnExplosion = true; });
-
 	EventBus::addCallback([this](const DoubleScoreOver&) { m_DoubleScoreActive = false; });
 
 	/*************
