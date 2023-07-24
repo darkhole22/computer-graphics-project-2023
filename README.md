@@ -21,22 +21,25 @@ Our project is split in two main parts:
 
 ## :robot: Robot Survivor
 
-**Robot Survivor** is a first person shooter in which you have to survive incoming waves of enemy robots on a procedurally generated alien planet.
+**Robot Survivor** is a first-person shooter in which you have to survive incoming waves of enemy robots on a procedurally generated alien planet.
 
-![Robot Survivors Screenshot](./assets/robot-survivors.png)
+![Enemies Chasing the Player at Night](./assets/enemies.png)
 
-By destroying enemies, you can level up and obtain random upgrades to help you live longer!
-
-Walking around, you'll be able to find powerful *pick-ups*!
+By destroying enemies, you can level up and obtain random upgrades to help you live longer, and walking around, you'll be able to find powerful *pick-ups*!
 
 ![Bomb Explosion](./assets/bomb-pickup.png)
+
+The game also features a full **Day-Night Cycle**!
+
+![Sunrise](./assets/sunrise.png)
+![Day](./assets/day.png)
+![Sunset](./assets/sunset.png)
 
 ## :volcano: Vulture
 
 Vulture is our toy **Vulkan** game engine written on top of the famous [Vulkan Tutorial](https://vulkan-tutorial.com).
 
 The **key features** of Vulture are:
-- Multi-pipeline support
 - Render varying amounts of dynamically instantiated objects
 - Dynamic **Skybox** support
 - **UI** capabilities with **Image** and **Text** rendering

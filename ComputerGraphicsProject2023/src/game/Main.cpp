@@ -288,7 +288,7 @@ int main()
 		{
 			game::TestGame game;
 
-			app = Application::launch(game, vulture::AppConfig{ "Vulture demo", 800, 600 });
+			app = Application::launch(game, vulture::AppConfig{ "Robot Survivor", 800, 600 });
 		}
 
 		return EXIT_SUCCESS;
