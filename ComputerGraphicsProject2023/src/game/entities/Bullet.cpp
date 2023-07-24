@@ -10,7 +10,7 @@ const String Bullet::s_RoughnessTextureName = "bullet";
 Bullet::Bullet(Ref<GameObject> gameObject)
 	: gameObject(gameObject)
 {
-	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.6f, 3.6f));
+	m_Hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(0.05f, 0.28f));
 	m_Hitbox->layerMask = PLAYER_BULLET_MASK;
 	m_Hitbox->collisionMask = ENEMY_MASK;
 
