@@ -1,6 +1,7 @@
 #include "Tree.h"
 
 #include "vulture/core/Application.h"
+#include "vulture/util/Random.h"
 
 namespace game {
 
@@ -19,6 +20,8 @@ Tree::Tree()
 
 	m_TrunkGameObject->transform->setScale(0.05f);
 	m_LeavesGameObject->transform->setScale(0.05f);
+
+	m_LeavesGameObject->transform->rotate(0.0f, Random::next(0.0f, glm::radians(360.0f)), 0.0f);
 
 	m_Scene->addObject(m_TrunkGameObject);
 	m_Scene->addObject(m_LeavesGameObject, m_LeavesPipelineHandle);
