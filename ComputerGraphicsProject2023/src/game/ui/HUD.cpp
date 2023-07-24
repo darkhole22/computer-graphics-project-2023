@@ -88,7 +88,7 @@ HUD::HUD()
 	 * PAUSE SCREEN *
 	 ****************/
 	m_PauseScreenTitle = m_UIHandler->makeText("PAUSED");
-	m_PauseScreenSubtitle = m_UIHandler->makeText("ESC/START to Resume");
+	m_PauseScreenSubtitle = m_UIHandler->makeText("Press ESC/START to Resume");
 
 	setupTitleStyle(m_PauseScreenTitle);
 	setupSubtitleStyle(m_PauseScreenSubtitle);
@@ -100,7 +100,7 @@ HUD::HUD()
 	 * GAME OVER SCREEN *
 	 ********************/
 	m_GameOverTitle = m_UIHandler->makeText("GAME OVER");
-	m_GameOverSubtitle = m_UIHandler->makeText("R/START to Restart");
+	m_GameOverSubtitle = m_UIHandler->makeText("Press R/START to Restart");
 
 	setupTitleStyle(m_GameOverTitle);
 	setupSubtitleStyle(m_GameOverSubtitle);
