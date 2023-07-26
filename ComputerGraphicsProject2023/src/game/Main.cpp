@@ -109,14 +109,14 @@ private:
 		m_Scene->getWorld()->directLight.direction = glm::normalize(glm::vec3(-1.0f));
 
 		auto lightFun = [this](f32 angle) {
-			constexpr float hAngle = glm::radians(10.0f);
+			constexpr f32 hAngle = glm::radians(10.0f);
 
 			m_Scene->getWorld()->directLight.color = glm::vec4(1.0f, 0.2f + 0.7f * std::pow(sin(angle), 3.0f), std::pow(sin(angle), 5.0f) * 0.9f, 1.0f);
 			m_Scene->getWorld()->directLight.direction = glm::vec3(cos(angle) * cos(hAngle), sin(angle) * cos(hAngle), sin(hAngle));
 		};
 
 		auto lightInvFun = [this](f32 angle) {
-			constexpr float hAngle = glm::radians(10.0f);
+			constexpr f32 hAngle = glm::radians(10.0f);
 			f32 decay = 1.0f - std::pow(sin(angle), 5.0f);
 
 			m_Scene->getWorld()->directLight.color = static_cast<f32>(1.0f - 0.5f * sin(angle)) * glm::vec4(decay * 1.0f, decay * 0.2f, 1.0f - decay, 1.0f);
@@ -139,11 +139,11 @@ private:
 
 		// Midnight
 		directLightTween->addCallbackTweener([this]() { m_Scene->setSkybox(SKYBOX_MIDNIGHT); });
-		directLightTween->addMethodTweener<f32>(lightInvFun, glm::radians(180.0f), glm::radians(30.0f), 10.0f);
+		directLightTween->addMethodTweener<f32>(lightInvFun, glm::radians(180.0f), glm::radians(130.0f), 10.0f);
 
 		// Night
 		directLightTween->addCallbackTweener([this]() { m_Scene->setSkybox(SKYBOX_NIGHT); });
-		directLightTween->addMethodTweener<f32>(lightInvFun, glm::radians(150.0f), 0.0f, 50.0f);
+		directLightTween->addMethodTweener<f32>(lightInvFun, glm::radians(130.0f), 0.0f, 50.0f);
 	}
 
 	void setupInputActions()
