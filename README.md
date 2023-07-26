@@ -141,7 +141,7 @@ Look at this example for a reference on how you can setup a hitbox for your game
 Ref<HitBox> hitbox = makeRef<HitBox>(makeRef<CapsuleCollisionShape>(radius, height));
 
 // Sets the hitbox transform
-hitbox->transform = gameObject->transform
+hitbox->transform = gameObject->transform;
 
 // Define the Layer and Collision masks
 hitbox->layerMask = BitMask::BIT0;
@@ -184,8 +184,8 @@ Creating tweens is easy, and you can even loop them, chain them or run them in p
 Ref<Tween> tween = Application::getScene()->makeTween();
 tween->loop(); // Makes the tween loop
 
-tween->addValueTweener(&gameObject.transform.scale, 5.0f, 1.0f) // Scales the object 5x over 1 second
-tween->addValueTweener(&gameObject.transform.scale, 1.0f, 1.0f) // Scales the object to its original size over 1 second
+tween->addValueTweener(&gameObject.transform.scale, 5.0f, 1.0f); // Scales the object 5x over 1 second
+tween->addValueTweener(&gameObject.transform.scale, 1.0f, 1.0f); // Scales the object to its original size over 1 second
 ```
 
 Tweens can be used to animate game objects in the world, to animate UIs or even to handle gameplay logic.
