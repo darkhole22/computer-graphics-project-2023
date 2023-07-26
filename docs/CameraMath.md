@@ -47,7 +47,7 @@ $\overrightarrow{r'} = \overrightarrow{front} \times \overrightarrow{dir} = \|\o
 
 And the definition of the dot product:
 
-$\overrightarrow{A} \times \overrightarrow{B} = \|\overrightarrow{A} \| \cdot \| \overrightarrow{B} \| \cdot \cos (\theta)$
+$\overrightarrow{A} \cdot \overrightarrow{B} = \|\overrightarrow{A} \| \cdot \| \overrightarrow{B} \| \cdot \cos (\theta)$
 
 We can obtain:
 
