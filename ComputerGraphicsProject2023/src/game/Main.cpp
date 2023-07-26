@@ -52,6 +52,8 @@ public:
 			std::this_thread::sleep_for(100ms);
 			return true;
 		}, nullptr, [this](bool, void*) {
+			DEBUG_TIMER("Game creation");
+
 			/***********
 			* TERRAIN *
 			***********/

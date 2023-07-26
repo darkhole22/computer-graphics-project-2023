@@ -62,7 +62,7 @@ void Application::run()
 void Application::setup()
 {
 	Input::initialize(m_Window);
-	DEBUG_TIMER("Game creation");
+
 	m_Game->setup();
 }
 
