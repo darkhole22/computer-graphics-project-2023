@@ -21,9 +21,9 @@ public:
 
 	inline CallbackReference addCallback(Callback callback)
 	{
-		m_NextReferance.value++;
-		m_Callbacks.insert({ m_NextReferance.value, callback });
-		return CallbackReference{ m_NextReferance.value };
+		m_NextReference.value++;
+		m_Callbacks.insert({m_NextReference.value, callback });
+		return CallbackReference{m_NextReference.value };
 	}
 
 	inline void emit(const Event& event) const
@@ -41,7 +41,7 @@ public:
 
 	~EventHandler() = default;
 private:
-	CallbackReference m_NextReferance;
+	CallbackReference m_NextReference;
 	std::unordered_map<u64, Callback> m_Callbacks;
 };
 
