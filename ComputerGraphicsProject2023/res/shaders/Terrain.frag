@@ -39,7 +39,7 @@ vec3 pointLightModel(vec3 lightColor, vec3 lightPosition, vec3 fragPosition, flo
 
 // This BRDF implements OrenNayar, used for materials that do not show specular reflections
 // such as our terrain.
-vec3 orenNayar(vec3 V, vec3 N, vec3 L, vec3 Md, float sigma) {
+vec3 OrenNayar(vec3 V, vec3 N, vec3 L, vec3 Md, float sigma) {
     //vec3 V  - direction of the viewer
     //vec3 N  - normal vector to the surface
     //vec3 L  - light vector (from the light model)
@@ -91,7 +91,7 @@ void main() {
     vec3 pointLightDir = normalize(wubo.pointLightPosition.xyz - fragPos);
     vec3 pointLightColor = wubo.pointLightColor.rgb;
 
-    diff = orenNayar(cameraDir, norm, pointLightDir, color, 0.4);
+    diff = OrenNayar(cameraDir, norm, pointLightDir, color, 0.4);
     vec3 pointLightComponent = pointLightModel(pointLightColor, wubo.pointLightPosition.xyz, fragPos, wubo.pointLightDecay, wubo.pointLightMaxRange) * diff;
 
     // Ambient
