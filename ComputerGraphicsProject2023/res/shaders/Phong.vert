@@ -24,5 +24,5 @@ void main() {
 
     fragNorm = normalize(inverse(transpose(mat3(mbo.model))) * inNorm);
     fragTexCoord = inTexCoord;
-    fragPos = position.xyz;
+    fragPos = (mbo.model * vec4(inPosition, 1.0)).xyz;
 }

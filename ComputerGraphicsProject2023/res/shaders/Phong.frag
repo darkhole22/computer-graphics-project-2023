@@ -13,6 +13,7 @@ layout(set = 2, binding = 0) uniform WorldBufferObject {
     vec4 pointLightColor;
     float pointLightDecay;
     float pointLightMaxRange;
+    float ambientStrength;
 
     vec4 directLightDirection;
     vec4 directLightColor;
@@ -37,7 +38,7 @@ vec3 BRDF(vec3 V, vec3 N, vec3 L, vec3 Md, vec3 Ms, float gamma) {
     vec3 lambert_diffuse = Md * max(dot(L, N), 0);
 
     vec3 rlx = -reflect(-L, N);
-    vec3 phong_specular = Ms * pow(clamp(dot(-V, rlx), 0.0f, 1.0f), gamma);
+    vec3 phong_specular = Ms * pow(clamp(dot(-V, rlx), 0.0, 1.0), gamma);
 
     return lambert_diffuse + phong_specular;
 }
@@ -51,20 +52,20 @@ void main() {
     vec3 CameraDir = normalize(wubo.cameraPosition.xyz - fragPos);
 
     // We only read the R channel of the roughness textures
-    float roughness = texture(texRoughness, fragTexCoord).r * 255.0f;
+    float roughness = texture(texRoughness, fragTexCoord).r * 255.0;
 
     // Direct Light
     vec3 directLightDir = wubo.directLightDirection.xyz;
     vec3 directLightColor = wubo.directLightColor.rgb;
 
-    vec3 DiffSpec = BRDF(CameraDir, Norm, directLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), roughness);
+    vec3 DiffSpec = BRDF(CameraDir, Norm, directLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0), roughness);
     vec3 directLightComponent = directLightColor * DiffSpec;
 
     // Point Light
     vec3 pointLightDir = normalize(wubo.pointLightPosition.xyz - fragPos);
     vec3 pointLightColor = wubo.pointLightColor.rgb;
 
-    DiffSpec = BRDF(CameraDir, Norm, pointLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0f), roughness);
+    DiffSpec = BRDF(CameraDir, Norm, pointLightDir, texture(texSampler, fragTexCoord).rgb, vec3(1.0), roughness);
     vec3 pointLightComponent = pointLightModel(pointLightColor, wubo.pointLightPosition.xyz, fragPos, wubo.pointLightDecay, wubo.pointLightMaxRange) * DiffSpec;
 
     // Ambient Lighting
@@ -72,9 +73,9 @@ void main() {
 
     // Emission
     vec3 Emission = texture(texEmission, fragTexCoord).rgb;
-    float emissionStrength = step(1.0f, texture(texEmission, fragTexCoord).a) * oubo.emissionStrength;
+    float emissionStrength = step(1.0, texture(texEmission, fragTexCoord).a) * oubo.emissionStrength;
 
     // Out
-    vec3 baseColor = clamp(0.95f * (directLightComponent + pointLightComponent) + 0.05f * Ambient, 0.0f, 1.0f);
-    outColor = vec4(mix(baseColor, Emission, emissionStrength), 1.0f);
+    vec3 baseColor = clamp((1.0 - wubo.ambientStrength) * (directLightComponent + pointLightComponent) + wubo.ambientStrength * Ambient, 0.0, 1.0);
+    outColor = vec4(mix(baseColor, Emission, emissionStrength), 1.0);
 }

@@ -38,6 +38,7 @@ void main() {
     // Sets actual coord position
     vec4 position = vec4(inPosition, 1.0);
     position.y += h0;
+    fragPos = (mbo.model * vec4(position.xyz, 1.0)).xyz;
     position = cbo.proj * cbo.view * mbo.model * position;
 
     gl_Position = position;
@@ -48,5 +49,5 @@ void main() {
 
     fragNorm = normalize(inverse(transpose(mat3(mbo.model))) * norm);
     fragTexCoord = inTexCoord;
-    fragPos = position.xyz;
+    
 }

@@ -19,6 +19,7 @@ layout(set = 2, binding = 0) uniform WorldBufferObject {
     vec4 pointLightColor;
     float pointLightDecay;
     float pointLightMaxRange;
+    float ambientStrength;
 
     vec4 directLightDirection;
     vec4 directLightColor;
@@ -57,7 +58,7 @@ vec3 OrenNayar(vec3 V, vec3 N, vec3 L, vec3 Md, float sigma) {
     vec3 v_r = normalize(V - dot(V, N) * N);
     float G = max(0, dot(v_i, v_r));
 
-    vec3 l = Md * clamp(dot(L, N), 0.0f, 1.0f);
+    vec3 l = Md * clamp(dot(L, N), 0.0, 1.0);
 
     vec3 oren_nayar_diffuse = l * (A + B * G * sin(alpha) * tan(beta));
 
@@ -94,9 +95,9 @@ void main() {
     vec3 pointLightComponent = pointLightModel(pointLightColor, wubo.pointLightPosition.xyz, fragPos, wubo.pointLightDecay, wubo.pointLightMaxRange) * diff;
 
     // Ambient
-    vec3 Ambient = color;
+    vec3 ambient = color;
 
     // Out
-    vec3 baseColor = clamp(0.95f * (directLightComponent + pointLightComponent) + 0.05f * Ambient, 0.0f, 1.0f);
+    vec3 baseColor = clamp((1.0 - wubo.ambientStrength) * (directLightComponent + pointLightComponent) + wubo.ambientStrength * ambient, 0.0, 1.0);
     outColor = vec4(baseColor, 1.0);
 }

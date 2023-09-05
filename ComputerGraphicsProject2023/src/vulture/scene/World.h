@@ -14,6 +14,7 @@ struct WorldBufferObject
 	alignas(16) glm::vec4 pointLightColor;
 	alignas(4) 	f32 pointLightDecay;
 	alignas(4) 	f32 pointLightMaxRange;
+	alignas(4) 	f32 ambientStrength = 0.005f;
 
 	alignas(16) glm::vec3 directLightDirection;
 	alignas(16) glm::vec4 directLightColor;
@@ -31,8 +32,8 @@ struct PointLight
 {
 	glm::vec3 position = {0.0f, 0.0f, 0.0f};
 	glm::vec4 color { 0.0f, 0.0f, 0.0f, 1.0f};
-	float decay = 1.0f;
-	float maxRange = 20.0f;
+	f32 decay = 1.0f;
+	f32 maxRange = 20.0f;
 };
 
 class World
